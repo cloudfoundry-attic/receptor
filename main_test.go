@@ -55,7 +55,8 @@ var _ = Describe("Receptor API", func() {
 		etcdRunner.Start()
 		bbs = Bbs.NewBBS(etcdRunner.Adapter(), timeprovider.NewTimeProvider(), lagertest.NewTestLogger("test"))
 
-		receptorRunner = testrunner.New(receptorBinPath, receptorAddress)
+		etcdUrl := fmt.Sprintf("http://127.0.0.1:%d", etcdPort)
+		receptorRunner = testrunner.New(receptorBinPath, receptorAddress, etcdUrl)
 		receptorProcess = ginkgomon.Invoke(receptorRunner)
 		reqGen = rata.NewRequestGenerator("http://"+receptorAddress, api.Routes)
 		client = new(http.Client)

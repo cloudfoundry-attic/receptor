@@ -4,13 +4,14 @@ import (
 	"net/http"
 
 	"github.com/cloudfoundry-incubator/receptor/api"
+	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/pivotal-golang/lager"
 	"github.com/tedsuo/rata"
 )
 
-func New(logger lager.Logger) http.Handler {
+func New(bbs Bbs.ReceptorBBS, logger lager.Logger) http.Handler {
 	routes, err := rata.NewRouter(api.Routes, rata.Handlers{
-		api.CreateTask: newCreateTaskHandler(logger),
+		api.CreateTask: newCreateTaskHandler(bbs, logger),
 	})
 	if err != nil {
 		panic("unable to create router: " + err.Error())
