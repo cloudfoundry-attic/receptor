@@ -23,7 +23,10 @@ func (req CreateTaskRequest) JSONReader() io.Reader {
 	pipeReader, pipeWriter := io.Pipe()
 	jsonEncoder := json.NewEncoder(pipeWriter)
 	go func() {
-		jsonEncoder.Encode(req)
+		err := jsonEncoder.Encode(req)
+		if err != nil {
+			panic("Unable to encode JSON: " + err.Error())
+		}
 		pipeWriter.Close()
 	}()
 	return pipeReader

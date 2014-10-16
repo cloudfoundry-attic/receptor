@@ -6,7 +6,11 @@ import (
 
 	"github.com/cloudfoundry-incubator/receptor/api"
 	"github.com/cloudfoundry-incubator/receptor/testrunner"
+	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
+	"github.com/cloudfoundry/gunk/timeprovider"
+	"github.com/cloudfoundry/storeadapter/storerunner/etcdstorerunner"
+	"github.com/pivotal-golang/lager/lagertest"
 	"github.com/tedsuo/ifrit"
 	"github.com/tedsuo/ifrit/ginkgomon"
 	"github.com/tedsuo/rata"
@@ -18,6 +22,7 @@ import (
 
 var receptorBinPath string
 var receptorAddress string
+var etcdPort int
 
 var _ = SynchronizedBeforeSuite(
 	func() []byte {
@@ -28,6 +33,7 @@ var _ = SynchronizedBeforeSuite(
 	func(receptorConfig []byte) {
 		receptorBinPath = string(receptorConfig)
 		receptorAddress = fmt.Sprintf("127.0.0.1:%d", 6700+GinkgoParallelNode())
+		etcdPort = 4001 + GinkgoParallelNode()
 	},
 )
 
@@ -37,12 +43,18 @@ var _ = SynchronizedAfterSuite(func() {
 })
 
 var _ = Describe("Receptor API", func() {
+	var etcdRunner *etcdstorerunner.ETCDClusterRunner
+	var bbs *Bbs.BBS
 	var receptorRunner *ginkgomon.Runner
 	var receptorProcess ifrit.Process
 	var reqGen *rata.RequestGenerator
 	var client *http.Client
 
 	BeforeEach(func() {
+		etcdRunner = etcdstorerunner.NewETCDClusterRunner(etcdPort, 1)
+		etcdRunner.Start()
+		bbs = Bbs.NewBBS(etcdRunner.Adapter(), timeprovider.NewTimeProvider(), lagertest.NewTestLogger("test"))
+
 		receptorRunner = testrunner.New(receptorBinPath, receptorAddress)
 		receptorProcess = ginkgomon.Invoke(receptorRunner)
 		reqGen = rata.NewRequestGenerator("http://"+receptorAddress, api.Routes)
@@ -50,6 +62,7 @@ var _ = Describe("Receptor API", func() {
 	})
 
 	AfterEach(func() {
+		defer etcdRunner.Stop()
 		ginkgomon.Kill(receptorProcess)
 	})
 
@@ -75,9 +88,11 @@ var _ = Describe("Receptor API", func() {
 		})
 
 		It("responds with 201 CREATED", func() {
-			Ω(createTaskRes.StatusCode).Should(Equal(201))
+			Ω(createTaskRes.StatusCode).Should(Equal(http.StatusCreated))
 		})
 
-		It("desires the task in the BBS", func() {})
+		It("desires the task in the BBS", func() {
+			Eventually(bbs.GetAllPendingTasks).Should(HaveLen(1))
+		})
 	})
 })

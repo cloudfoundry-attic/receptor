@@ -8,7 +8,8 @@ import (
 
 func New(binPath string, address string) *ginkgomon.Runner {
 	return ginkgomon.New(ginkgomon.Config{
-		Name:    "receptor",
-		Command: exec.Command(binPath, "-address", address),
+		Name:       "receptor",
+		Command:    exec.Command(binPath, "-address", address),
+		StartCheck: "started",
 	})
 }
