@@ -1,6 +1,11 @@
 package api
 
-import "github.com/cloudfoundry-incubator/runtime-schema/models"
+import (
+	"encoding/json"
+	"io"
+
+	"github.com/cloudfoundry-incubator/runtime-schema/models"
+)
 
 type CreateTaskRequest struct {
 	TaskGuid   string                  `json:"task_guid"`
@@ -14,7 +19,12 @@ type CreateTaskRequest struct {
 	Annotation string                  `json:"annotation,omitempty"`
 }
 
-
-func (req CreateTaskRequest) JSONReader() *byes.Reader {
-	
+func (req CreateTaskRequest) JSONReader() io.Reader {
+	pipeReader, pipeWriter := io.Pipe()
+	jsonEncoder := json.NewEncoder(pipeWriter)
+	go func() {
+		jsonEncoder.Encode(req)
+		pipeWriter.Close()
+	}()
+	return pipeReader
 }
