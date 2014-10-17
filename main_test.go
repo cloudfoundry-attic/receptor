@@ -2,6 +2,7 @@ package main_test
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/cloudfoundry-incubator/receptor/api"
@@ -9,6 +10,7 @@ import (
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/cloudfoundry/gunk/timeprovider"
+	"github.com/cloudfoundry/storeadapter"
 	"github.com/cloudfoundry/storeadapter/storerunner/etcdstorerunner"
 	"github.com/pivotal-golang/lager"
 	"github.com/tedsuo/ifrit"
@@ -98,6 +100,32 @@ var _ = Describe("Receptor API", func() {
 
 		It("desires the task in the BBS", func() {
 			Eventually(bbs.GetAllPendingTasks).Should(HaveLen(1))
+		})
+
+		Context("when trying to create a task with a GUID that already exists", func() {
+			var body []byte
+
+			BeforeEach(func() {
+				var err error
+				createTaskReq, err = reqGen.CreateRequest(api.CreateTask, nil, taskToCreate.JSONReader())
+				Ω(err).ShouldNot(HaveOccurred())
+
+				createTaskRes, err = client.Do(createTaskReq)
+				Ω(err).ShouldNot(HaveOccurred())
+				body, err = ioutil.ReadAll(createTaskRes.Body)
+				Ω(err).ShouldNot(HaveOccurred())
+				createTaskRes.Body.Close()
+			})
+
+			It("returns an error indicating that the key already exists", func() {
+				Ω(createTaskRes.StatusCode).Should(Equal(http.StatusInternalServerError))
+
+				expectedError := api.ErrorResponse{
+					Error: storeadapter.ErrorKeyExists.Error(),
+				}
+
+				Expect(body).To(BeEquivalentTo(expectedError.JSONReader().String()))
+			})
 		})
 	})
 })
