@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/cloudfoundry-incubator/receptor/api"
+	"github.com/cloudfoundry-incubator/receptor"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -20,7 +20,7 @@ func TestHandlers(t *testing.T) {
 func newTestRequest(body interface{}) *http.Request {
 	var reader io.Reader
 	switch body := body.(type) {
-	case api.JSONReader:
+	case receptor.JSONReader:
 		reader = body.JSONReader()
 	case string:
 		reader = bytes.NewBufferString(body)

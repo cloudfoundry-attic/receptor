@@ -31,6 +31,18 @@ var etcdCluster = flag.String(
 	"comma-separated list of etcd addresses (http://ip:port)",
 )
 
+var username = flag.String(
+	"username",
+	"",
+	"username for basic auth, enables basic auth if set",
+)
+
+var password = flag.String(
+	"password",
+	"",
+	"password for basic auth",
+)
+
 func main() {
 	flag.Parse()
 
@@ -41,8 +53,10 @@ func main() {
 
 	bbs := initializeReceptorBBS(logger)
 
+	handler := handlers.New(bbs, logger, *username, *password)
+
 	group := grouper.NewOrdered(os.Interrupt, grouper.Members{
-		{"server", http_server.New(*serverAddress, handlers.New(bbs, logger))},
+		{"server", http_server.New(*serverAddress, handler)},
 	})
 
 	monitor := ifrit.Invoke(sigmon.New(group))

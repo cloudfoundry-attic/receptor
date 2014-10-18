@@ -3,33 +3,34 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/cloudfoundry-incubator/receptor/api"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/pivotal-golang/lager"
 	"github.com/tedsuo/rata"
 )
 
-func New(bbs Bbs.ReceptorBBS, logger lager.Logger) http.Handler {
-	routes, err := rata.NewRouter(api.Routes, rata.Handlers{
-		api.CreateTask: NewCreateTaskHandler(bbs, logger),
-	})
+const (
+	CreateTask = "CreateTask"
+)
+
+var Routes = rata.Routes{
+	{Path: "/tasks", Method: "POST", Name: CreateTask},
+}
+
+func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) http.Handler {
+	actions := rata.Handlers{
+		CreateTask: NewCreateTaskHandler(bbs, logger),
+	}
+
+	handler, err := rata.NewRouter(Routes, actions)
 	if err != nil {
 		panic("unable to create router: " + err.Error())
 	}
-	return logWrap(routes, logger)
-}
 
-func logWrap(handler http.Handler, logger lager.Logger) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		requestLog := logger.Session("request", lager.Data{
-			"method":  r.Method,
-			"request": r.URL.String(),
-		})
-
-		requestLog.Info("serving")
-
-		handler.ServeHTTP(w, r)
-
-		requestLog.Info("done")
+	if username != "" {
+		handler = BasicAuthWrap(handler, username, password)
 	}
+
+	handler = LogWrap(handler, logger)
+
+	return handler
 }

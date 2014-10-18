@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/cloudfoundry-incubator/receptor/api"
+	"github.com/cloudfoundry-incubator/receptor"
 	. "github.com/cloudfoundry-incubator/receptor/handlers"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
@@ -21,7 +21,7 @@ var _ = Describe("Create Task Handler", func() {
 		fakeBBS            *fake_bbs.FakeReceptorBBS
 		handler            http.Handler
 		responseRecorder   *httptest.ResponseRecorder
-		validCreateRequest = api.CreateTaskRequest{
+		validCreateRequest = receptor.CreateTaskRequest{
 			TaskGuid: "task-guid-1",
 			Domain:   "test-domain",
 			Stack:    "some-stack",
@@ -78,7 +78,7 @@ var _ = Describe("Create Task Handler", func() {
 		})
 
 		It("responds with a relevant error message", func() {
-			expectedError := api.ErrorResponse{
+			expectedError := receptor.ErrorResponse{
 				Error: "ka-boom",
 			}
 			expectedBody := expectedError.JSONReader()
@@ -87,7 +87,7 @@ var _ = Describe("Create Task Handler", func() {
 	})
 
 	Context("when the requested task is invalid", func() {
-		var invalidTask = api.CreateTaskRequest{
+		var invalidTask = receptor.CreateTaskRequest{
 			TaskGuid: "invalid-task",
 		}
 
@@ -106,7 +106,7 @@ var _ = Describe("Create Task Handler", func() {
 
 		It("responds with a relevant error message", func() {
 			_, err := invalidTask.ToTask()
-			expectedError := api.ErrorResponse{
+			expectedError := receptor.ErrorResponse{
 				Error: err.Error(),
 			}
 			expectedBody := expectedError.JSONReader()
@@ -131,8 +131,8 @@ var _ = Describe("Create Task Handler", func() {
 		})
 
 		It("responds with a relevant error message", func() {
-			err := json.Unmarshal(garbageRequest, &api.CreateTaskRequest{})
-			expectedError := api.ErrorResponse{
+			err := json.Unmarshal(garbageRequest, &receptor.CreateTaskRequest{})
+			expectedError := receptor.ErrorResponse{
 				Error: err.Error(),
 			}
 			expectedBody := expectedError.JSONReader()

@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/cloudfoundry-incubator/receptor/api"
+	"github.com/cloudfoundry-incubator/receptor"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/pivotal-golang/lager"
 )
@@ -23,13 +23,13 @@ func NewCreateTaskHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) http.Handler
 
 func (h *createTaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log := h.logger.Session("create-task-handler")
-	taskRequest := api.CreateTaskRequest{}
+	taskRequest := receptor.CreateTaskRequest{}
 
 	err := json.NewDecoder(r.Body).Decode(&taskRequest)
 	if err != nil {
 		log.Error("invalid-json", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write(api.NewErrorResponse(err).JSONReader().Bytes())
+		w.Write(receptor.NewErrorResponse(err).JSONReader().Bytes())
 		return
 	}
 
@@ -37,7 +37,7 @@ func (h *createTaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error("task-request-invalid", err)
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write(api.NewErrorResponse(err).JSONReader().Bytes())
+		w.Write(receptor.NewErrorResponse(err).JSONReader().Bytes())
 		return
 	}
 
@@ -45,7 +45,7 @@ func (h *createTaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Error("desire-task-failed", err)
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write(api.NewErrorResponse(err).JSONReader().Bytes())
+		w.Write(receptor.NewErrorResponse(err).JSONReader().Bytes())
 		return
 	}
 

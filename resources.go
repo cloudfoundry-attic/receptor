@@ -1,4 +1,4 @@
-package api
+package receptor
 
 import (
 	"bytes"

@@ -9,5 +9,5 @@ import (
 
 func TestReceptor(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Receptor Integration Suite")
+	RunSpecs(t, "Receptor Suite")
 }
