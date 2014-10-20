@@ -29,25 +29,33 @@ func (h *createTaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&taskRequest)
 	if err != nil {
 		log.Error("invalid-json", err)
-		writeErrorResponse(w, http.StatusBadRequest, err)
+		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
+			Type:    receptor.InvalidJSON,
+			Message: err.Error(),
+		})
 		return
 	}
 
 	task, err := taskRequest.ToTask()
 	if err != nil {
 		log.Error("task-request-invalid", err)
-		writeErrorResponse(w, http.StatusBadRequest, err)
+		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
+			Type:    receptor.InvalidTask,
+			Message: err.Error(),
+		})
 		return
 	}
 
 	err = h.bbs.DesireTask(task)
 	if err != nil {
 		log.Error("desire-task-failed", err)
-		errJSON := receptor.NewErrorResponse(err)
 		if err == storeadapter.ErrorKeyExists {
-			writeJSONResponse(w, http.StatusConflict, errJSON)
+			writeJSONResponse(w, http.StatusConflict, receptor.Error{
+				Type:    receptor.TaskGuidAlreadyExists,
+				Message: "task already exists",
+			})
 		} else {
-			writeJSONResponse(w, http.StatusInternalServerError, errJSON)
+			writeUnknownErrorResponse(w, err)
 		}
 		return
 	}

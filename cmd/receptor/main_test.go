@@ -2,23 +2,18 @@ package main_test
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/cmd/receptor/testrunner"
-	"github.com/cloudfoundry-incubator/receptor/handlers"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/cloudfoundry/gunk/timeprovider"
-	"github.com/cloudfoundry/storeadapter"
 	"github.com/cloudfoundry/storeadapter/storerunner/etcdstorerunner"
 	"github.com/pivotal-golang/lager"
 	"github.com/tedsuo/ifrit"
 	"github.com/tedsuo/ifrit/ginkgomon"
-	"github.com/tedsuo/rata"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -56,8 +51,7 @@ var _ = Describe("Receptor API", func() {
 	var bbs *Bbs.BBS
 	var receptorRunner *ginkgomon.Runner
 	var receptorProcess ifrit.Process
-	var reqGen *rata.RequestGenerator
-	var client *http.Client
+	var client receptor.Client
 
 	BeforeEach(func() {
 		etcdUrl = fmt.Sprintf("http://127.0.0.1:%d", etcdPort)
@@ -69,9 +63,7 @@ var _ = Describe("Receptor API", func() {
 
 		bbs = Bbs.NewBBS(etcdRunner.Adapter(), timeprovider.NewTimeProvider(), logger)
 
-		reqGen = rata.NewRequestGenerator("http://"+receptorAddress, handlers.Routes)
-		reqGen.Header.Set("Authorization", "Basic "+basicAuth(username, password))
-		client = new(http.Client)
+		client = receptor.NewClient(receptorAddress, username, password)
 
 		receptorRunner = testrunner.New(receptorBinPath, receptorAddress, etcdUrl, username, password)
 		receptorProcess = ginkgomon.Invoke(receptorRunner)
@@ -84,6 +76,11 @@ var _ = Describe("Receptor API", func() {
 
 	Describe("Basic Auth", func() {
 		var res *http.Response
+		var httpClient *http.Client
+
+		BeforeEach(func() {
+			httpClient = new(http.Client)
+		})
 
 		Context("when the username and password are blank", func() {
 			BeforeEach(func() {
@@ -91,7 +88,8 @@ var _ = Describe("Receptor API", func() {
 				ginkgomon.Kill(receptorProcess)
 				receptorRunner = testrunner.New(receptorBinPath, receptorAddress, etcdUrl, "", "")
 				receptorProcess = ginkgomon.Invoke(receptorRunner)
-				res, err = client.Get("http://" + receptorAddress)
+
+				res, err = httpClient.Get("http://" + receptorAddress)
 				Ω(err).ShouldNot(HaveOccurred())
 				res.Body.Close()
 			})
@@ -104,7 +102,7 @@ var _ = Describe("Receptor API", func() {
 		Context("when the username and password are required but not sent", func() {
 			BeforeEach(func() {
 				var err error
-				res, err = client.Get("http://" + receptorAddress)
+				res, err = httpClient.Get("http://" + receptorAddress)
 				Ω(err).ShouldNot(HaveOccurred())
 				res.Body.Close()
 			})
@@ -116,9 +114,8 @@ var _ = Describe("Receptor API", func() {
 	})
 
 	Describe("POST /task", func() {
-		var createTaskRes *http.Response
 		var taskToCreate receptor.CreateTaskRequest
-		var body []byte
+		var err error
 
 		BeforeEach(func() {
 			taskToCreate = receptor.CreateTaskRequest{
@@ -130,12 +127,11 @@ var _ = Describe("Receptor API", func() {
 				},
 			}
 
-			createTaskRes = doJSONRequest(reqGen, handlers.CreateTask, taskToCreate)
-			createTaskRes.Body.Close()
+			err = client.CreateTask(taskToCreate)
 		})
 
-		It("responds with 201 CREATED", func() {
-			Ω(createTaskRes.StatusCode).Should(Equal(http.StatusCreated))
+		It("responds without an error", func() {
+			Ω(err).ShouldNot(HaveOccurred())
 		})
 
 		It("desires the task in the BBS", func() {
@@ -144,22 +140,11 @@ var _ = Describe("Receptor API", func() {
 
 		Context("when trying to create a task with a GUID that already exists", func() {
 			BeforeEach(func() {
-				var err error
-				createTaskRes = doJSONRequest(reqGen, handlers.CreateTask, taskToCreate)
-				body, err = ioutil.ReadAll(createTaskRes.Body)
-				Ω(err).ShouldNot(HaveOccurred())
-				createTaskRes.Body.Close()
+				err = client.CreateTask(taskToCreate)
 			})
 
 			It("returns an error indicating that the key already exists", func() {
-				Ω(createTaskRes.StatusCode).Should(Equal(http.StatusConflict))
-
-				expectedBody, err := json.Marshal(receptor.ErrorResponse{
-					Error: storeadapter.ErrorKeyExists.Error(),
-				})
-
-				Ω(err).ShouldNot(HaveOccurred())
-				Expect(body).To(Equal(expectedBody))
+				Ω(err.(receptor.Error).Type).Should(Equal(receptor.TaskGuidAlreadyExists))
 			})
 		})
 	})

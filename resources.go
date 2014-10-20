@@ -2,14 +2,6 @@ package receptor
 
 import "github.com/cloudfoundry-incubator/runtime-schema/models"
 
-func NewErrorResponse(err error) ErrorResponse {
-	return ErrorResponse{err.Error()}
-}
-
-type ErrorResponse struct {
-	Error string `json:"error"`
-}
-
 type CreateTaskRequest struct {
 	TaskGuid   string                  `json:"task_guid"`
 	Domain     string                  `json:"domain"`
