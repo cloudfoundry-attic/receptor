@@ -6,6 +6,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/receptor"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
+	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/cloudfoundry/storeadapter"
 	"github.com/pivotal-golang/lager"
 )
@@ -36,7 +37,7 @@ func (h *createTaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	task, err := taskRequest.ToTask()
+	task, err := newTaskFromCreateRequest(taskRequest)
 	if err != nil {
 		log.Error("task-request-invalid", err)
 		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
@@ -62,4 +63,24 @@ func (h *createTaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	log.Info("created", lager.Data{"task-guid": task.TaskGuid})
 	w.WriteHeader(http.StatusCreated)
+}
+
+func newTaskFromCreateRequest(req receptor.CreateTaskRequest) (models.Task, error) {
+	task := models.Task{
+		TaskGuid:   req.TaskGuid,
+		Domain:     req.Domain,
+		Actions:    req.Actions,
+		Stack:      req.Stack,
+		MemoryMB:   req.MemoryMB,
+		DiskMB:     req.DiskMB,
+		CpuPercent: req.CpuPercent,
+		Log:        req.Log,
+		Annotation: req.Annotation,
+	}
+
+	err := task.Validate()
+	if err != nil {
+		return models.Task{}, err
+	}
+	return task, nil
 }

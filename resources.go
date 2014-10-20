@@ -13,23 +13,3 @@ type CreateTaskRequest struct {
 	Log        models.LogConfig        `json:"log"`
 	Annotation string                  `json:"annotation,omitempty"`
 }
-
-func (req CreateTaskRequest) ToTask() (models.Task, error) {
-	task := models.Task{
-		TaskGuid:   req.TaskGuid,
-		Domain:     req.Domain,
-		Actions:    req.Actions,
-		Stack:      req.Stack,
-		MemoryMB:   req.MemoryMB,
-		DiskMB:     req.DiskMB,
-		CpuPercent: req.CpuPercent,
-		Log:        req.Log,
-		Annotation: req.Annotation,
-	}
-
-	err := task.Validate()
-	if err != nil {
-		return models.Task{}, err
-	}
-	return task, nil
-}

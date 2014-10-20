@@ -64,8 +64,9 @@ var _ = Describe("Middleware", func() {
 			})
 
 			It("returns an unauthorized error response", func() {
-				expectedBody, _ := json.Marshal(receptor.ErrorResponse{
-					Error: http.StatusText(http.StatusUnauthorized),
+				expectedBody, _ := json.Marshal(receptor.Error{
+					Type:    receptor.Unauthorized,
+					Message: http.StatusText(http.StatusUnauthorized),
 				})
 				Ω(res.Body.String()).Should(Equal(string(expectedBody)))
 			})

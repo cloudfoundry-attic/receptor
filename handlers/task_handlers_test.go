@@ -79,8 +79,9 @@ var _ = Describe("Create Task Handler", func() {
 		})
 
 		It("responds with a relevant error message", func() {
-			expectedBody, _ := json.Marshal(receptor.ErrorResponse{
-				Error: "ka-boom",
+			expectedBody, _ := json.Marshal(receptor.Error{
+				Type:    receptor.UnknownError,
+				Message: "ka-boom",
 			})
 
 			Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
@@ -108,9 +109,10 @@ var _ = Describe("Create Task Handler", func() {
 		})
 
 		It("responds with a relevant error message", func() {
-			_, err := invalidTask.ToTask()
-			expectedBody, _ := json.Marshal(receptor.ErrorResponse{
-				Error: err.Error(),
+			task := models.Task{TaskGuid: "invalid-task"}
+			expectedBody, _ := json.Marshal(receptor.Error{
+				Type:    receptor.InvalidTask,
+				Message: task.Validate().Error(),
 			})
 			Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
 		})
@@ -134,8 +136,9 @@ var _ = Describe("Create Task Handler", func() {
 
 		It("responds with a relevant error message", func() {
 			err := json.Unmarshal(garbageRequest, &receptor.CreateTaskRequest{})
-			expectedBody, _ := json.Marshal(receptor.ErrorResponse{
-				Error: err.Error(),
+			expectedBody, _ := json.Marshal(receptor.Error{
+				Type:    receptor.InvalidJSON,
+				Message: err.Error(),
 			})
 			Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
 		})
