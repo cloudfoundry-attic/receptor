@@ -6,6 +6,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/receptor"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
+	"github.com/cloudfoundry/storeadapter"
 	"github.com/pivotal-golang/lager"
 )
 
@@ -44,7 +45,11 @@ func (h *createTaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err = h.bbs.DesireTask(task)
 	if err != nil {
 		log.Error("desire-task-failed", err)
-		w.WriteHeader(http.StatusInternalServerError)
+		if err == storeadapter.ErrorKeyExists {
+			w.WriteHeader(http.StatusConflict)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
 		w.Write(receptor.NewErrorResponse(err).JSONReader().Bytes())
 		return
 	}

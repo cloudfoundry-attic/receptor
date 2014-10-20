@@ -162,7 +162,7 @@ var _ = Describe("Receptor API", func() {
 			})
 
 			It("returns an error indicating that the key already exists", func() {
-				Ω(createTaskRes.StatusCode).Should(Equal(http.StatusInternalServerError))
+				Ω(createTaskRes.StatusCode).Should(Equal(http.StatusConflict))
 
 				expectedError := receptor.ErrorResponse{
 					Error: storeadapter.ErrorKeyExists.Error(),
