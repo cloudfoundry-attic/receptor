@@ -2,6 +2,7 @@ package main_test
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -115,9 +116,9 @@ var _ = Describe("Receptor API", func() {
 	})
 
 	Describe("POST /task", func() {
-		var createTaskReq *http.Request
 		var createTaskRes *http.Response
 		var taskToCreate receptor.CreateTaskRequest
+		var body []byte
 
 		BeforeEach(func() {
 			taskToCreate = receptor.CreateTaskRequest{
@@ -128,13 +129,8 @@ var _ = Describe("Receptor API", func() {
 					{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
 				},
 			}
-			var err error
-			createTaskReq, err = reqGen.CreateRequest(handlers.CreateTask, nil, taskToCreate.JSONReader())
-			Ω(err).ShouldNot(HaveOccurred())
 
-			createTaskRes, err = client.Do(createTaskReq)
-			Ω(err).ShouldNot(HaveOccurred())
-
+			createTaskRes = doJSONRequest(reqGen, handlers.CreateTask, taskToCreate)
 			createTaskRes.Body.Close()
 		})
 
@@ -147,15 +143,9 @@ var _ = Describe("Receptor API", func() {
 		})
 
 		Context("when trying to create a task with a GUID that already exists", func() {
-			var body []byte
-
 			BeforeEach(func() {
 				var err error
-				createTaskReq, err = reqGen.CreateRequest(handlers.CreateTask, nil, taskToCreate.JSONReader())
-				Ω(err).ShouldNot(HaveOccurred())
-
-				createTaskRes, err = client.Do(createTaskReq)
-				Ω(err).ShouldNot(HaveOccurred())
+				createTaskRes = doJSONRequest(reqGen, handlers.CreateTask, taskToCreate)
 				body, err = ioutil.ReadAll(createTaskRes.Body)
 				Ω(err).ShouldNot(HaveOccurred())
 				createTaskRes.Body.Close()
@@ -164,11 +154,12 @@ var _ = Describe("Receptor API", func() {
 			It("returns an error indicating that the key already exists", func() {
 				Ω(createTaskRes.StatusCode).Should(Equal(http.StatusConflict))
 
-				expectedError := receptor.ErrorResponse{
+				expectedBody, err := json.Marshal(receptor.ErrorResponse{
 					Error: storeadapter.ErrorKeyExists.Error(),
-				}
+				})
 
-				Expect(body).To(BeEquivalentTo(expectedError.JSONReader().String()))
+				Ω(err).ShouldNot(HaveOccurred())
+				Expect(body).To(Equal(expectedBody))
 			})
 		})
 	})

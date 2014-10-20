@@ -4,7 +4,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry/dropsonde/autowire"
 	"github.com/goji/httpauth"
 	"github.com/pivotal-golang/lager"
@@ -37,7 +36,6 @@ func BasicAuthWrap(handler http.Handler, username, password string) http.Handler
 
 func unauthorized(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusUnauthorized
-	w.WriteHeader(status)
 	err := errors.New(http.StatusText(status))
-	w.Write(receptor.NewErrorResponse(err).JSONReader().Bytes())
+	writeErrorResponse(w, status, err)
 }

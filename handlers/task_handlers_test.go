@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 
 	"github.com/cloudfoundry-incubator/receptor"
 	. "github.com/cloudfoundry-incubator/receptor/handlers"
@@ -78,11 +79,13 @@ var _ = Describe("Create Task Handler", func() {
 		})
 
 		It("responds with a relevant error message", func() {
-			expectedError := receptor.ErrorResponse{
+			expectedBody, _ := json.Marshal(receptor.ErrorResponse{
 				Error: "ka-boom",
-			}
-			expectedBody := expectedError.JSONReader()
-			Ω(responseRecorder.Body.String()).Should(Equal(expectedBody.String()))
+			})
+
+			Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
+			Ω(responseRecorder.Header().Get("Content-Length")).Should(Equal(strconv.Itoa(len(expectedBody))))
+			Ω(responseRecorder.Header().Get("Content-Type")).Should(Equal("application/json"))
 		})
 	})
 
@@ -106,11 +109,10 @@ var _ = Describe("Create Task Handler", func() {
 
 		It("responds with a relevant error message", func() {
 			_, err := invalidTask.ToTask()
-			expectedError := receptor.ErrorResponse{
+			expectedBody, _ := json.Marshal(receptor.ErrorResponse{
 				Error: err.Error(),
-			}
-			expectedBody := expectedError.JSONReader()
-			Ω(responseRecorder.Body.String()).Should(Equal(expectedBody.String()))
+			})
+			Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
 		})
 	})
 
@@ -132,11 +134,10 @@ var _ = Describe("Create Task Handler", func() {
 
 		It("responds with a relevant error message", func() {
 			err := json.Unmarshal(garbageRequest, &receptor.CreateTaskRequest{})
-			expectedError := receptor.ErrorResponse{
+			expectedBody, _ := json.Marshal(receptor.ErrorResponse{
 				Error: err.Error(),
-			}
-			expectedBody := expectedError.JSONReader()
-			Ω(responseRecorder.Body.String()).Should(Equal(expectedBody.String()))
+			})
+			Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
 		})
 	})
 })

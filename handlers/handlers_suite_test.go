@@ -2,10 +2,11 @@ package handlers_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
+	"strings"
 
-	"github.com/cloudfoundry-incubator/receptor"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -20,13 +21,16 @@ func TestHandlers(t *testing.T) {
 func newTestRequest(body interface{}) *http.Request {
 	var reader io.Reader
 	switch body := body.(type) {
-	case receptor.JSONReader:
-		reader = body.JSONReader()
 	case string:
-		reader = bytes.NewBufferString(body)
+		reader = strings.NewReader(body)
 	case []byte:
-		reader = bytes.NewBuffer(body)
+		reader = bytes.NewReader(body)
+	default:
+		jsonBytes, err := json.Marshal(body)
+		Ω(err).ShouldNot(HaveOccurred())
+		reader = bytes.NewReader(jsonBytes)
 	}
+
 	request, err := http.NewRequest("", "", reader)
 	Ω(err).ToNot(HaveOccurred())
 	return request

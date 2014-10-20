@@ -29,28 +29,26 @@ func (h *createTaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&taskRequest)
 	if err != nil {
 		log.Error("invalid-json", err)
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write(receptor.NewErrorResponse(err).JSONReader().Bytes())
+		writeErrorResponse(w, http.StatusBadRequest, err)
 		return
 	}
 
 	task, err := taskRequest.ToTask()
 	if err != nil {
 		log.Error("task-request-invalid", err)
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write(receptor.NewErrorResponse(err).JSONReader().Bytes())
+		writeErrorResponse(w, http.StatusBadRequest, err)
 		return
 	}
 
 	err = h.bbs.DesireTask(task)
 	if err != nil {
 		log.Error("desire-task-failed", err)
+		errJSON := receptor.NewErrorResponse(err)
 		if err == storeadapter.ErrorKeyExists {
-			w.WriteHeader(http.StatusConflict)
+			writeJSONResponse(w, http.StatusConflict, errJSON)
 		} else {
-			w.WriteHeader(http.StatusInternalServerError)
+			writeJSONResponse(w, http.StatusInternalServerError, errJSON)
 		}
-		w.Write(receptor.NewErrorResponse(err).JSONReader().Bytes())
 		return
 	}
 

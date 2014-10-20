@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 
@@ -63,11 +64,10 @@ var _ = Describe("Middleware", func() {
 			})
 
 			It("returns an unauthorized error response", func() {
-				expectedError := receptor.ErrorResponse{
+				expectedBody, _ := json.Marshal(receptor.ErrorResponse{
 					Error: http.StatusText(http.StatusUnauthorized),
-				}
-				expectedBody := expectedError.JSONReader()
-				Ω(res.Body.String()).Should(Equal(expectedBody.String()))
+				})
+				Ω(res.Body.String()).Should(Equal(string(expectedBody)))
 			})
 
 			It("doesn't call the wrapped handler", func() {

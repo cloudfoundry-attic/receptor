@@ -1,11 +1,6 @@
 package receptor
 
-import (
-	"bytes"
-	"encoding/json"
-
-	"github.com/cloudfoundry-incubator/runtime-schema/models"
-)
+import "github.com/cloudfoundry-incubator/runtime-schema/models"
 
 func NewErrorResponse(err error) ErrorResponse {
 	return ErrorResponse{err.Error()}
@@ -13,10 +8,6 @@ func NewErrorResponse(err error) ErrorResponse {
 
 type ErrorResponse struct {
 	Error string `json:"error"`
-}
-
-func (res ErrorResponse) JSONReader() *bytes.Buffer {
-	return writeJSON(res)
 }
 
 type CreateTaskRequest struct {
@@ -49,20 +40,4 @@ func (req CreateTaskRequest) ToTask() (models.Task, error) {
 		return models.Task{}, err
 	}
 	return task, nil
-}
-
-func (req CreateTaskRequest) JSONReader() *bytes.Buffer {
-	return writeJSON(req)
-}
-
-type JSONReader interface {
-	JSONReader() *bytes.Buffer
-}
-
-func writeJSON(jsonObj interface{}) *bytes.Buffer {
-	jsonBytes, err := json.Marshal(jsonObj)
-	if err != nil {
-		panic("Unable to encode JSON: " + err.Error())
-	}
-	return bytes.NewBuffer(jsonBytes)
 }
