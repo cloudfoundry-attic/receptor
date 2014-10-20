@@ -139,5 +139,4 @@ var _ = Describe("Create Task Handler", func() {
 			Ω(responseRecorder.Body.String()).Should(Equal(expectedBody.String()))
 		})
 	})
-
 })

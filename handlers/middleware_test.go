@@ -11,11 +11,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("BasicAuthWrap", func() {
+var _ = Describe("Middleware", func() {
 	var handler http.Handler
 	var wrappedHandler *handler_fakes.FakeHandler
-	var expectedUsername = "user"
-	var expectedPassword = "pass"
 	var req *http.Request
 	var res *httptest.ResponseRecorder
 
@@ -23,50 +21,58 @@ var _ = Describe("BasicAuthWrap", func() {
 		req = newTestRequest("")
 		res = httptest.NewRecorder()
 		wrappedHandler = new(handler_fakes.FakeHandler)
-		handler = handlers.BasicAuthWrap(wrappedHandler, expectedUsername, expectedPassword)
 	})
 
-	Context("when the correct credentials are provided", func() {
+	Describe("BasicAuthWrap", func() {
+		var expectedUsername = "user"
+		var expectedPassword = "pass"
+
 		BeforeEach(func() {
-			req.SetBasicAuth(expectedUsername, expectedPassword)
-			handler.ServeHTTP(res, req)
+			handler = handlers.BasicAuthWrap(wrappedHandler, expectedUsername, expectedPassword)
 		})
 
-		It("calls the wrapped handler", func() {
-			Ω(wrappedHandler.ServeHTTPCallCount()).Should(Equal(1))
-		})
-	})
+		Context("when the correct credentials are provided", func() {
+			BeforeEach(func() {
+				req.SetBasicAuth(expectedUsername, expectedPassword)
+				handler.ServeHTTP(res, req)
+			})
 
-	Context("when no credentials are provided", func() {
-		BeforeEach(func() {
-			handler.ServeHTTP(res, req)
-		})
-
-		It("doesn't call the wrapped handler", func() {
-			Ω(wrappedHandler.ServeHTTPCallCount()).Should(Equal(0))
-		})
-	})
-
-	Context("when incorrect credentials are provided", func() {
-		BeforeEach(func() {
-			req.SetBasicAuth(expectedUsername, "badPassword")
-			handler.ServeHTTP(res, req)
+			It("calls the wrapped handler", func() {
+				Ω(wrappedHandler.ServeHTTPCallCount()).Should(Equal(1))
+			})
 		})
 
-		It("returns 401 UNAUTHORIZED", func() {
-			Ω(res.Code).Should(Equal(http.StatusUnauthorized))
+		Context("when no credentials are provided", func() {
+			BeforeEach(func() {
+				handler.ServeHTTP(res, req)
+			})
+
+			It("doesn't call the wrapped handler", func() {
+				Ω(wrappedHandler.ServeHTTPCallCount()).Should(Equal(0))
+			})
 		})
 
-		It("returns an unauthorized error response", func() {
-			expectedError := receptor.ErrorResponse{
-				Error: http.StatusText(http.StatusUnauthorized),
-			}
-			expectedBody := expectedError.JSONReader()
-			Ω(res.Body.String()).Should(Equal(expectedBody.String()))
-		})
+		Context("when incorrect credentials are provided", func() {
+			BeforeEach(func() {
+				req.SetBasicAuth(expectedUsername, "badPassword")
+				handler.ServeHTTP(res, req)
+			})
 
-		It("doesn't call the wrapped handler", func() {
-			Ω(wrappedHandler.ServeHTTPCallCount()).Should(Equal(0))
+			It("returns 401 UNAUTHORIZED", func() {
+				Ω(res.Code).Should(Equal(http.StatusUnauthorized))
+			})
+
+			It("returns an unauthorized error response", func() {
+				expectedError := receptor.ErrorResponse{
+					Error: http.StatusText(http.StatusUnauthorized),
+				}
+				expectedBody := expectedError.JSONReader()
+				Ω(res.Body.String()).Should(Equal(expectedBody.String()))
+			})
+
+			It("doesn't call the wrapped handler", func() {
+				Ω(wrappedHandler.ServeHTTPCallCount()).Should(Equal(0))
+			})
 		})
 	})
 })
