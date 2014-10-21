@@ -10,8 +10,8 @@ import (
 	"github.com/cloudfoundry-incubator/receptor/handlers"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry/gunk/timeprovider"
+	"github.com/cloudfoundry/gunk/workpool"
 	"github.com/cloudfoundry/storeadapter/etcdstoreadapter"
-	"github.com/cloudfoundry/storeadapter/workerpool"
 	"github.com/pivotal-golang/lager"
 	"github.com/tedsuo/ifrit"
 	"github.com/tedsuo/ifrit/grouper"
@@ -75,7 +75,7 @@ func main() {
 func initializeReceptorBBS(logger lager.Logger) Bbs.ReceptorBBS {
 	etcdAdapter := etcdstoreadapter.NewETCDStoreAdapter(
 		strings.Split(*etcdCluster, ","),
-		workerpool.NewWorkerPool(10),
+		workpool.NewWorkPool(10),
 	)
 
 	err := etcdAdapter.Connect()
