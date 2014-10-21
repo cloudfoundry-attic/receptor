@@ -23,6 +23,24 @@ func NewCreateTaskHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) http.Handler
 	}
 }
 
+func NewGetAllTasksHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		tasks, err := bbs.GetAllTasks()
+		if err != nil {
+			logger.Error("failed-to-fetch-tasks", err)
+			writeUnknownErrorResponse(w, err)
+			return
+		}
+
+		taskResponses := make([]receptor.TaskResponse, 0, len(tasks))
+		for _, task := range tasks {
+			taskResponses = append(taskResponses, responseFromTask(task))
+		}
+
+		writeJSONResponse(w, http.StatusOK, taskResponses)
+	})
+}
+
 func (h *createTaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log := h.logger.Session("create-task-handler")
 	taskRequest := receptor.CreateTaskRequest{}
@@ -83,4 +101,18 @@ func newTaskFromCreateRequest(req receptor.CreateTaskRequest) (models.Task, erro
 		return models.Task{}, err
 	}
 	return task, nil
+}
+
+func responseFromTask(task models.Task) receptor.TaskResponse {
+	return receptor.TaskResponse{
+		TaskGuid:   task.TaskGuid,
+		Domain:     task.Domain,
+		Actions:    task.Actions,
+		Stack:      task.Stack,
+		MemoryMB:   task.MemoryMB,
+		DiskMB:     task.DiskMB,
+		CpuPercent: task.CpuPercent,
+		Log:        task.Log,
+		Annotation: task.Annotation,
+	}
 }

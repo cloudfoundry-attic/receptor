@@ -11,6 +11,7 @@ import (
 
 type Client interface {
 	CreateTask(CreateTaskRequest) error
+	GetAllTasks() ([]TaskResponse, error)
 }
 
 func NewClient(addr, user, password string) Client {
@@ -30,10 +31,16 @@ type client struct {
 }
 
 func (c *client) CreateTask(request CreateTaskRequest) error {
-	return c.doRequest(CreateTask, nil, request)
+	return c.doRequest(CreateTask, nil, request, nil)
 }
 
-func (c *client) doRequest(requestName string, params rata.Params, request interface{}) error {
+func (c *client) GetAllTasks() ([]TaskResponse, error) {
+	tasks := []TaskResponse{}
+	err := c.doRequest(GetAllTasks, nil, nil, &tasks)
+	return tasks, err
+}
+
+func (c *client) doRequest(requestName string, params rata.Params, request, response interface{}) error {
 	requestJson, err := json.Marshal(request)
 	if err != nil {
 		return err
@@ -58,5 +65,9 @@ func (c *client) doRequest(requestName string, params rata.Params, request inter
 		return errResponse
 	}
 
-	return nil
+	if response != nil {
+		return json.NewDecoder(res.Body).Decode(&response)
+	} else {
+		return nil
+	}
 }

@@ -13,3 +13,5 @@ type CreateTaskRequest struct {
 	Log        models.LogConfig        `json:"log"`
 	Annotation string                  `json:"annotation,omitempty"`
 }
+
+type TaskResponse CreateTaskRequest

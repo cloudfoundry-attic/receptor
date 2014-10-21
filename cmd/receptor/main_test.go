@@ -86,7 +86,7 @@ var _ = Describe("Receptor API", func() {
 		})
 	})
 
-	Describe("POST /task", func() {
+	Describe("POST /tasks", func() {
 		var taskToCreate receptor.CreateTaskRequest
 		var err error
 
@@ -118,6 +118,51 @@ var _ = Describe("Receptor API", func() {
 
 			It("returns an error indicating that the key already exists", func() {
 				Ω(err.(receptor.Error).Type).Should(Equal(receptor.TaskGuidAlreadyExists))
+			})
+		})
+	})
+
+	Describe("GET /tasks", func() {
+		Context("when there are no tasks", func() {
+			It("returns an empty array", func() {
+				tasks, err := client.GetAllTasks()
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(tasks).Should(BeEmpty())
+			})
+		})
+
+		Context("when there are tasks", func() {
+			BeforeEach(func() {
+				err := bbs.DesireTask(models.Task{
+					TaskGuid: "task-guid-1",
+					Domain:   "test-domain",
+					Stack:    "some-stack",
+					Actions: []models.ExecutorAction{
+						{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
+					},
+				})
+				Ω(err).ShouldNot(HaveOccurred())
+
+				err = bbs.DesireTask(models.Task{
+					TaskGuid: "task-guid-2",
+					Domain:   "test-domain",
+					Stack:    "some-stack",
+					Actions: []models.ExecutorAction{
+						{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
+					},
+				})
+				Ω(err).ShouldNot(HaveOccurred())
+			})
+
+			It("returns an array of all the tasks", func() {
+				tasks, err := client.GetAllTasks()
+				Ω(err).ShouldNot(HaveOccurred())
+
+				taskGuids := []string{}
+				for _, task := range tasks {
+					taskGuids = append(taskGuids, task.TaskGuid)
+				}
+				Ω(taskGuids).Should(ConsistOf([]string{"task-guid-1", "task-guid-2"}))
 			})
 		})
 	})
