@@ -11,8 +11,9 @@ import (
 
 func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) http.Handler {
 	actions := rata.Handlers{
-		receptor.CreateTask:  NewCreateTaskHandler(bbs, logger),
-		receptor.GetAllTasks: NewGetAllTasksHandler(bbs, logger),
+		receptor.CreateTask:          NewCreateTaskHandler(bbs, logger),
+		receptor.GetAllTasks:         NewGetAllTasksHandler(bbs, logger),
+		receptor.GetAllTasksByDomain: NewGetAllTasksByDomainHandler(bbs, logger),
 	}
 
 	handler, err := rata.NewRouter(receptor.Routes, actions)

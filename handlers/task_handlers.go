@@ -26,18 +26,14 @@ func NewCreateTaskHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) http.Handler
 func NewGetAllTasksHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		tasks, err := bbs.GetAllTasks()
-		if err != nil {
-			logger.Error("failed-to-fetch-tasks", err)
-			writeUnknownErrorResponse(w, err)
-			return
-		}
+		writeTaskResponse(w, logger, tasks, err)
+	})
+}
 
-		taskResponses := make([]receptor.TaskResponse, 0, len(tasks))
-		for _, task := range tasks {
-			taskResponses = append(taskResponses, responseFromTask(task))
-		}
-
-		writeJSONResponse(w, http.StatusOK, taskResponses)
+func NewGetAllTasksByDomainHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		tasks, err := bbs.GetAllTasksByDomain(req.FormValue(":domain"))
+		writeTaskResponse(w, logger, tasks, err)
 	})
 }
 
@@ -81,6 +77,21 @@ func (h *createTaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	log.Info("created", lager.Data{"task-guid": task.TaskGuid})
 	w.WriteHeader(http.StatusCreated)
+}
+
+func writeTaskResponse(w http.ResponseWriter, logger lager.Logger, tasks []models.Task, err error) {
+	if err != nil {
+		logger.Error("failed-to-fetch-tasks", err)
+		writeUnknownErrorResponse(w, err)
+		return
+	}
+
+	taskResponses := make([]receptor.TaskResponse, 0, len(tasks))
+	for _, task := range tasks {
+		taskResponses = append(taskResponses, responseFromTask(task))
+	}
+
+	writeJSONResponse(w, http.StatusOK, taskResponses)
 }
 
 func newTaskFromCreateRequest(req receptor.CreateTaskRequest) (models.Task, error) {

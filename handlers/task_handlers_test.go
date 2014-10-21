@@ -16,7 +16,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Create Task Handler", func() {
+var _ = Describe("Task Handlers", func() {
 	var (
 		logger           lager.Logger
 		fakeBBS          *fake_bbs.FakeReceptorBBS
@@ -194,6 +194,49 @@ var _ = Describe("Create Task Handler", func() {
 
 			It("excludes internal fields", func() {
 				handler.ServeHTTP(responseRecorder, newTestRequest(""))
+				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
+				Ω(responseRecorder.Body.String()).Should(ContainSubstring("task-guid-1"))
+				Ω(responseRecorder.Body.String()).ShouldNot(ContainSubstring("internal stuff"))
+			})
+		})
+	})
+
+	Describe("GetAllTasksByDomain", func() {
+		var request *http.Request
+
+		BeforeEach(func() {
+			handler = NewGetAllTasksByDomainHandler(fakeBBS, logger)
+
+			var err error
+			request, err = http.NewRequest("", "http://example.com?:domain=a-domain", nil)
+			Ω(err).ShouldNot(HaveOccurred())
+		})
+
+		Context("when reading tasks from the BBS fails", func() {
+			BeforeEach(func() {
+				fakeBBS.GetAllTasksByDomainReturns([]models.Task{}, errors.New("Something went wrong"))
+			})
+
+			It("responds with an error", func() {
+				handler.ServeHTTP(responseRecorder, request)
+				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
+			})
+		})
+
+		Context("when reading tasks from BBS succeeds", func() {
+			BeforeEach(func() {
+				fakeBBS.GetAllTasksByDomainReturns([]models.Task{
+					{TaskGuid: "task-guid-1", Domain: "domain-1", ContainerHandle: "internal stuff"},
+				}, nil)
+			})
+
+			It("uses the given domain", func() {
+				handler.ServeHTTP(responseRecorder, request)
+				Ω(fakeBBS.GetAllTasksByDomainArgsForCall(0)).Should(Equal("a-domain"))
+			})
+
+			It("excludes internal fields", func() {
+				handler.ServeHTTP(responseRecorder, request)
 				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
 				Ω(responseRecorder.Body.String()).Should(ContainSubstring("task-guid-1"))
 				Ω(responseRecorder.Body.String()).ShouldNot(ContainSubstring("internal stuff"))

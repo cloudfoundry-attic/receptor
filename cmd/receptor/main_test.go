@@ -148,7 +148,7 @@ var _ = Describe("Receptor API", func() {
 					Domain:   "test-domain",
 					Stack:    "some-stack",
 					Actions: []models.ExecutorAction{
-						{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
+						{Action: models.RunAction{Path: "/bin/true"}},
 					},
 				})
 				Ω(err).ShouldNot(HaveOccurred())
@@ -158,7 +158,7 @@ var _ = Describe("Receptor API", func() {
 					Domain:   "test-domain",
 					Stack:    "some-stack",
 					Actions: []models.ExecutorAction{
-						{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
+						{Action: models.RunAction{Path: "/bin/true"}},
 					},
 				})
 				Ω(err).ShouldNot(HaveOccurred())
@@ -174,6 +174,51 @@ var _ = Describe("Receptor API", func() {
 				}
 				Ω(taskGuids).Should(ConsistOf([]string{"task-guid-1", "task-guid-2"}))
 			})
+		})
+	})
+
+	Describe("GET /domains/:domain/tasks", func() {
+		BeforeEach(func() {
+			err := bbs.DesireTask(models.Task{
+				TaskGuid: "task-guid-1",
+				Domain:   "test-domain",
+				Stack:    "stack-1",
+				Actions: []models.ExecutorAction{
+					{Action: models.RunAction{Path: "/bin/true"}},
+				},
+			})
+			Ω(err).ShouldNot(HaveOccurred())
+
+			err = bbs.DesireTask(models.Task{
+				TaskGuid: "task-guid-2",
+				Domain:   "other-domain",
+				Stack:    "stack-2",
+				Actions: []models.ExecutorAction{
+					{Action: models.RunAction{Path: "/bin/true"}},
+				},
+			})
+			Ω(err).ShouldNot(HaveOccurred())
+
+			err = bbs.DesireTask(models.Task{
+				TaskGuid: "task-guid-3",
+				Domain:   "test-domain",
+				Stack:    "stack-3",
+				Actions: []models.ExecutorAction{
+					{Action: models.RunAction{Path: "/bin/true"}},
+				},
+			})
+			Ω(err).ShouldNot(HaveOccurred())
+		})
+
+		It("returns an array of all the tasks for the domain", func() {
+			tasks, err := client.GetAllTasksByDomain("test-domain")
+			Ω(err).ShouldNot(HaveOccurred())
+
+			taskGuids := []string{}
+			for _, task := range tasks {
+				taskGuids = append(taskGuids, task.TaskGuid)
+			}
+			Ω(taskGuids).Should(ConsistOf([]string{"task-guid-1", "task-guid-3"}))
 		})
 	})
 })
