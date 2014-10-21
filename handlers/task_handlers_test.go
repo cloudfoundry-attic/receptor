@@ -39,6 +39,27 @@ var _ = Describe("Create Task Handler", func() {
 			Actions: []models.ExecutorAction{
 				{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
 			},
+			MemoryMB:   24,
+			DiskMB:     12,
+			CpuPercent: 100.0,
+			Log:        models.LogConfig{"guid", "source-name"},
+			ResultFile: "result-file",
+			Annotation: "some annotation",
+		}
+
+		expectedTask := models.Task{
+			TaskGuid: "task-guid-1",
+			Domain:   "test-domain",
+			Stack:    "some-stack",
+			Actions: []models.ExecutorAction{
+				{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
+			},
+			MemoryMB:   24,
+			DiskMB:     12,
+			CpuPercent: 100.0,
+			Log:        models.LogConfig{"guid", "source-name"},
+			ResultFile: "result-file",
+			Annotation: "some annotation",
 		}
 
 		BeforeEach(func() {
@@ -54,7 +75,7 @@ var _ = Describe("Create Task Handler", func() {
 			It("calls DesireTask on the BBS with the correct task", func() {
 				Ω(fakeBBS.DesireTaskCallCount()).Should(Equal(1))
 				task := fakeBBS.DesireTaskArgsForCall(0)
-				Ω(task.TaskGuid).Should(Equal("task-guid-1"))
+				Ω(task).Should(Equal(expectedTask))
 			})
 
 			It("responds with 201 CREATED", func() {

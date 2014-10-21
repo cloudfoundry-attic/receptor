@@ -11,6 +11,7 @@ type CreateTaskRequest struct {
 	DiskMB     int                     `json:"disk_mb"`
 	CpuPercent float64                 `json:"cpu_percent"`
 	Log        models.LogConfig        `json:"log"`
+	ResultFile string                  `json:"result_file"`
 	Annotation string                  `json:"annotation,omitempty"`
 }
 

@@ -93,6 +93,7 @@ func newTaskFromCreateRequest(req receptor.CreateTaskRequest) (models.Task, erro
 		DiskMB:     req.DiskMB,
 		CpuPercent: req.CpuPercent,
 		Log:        req.Log,
+		ResultFile: req.ResultFile,
 		Annotation: req.Annotation,
 	}
 
