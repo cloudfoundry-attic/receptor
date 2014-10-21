@@ -11,72 +11,62 @@ import (
 	"github.com/pivotal-golang/lager"
 )
 
-type createTaskHandler struct {
-	bbs    Bbs.ReceptorBBS
-	logger lager.Logger
-}
-
 func NewCreateTaskHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) http.Handler {
-	return &createTaskHandler{
-		bbs:    bbs,
-		logger: logger,
-	}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		log := logger.Session("create-task-handler")
+		taskRequest := receptor.CreateTaskRequest{}
+
+		err := json.NewDecoder(r.Body).Decode(&taskRequest)
+		if err != nil {
+			log.Error("invalid-json", err)
+			writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
+				Type:    receptor.InvalidJSON,
+				Message: err.Error(),
+			})
+			return
+		}
+
+		task, err := newTaskFromCreateRequest(taskRequest)
+		if err != nil {
+			log.Error("task-request-invalid", err)
+			writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
+				Type:    receptor.InvalidTask,
+				Message: err.Error(),
+			})
+			return
+		}
+
+		err = bbs.DesireTask(task)
+		if err != nil {
+			log.Error("desire-task-failed", err)
+			if err == storeadapter.ErrorKeyExists {
+				writeJSONResponse(w, http.StatusConflict, receptor.Error{
+					Type:    receptor.TaskGuidAlreadyExists,
+					Message: "task already exists",
+				})
+			} else {
+				writeUnknownErrorResponse(w, err)
+			}
+			return
+		}
+
+		log.Info("created", lager.Data{"task-guid": task.TaskGuid})
+		w.WriteHeader(http.StatusCreated)
+	})
 }
 
 func NewGetAllTasksHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		tasks, err := bbs.GetAllTasks()
-		writeTaskResponse(w, logger, tasks, err)
+		writeTaskResponse(w, logger.Session("get-all-tasks-handler"), tasks, err)
 	})
 }
 
 func NewGetAllTasksByDomainHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		tasks, err := bbs.GetAllTasksByDomain(req.FormValue(":domain"))
-		writeTaskResponse(w, logger, tasks, err)
+		writeTaskResponse(w, logger.Session("get-tasks-by-domain-handler"), tasks, err)
 	})
-}
-
-func (h *createTaskHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	log := h.logger.Session("create-task-handler")
-	taskRequest := receptor.CreateTaskRequest{}
-
-	err := json.NewDecoder(r.Body).Decode(&taskRequest)
-	if err != nil {
-		log.Error("invalid-json", err)
-		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
-			Type:    receptor.InvalidJSON,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	task, err := newTaskFromCreateRequest(taskRequest)
-	if err != nil {
-		log.Error("task-request-invalid", err)
-		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
-			Type:    receptor.InvalidTask,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	err = h.bbs.DesireTask(task)
-	if err != nil {
-		log.Error("desire-task-failed", err)
-		if err == storeadapter.ErrorKeyExists {
-			writeJSONResponse(w, http.StatusConflict, receptor.Error{
-				Type:    receptor.TaskGuidAlreadyExists,
-				Message: "task already exists",
-			})
-		} else {
-			writeUnknownErrorResponse(w, err)
-		}
-		return
-	}
-
-	log.Info("created", lager.Data{"task-guid": task.TaskGuid})
-	w.WriteHeader(http.StatusCreated)
 }
 
 func writeTaskResponse(w http.ResponseWriter, logger lager.Logger, tasks []models.Task, err error) {
