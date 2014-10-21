@@ -86,6 +86,16 @@ var _ = Describe("Receptor API", func() {
 		})
 	})
 
+	Describe("Headers", func() {
+		It("includes the Content-Length and Content-Type headers", func() {
+			httpClient := new(http.Client)
+			res, err := httpClient.Get("http://" + receptorAddress + "/tasks")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(res.Header.Get("Content-Length")).Should(MatchRegexp(`\d+`))
+			Ω(res.Header.Get("Content-Type")).Should(Equal("application/json"))
+		})
+	})
+
 	Describe("POST /tasks", func() {
 		var taskToCreate receptor.CreateTaskRequest
 		var err error

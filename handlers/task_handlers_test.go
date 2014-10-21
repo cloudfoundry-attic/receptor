@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"strconv"
 
 	"github.com/cloudfoundry-incubator/receptor"
 	. "github.com/cloudfoundry-incubator/receptor/handlers"
@@ -91,8 +90,6 @@ var _ = Describe("Create Task Handler", func() {
 				})
 
 				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
-				Ω(responseRecorder.Header().Get("Content-Length")).Should(Equal(strconv.Itoa(len(expectedBody))))
-				Ω(responseRecorder.Header().Get("Content-Type")).Should(Equal("application/json"))
 			})
 		})
 
@@ -170,7 +167,7 @@ var _ = Describe("Create Task Handler", func() {
 		Context("when reading tasks from BBS succeeds", func() {
 			BeforeEach(func() {
 				fakeBBS.GetAllTasksReturns([]models.Task{
-					{ TaskGuid: "task-guid-1", Domain: "domain-1", ContainerHandle: "internal stuff" },
+					{TaskGuid: "task-guid-1", Domain: "domain-1", ContainerHandle: "internal stuff"},
 				}, nil)
 			})
 
