@@ -16,12 +16,12 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("Task Handlers", func() {
+var _ = Describe("TaskHandler", func() {
 	var (
 		logger           lager.Logger
 		fakeBBS          *fake_bbs.FakeReceptorBBS
-		handler          *TaskHandler
 		responseRecorder *httptest.ResponseRecorder
+		handler          *TaskHandler
 	)
 
 	BeforeEach(func() {
@@ -29,7 +29,6 @@ var _ = Describe("Task Handlers", func() {
 		logger = lager.NewLogger("test")
 		logger.RegisterSink(lager.NewWriterSink(GinkgoWriter, lager.DEBUG))
 		responseRecorder = httptest.NewRecorder()
-
 		handler = NewTaskHandler(fakeBBS, logger)
 	})
 
