@@ -11,82 +11,86 @@ import (
 	"github.com/pivotal-golang/lager"
 )
 
-func NewCreateTaskHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log := logger.Session("create-task-handler")
-		taskRequest := receptor.CreateTaskRequest{}
-
-		err := json.NewDecoder(r.Body).Decode(&taskRequest)
-		if err != nil {
-			log.Error("invalid-json", err)
-			writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
-				Type:    receptor.InvalidJSON,
-				Message: err.Error(),
-			})
-			return
-		}
-
-		task, err := newTaskFromCreateRequest(taskRequest)
-		if err != nil {
-			log.Error("task-request-invalid", err)
-			writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
-				Type:    receptor.InvalidTask,
-				Message: err.Error(),
-			})
-			return
-		}
-
-		err = bbs.DesireTask(task)
-		if err != nil {
-			log.Error("desire-task-failed", err)
-			if err == storeadapter.ErrorKeyExists {
-				writeJSONResponse(w, http.StatusConflict, receptor.Error{
-					Type:    receptor.TaskGuidAlreadyExists,
-					Message: "task already exists",
-				})
-			} else {
-				writeUnknownErrorResponse(w, err)
-			}
-			return
-		}
-
-		log.Info("created", lager.Data{"task-guid": task.TaskGuid})
-		w.WriteHeader(http.StatusCreated)
-	})
+type TaskHandler struct {
+	bbs    Bbs.ReceptorBBS
+	logger lager.Logger
 }
 
-func NewGetAllTasksHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		tasks, err := bbs.GetAllTasks()
-		writeTaskResponse(w, logger.Session("get-all-tasks-handler"), tasks, err)
-	})
+func NewTaskHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) *TaskHandler {
+	return &TaskHandler{
+		bbs:    bbs,
+		logger: logger,
+	}
 }
 
-func NewGetAllTasksByDomainHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		tasks, err := bbs.GetAllTasksByDomain(req.FormValue(":domain"))
-		writeTaskResponse(w, logger.Session("get-tasks-by-domain-handler"), tasks, err)
-	})
-}
+func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
+	log := h.logger.Session("create-task-handler")
+	taskRequest := receptor.CreateTaskRequest{}
 
-func NewGetTaskHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		task, err := bbs.GetTaskByGuid(req.FormValue(":task_guid"))
-		if err == storeadapter.ErrorKeyNotFound {
-			logger.Error("failed-to-fetch-task", err)
-			writeJSONResponse(w, http.StatusNotFound, receptor.Error{
-				Type:    receptor.TaskNotFound,
-				Message: "task guid not found",
+	err := json.NewDecoder(r.Body).Decode(&taskRequest)
+	if err != nil {
+		log.Error("invalid-json", err)
+		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
+			Type:    receptor.InvalidJSON,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	task, err := newTaskFromCreateRequest(taskRequest)
+	if err != nil {
+		log.Error("task-request-invalid", err)
+		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
+			Type:    receptor.InvalidTask,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	err = h.bbs.DesireTask(task)
+	if err != nil {
+		log.Error("desire-task-failed", err)
+		if err == storeadapter.ErrorKeyExists {
+			writeJSONResponse(w, http.StatusConflict, receptor.Error{
+				Type:    receptor.TaskGuidAlreadyExists,
+				Message: "task already exists",
 			})
-			return
-		} else if err != nil {
-			logger.Error("failed-to-fetch-task", err)
+		} else {
 			writeUnknownErrorResponse(w, err)
-			return
 		}
+		return
+	}
 
-		writeJSONResponse(w, http.StatusOK, responseFromTask(task))
-	})
+	log.Info("created", lager.Data{"task-guid": task.TaskGuid})
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (h *TaskHandler) GetAll(w http.ResponseWriter, req *http.Request) {
+	tasks, err := h.bbs.GetAllTasks()
+	writeTaskResponse(w, h.logger.Session("get-all-tasks-handler"), tasks, err)
+}
+
+func (h *TaskHandler) GetAllByDomain(w http.ResponseWriter, req *http.Request) {
+	tasks, err := h.bbs.GetAllTasksByDomain(req.FormValue(":domain"))
+	writeTaskResponse(w, h.logger.Session("get-tasks-by-domain-handler"), tasks, err)
+}
+
+func (h *TaskHandler) GetByGuid(w http.ResponseWriter, req *http.Request) {
+	task, err := h.bbs.GetTaskByGuid(req.FormValue(":task_guid"))
+	if err == storeadapter.ErrorKeyNotFound {
+		h.logger.Error("failed-to-fetch-task", err)
+		writeJSONResponse(w, http.StatusNotFound, receptor.Error{
+			Type:    receptor.TaskNotFound,
+			Message: "task guid not found",
+		})
+		return
+	} else if err != nil {
+		h.logger.Error("failed-to-fetch-task", err)
+		writeUnknownErrorResponse(w, err)
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, responseFromTask(task))
 }
 
 func writeTaskResponse(w http.ResponseWriter, logger lager.Logger, tasks []models.Task, err error) {

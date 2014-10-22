@@ -20,7 +20,7 @@ var _ = Describe("Task Handlers", func() {
 	var (
 		logger           lager.Logger
 		fakeBBS          *fake_bbs.FakeReceptorBBS
-		handler          http.Handler
+		handler          *TaskHandler
 		responseRecorder *httptest.ResponseRecorder
 	)
 
@@ -29,9 +29,11 @@ var _ = Describe("Task Handlers", func() {
 		logger = lager.NewLogger("test")
 		logger.RegisterSink(lager.NewWriterSink(GinkgoWriter, lager.DEBUG))
 		responseRecorder = httptest.NewRecorder()
+
+		handler = NewTaskHandler(fakeBBS, logger)
 	})
 
-	Describe("CreateTask", func() {
+	Describe("Create", func() {
 		validCreateRequest := receptor.CreateTaskRequest{
 			TaskGuid: "task-guid-1",
 			Domain:   "test-domain",
@@ -62,14 +64,10 @@ var _ = Describe("Task Handlers", func() {
 			Annotation: "some annotation",
 		}
 
-		BeforeEach(func() {
-			handler = NewCreateTaskHandler(fakeBBS, logger)
-		})
-
 		Context("when everything succeeds", func() {
 			BeforeEach(func(done Done) {
 				defer close(done)
-				handler.ServeHTTP(responseRecorder, newTestRequest(validCreateRequest))
+				handler.Create(responseRecorder, newTestRequest(validCreateRequest))
 			})
 
 			It("calls DesireTask on the BBS with the correct task", func() {
@@ -91,7 +89,7 @@ var _ = Describe("Task Handlers", func() {
 			BeforeEach(func(done Done) {
 				defer close(done)
 				fakeBBS.DesireTaskReturns(errors.New("ka-boom"))
-				handler.ServeHTTP(responseRecorder, newTestRequest(validCreateRequest))
+				handler.Create(responseRecorder, newTestRequest(validCreateRequest))
 			})
 
 			It("calls DesireTask on the BBS with the correct task", func() {
@@ -121,7 +119,7 @@ var _ = Describe("Task Handlers", func() {
 
 			BeforeEach(func(done Done) {
 				defer close(done)
-				handler.ServeHTTP(responseRecorder, newTestRequest(invalidTask))
+				handler.Create(responseRecorder, newTestRequest(invalidTask))
 			})
 
 			It("does not call DesireTask on the BBS", func() {
@@ -147,7 +145,7 @@ var _ = Describe("Task Handlers", func() {
 
 			BeforeEach(func(done Done) {
 				defer close(done)
-				handler.ServeHTTP(responseRecorder, newTestRequest(garbageRequest))
+				handler.Create(responseRecorder, newTestRequest(garbageRequest))
 			})
 
 			It("does not call DesireTask on the BBS", func() {
@@ -169,18 +167,14 @@ var _ = Describe("Task Handlers", func() {
 		})
 	})
 
-	Describe("GetAllTasks", func() {
-		BeforeEach(func() {
-			handler = NewGetAllTasksHandler(fakeBBS, logger)
-		})
-
+	Describe("GetAll", func() {
 		Context("when reading tasks from the BBS fails", func() {
 			BeforeEach(func() {
 				fakeBBS.GetAllTasksReturns([]models.Task{}, errors.New("Something went wrong"))
 			})
 
 			It("responds with an error", func() {
-				handler.ServeHTTP(responseRecorder, newTestRequest(""))
+				handler.GetAll(responseRecorder, newTestRequest(""))
 				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
 			})
 		})
@@ -193,7 +187,7 @@ var _ = Describe("Task Handlers", func() {
 			})
 
 			It("excludes internal fields", func() {
-				handler.ServeHTTP(responseRecorder, newTestRequest(""))
+				handler.GetAll(responseRecorder, newTestRequest(""))
 				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
 				Ω(responseRecorder.Body.String()).Should(ContainSubstring("task-guid-1"))
 				Ω(responseRecorder.Body.String()).ShouldNot(ContainSubstring("internal stuff"))
@@ -201,12 +195,10 @@ var _ = Describe("Task Handlers", func() {
 		})
 	})
 
-	Describe("GetAllTasksByDomain", func() {
+	Describe("GetAllByDomain", func() {
 		var request *http.Request
 
 		BeforeEach(func() {
-			handler = NewGetAllTasksByDomainHandler(fakeBBS, logger)
-
 			var err error
 			request, err = http.NewRequest("", "http://example.com?:domain=a-domain", nil)
 			Ω(err).ShouldNot(HaveOccurred())
@@ -218,7 +210,7 @@ var _ = Describe("Task Handlers", func() {
 			})
 
 			It("responds with an error", func() {
-				handler.ServeHTTP(responseRecorder, request)
+				handler.GetAllByDomain(responseRecorder, request)
 				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
 			})
 		})
@@ -231,12 +223,12 @@ var _ = Describe("Task Handlers", func() {
 			})
 
 			It("uses the given domain", func() {
-				handler.ServeHTTP(responseRecorder, request)
+				handler.GetAllByDomain(responseRecorder, request)
 				Ω(fakeBBS.GetAllTasksByDomainArgsForCall(0)).Should(Equal("a-domain"))
 			})
 
 			It("excludes internal fields", func() {
-				handler.ServeHTTP(responseRecorder, request)
+				handler.GetAllByDomain(responseRecorder, request)
 				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
 				Ω(responseRecorder.Body.String()).Should(ContainSubstring("task-guid-1"))
 				Ω(responseRecorder.Body.String()).ShouldNot(ContainSubstring("internal stuff"))
@@ -244,12 +236,10 @@ var _ = Describe("Task Handlers", func() {
 		})
 	})
 
-	Describe("GetTask", func() {
+	Describe("GetByGuid", func() {
 		var request *http.Request
 
 		BeforeEach(func() {
-			handler = NewGetTaskHandler(fakeBBS, logger)
-
 			var err error
 			request, err = http.NewRequest("", "http://example.com?:task_guid=the-task-guid", nil)
 			Ω(err).ShouldNot(HaveOccurred())
@@ -261,7 +251,7 @@ var _ = Describe("Task Handlers", func() {
 			})
 
 			It("responds with an error", func() {
-				handler.ServeHTTP(responseRecorder, request)
+				handler.GetByGuid(responseRecorder, request)
 				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
 			})
 		})
@@ -274,12 +264,12 @@ var _ = Describe("Task Handlers", func() {
 			})
 
 			It("retrieves the task by the given guid", func() {
-				handler.ServeHTTP(responseRecorder, request)
+				handler.GetByGuid(responseRecorder, request)
 				Ω(fakeBBS.GetTaskByGuidArgsForCall(0)).Should(Equal("the-task-guid"))
 			})
 
 			It("excludes internal fields", func() {
-				handler.ServeHTTP(responseRecorder, request)
+				handler.GetByGuid(responseRecorder, request)
 				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
 				Ω(responseRecorder.Body.String()).Should(ContainSubstring("task-guid-1"))
 				Ω(responseRecorder.Body.String()).ShouldNot(ContainSubstring("internal stuff"))
