@@ -11,6 +11,7 @@ func (err Error) Error() string {
 
 const (
 	TaskGuidAlreadyExists = "TaskGuidAlreadyExists"
+	TaskNotFound          = "TaskNotFound"
 	InvalidJSON           = "InvalidJSON"
 	InvalidTask           = "InvalidTask"
 	UnknownError          = "UnknownError"

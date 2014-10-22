@@ -14,6 +14,7 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) ht
 		receptor.CreateTask:          NewCreateTaskHandler(bbs, logger),
 		receptor.GetAllTasks:         NewGetAllTasksHandler(bbs, logger),
 		receptor.GetAllTasksByDomain: NewGetAllTasksByDomainHandler(bbs, logger),
+		receptor.GetTask:             NewGetTaskHandler(bbs, logger),
 	}
 
 	handler, err := rata.NewRouter(receptor.Routes, actions)

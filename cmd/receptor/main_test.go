@@ -221,4 +221,33 @@ var _ = Describe("Receptor API", func() {
 			Ω(taskGuids).Should(ConsistOf([]string{"task-guid-1", "task-guid-3"}))
 		})
 	})
+
+	Describe("GET /tasks/:task_guid", func() {
+		BeforeEach(func() {
+			task := models.Task{
+				TaskGuid: "task-guid-1",
+				Domain:   "test-domain",
+				Stack:    "stack-1",
+				Actions: []models.ExecutorAction{
+					{Action: models.RunAction{Path: "/bin/true"}},
+				},
+			}
+			err := bbs.DesireTask(task)
+			Ω(err).ShouldNot(HaveOccurred())
+		})
+
+		It("returns the task", func() {
+			task, err := client.GetTask("task-guid-1")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(task.TaskGuid).Should(Equal("task-guid-1"))
+			Ω(task.Domain).Should(Equal("test-domain"))
+		})
+
+		Context("when the task doesn't exist", func() {
+			It("responds with a TaskNotFound error", func() {
+				_, err := client.GetTask("some-other-task-guid")
+				Ω(err.(receptor.Error).Type).Should(Equal(receptor.TaskNotFound))
+			})
+		})
+	})
 })

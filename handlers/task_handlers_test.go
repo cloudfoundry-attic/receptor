@@ -243,4 +243,47 @@ var _ = Describe("Task Handlers", func() {
 			})
 		})
 	})
+
+	Describe("GetTask", func() {
+		var request *http.Request
+
+		BeforeEach(func() {
+			handler = NewGetTaskHandler(fakeBBS, logger)
+
+			var err error
+			request, err = http.NewRequest("", "http://example.com?:task_guid=the-task-guid", nil)
+			Ω(err).ShouldNot(HaveOccurred())
+		})
+
+		Context("when reading the task from the BBS fails", func() {
+			BeforeEach(func() {
+				fakeBBS.GetTaskByGuidReturns(models.Task{}, errors.New("Something went wrong"))
+			})
+
+			It("responds with an error", func() {
+				handler.ServeHTTP(responseRecorder, request)
+				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
+			})
+		})
+
+		Context("when the task is successfully found in the BBS", func() {
+			BeforeEach(func() {
+				fakeBBS.GetTaskByGuidReturns(models.Task{
+					TaskGuid: "task-guid-1", Domain: "domain-1", ContainerHandle: "internal stuff",
+				}, nil)
+			})
+
+			It("retrieves the task by the given guid", func() {
+				handler.ServeHTTP(responseRecorder, request)
+				Ω(fakeBBS.GetTaskByGuidArgsForCall(0)).Should(Equal("the-task-guid"))
+			})
+
+			It("excludes internal fields", func() {
+				handler.ServeHTTP(responseRecorder, request)
+				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
+				Ω(responseRecorder.Body.String()).Should(ContainSubstring("task-guid-1"))
+				Ω(responseRecorder.Body.String()).ShouldNot(ContainSubstring("internal stuff"))
+			})
+		})
+	})
 })

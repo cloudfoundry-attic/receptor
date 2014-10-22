@@ -13,6 +13,7 @@ type Client interface {
 	CreateTask(CreateTaskRequest) error
 	GetAllTasks() ([]TaskResponse, error)
 	GetAllTasksByDomain(domain string) ([]TaskResponse, error)
+	GetTask(taskId string) (TaskResponse, error)
 }
 
 func NewClient(addr, user, password string) Client {
@@ -45,6 +46,12 @@ func (c *client) GetAllTasksByDomain(domain string) ([]TaskResponse, error) {
 	tasks := []TaskResponse{}
 	err := c.doRequest(GetAllTasksByDomain, rata.Params{"domain": domain}, nil, &tasks)
 	return tasks, err
+}
+
+func (c *client) GetTask(taskId string) (TaskResponse, error) {
+	task := TaskResponse{}
+	err := c.doRequest(GetTask, rata.Params{"task_guid": taskId}, nil, &task)
+	return task, err
 }
 
 func (c *client) doRequest(requestName string, params rata.Params, request, response interface{}) error {

@@ -69,6 +69,26 @@ func NewGetAllTasksByDomainHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) htt
 	})
 }
 
+func NewGetTaskHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		task, err := bbs.GetTaskByGuid(req.FormValue(":task_guid"))
+		if err == storeadapter.ErrorKeyNotFound {
+			logger.Error("failed-to-fetch-task", err)
+			writeJSONResponse(w, http.StatusNotFound, receptor.Error{
+				Type:    receptor.TaskNotFound,
+				Message: "task guid not found",
+			})
+			return
+		} else if err != nil {
+			logger.Error("failed-to-fetch-task", err)
+			writeUnknownErrorResponse(w, err)
+			return
+		}
+
+		writeJSONResponse(w, http.StatusOK, responseFromTask(task))
+	})
+}
+
 func writeTaskResponse(w http.ResponseWriter, logger lager.Logger, tasks []models.Task, err error) {
 	if err != nil {
 		logger.Error("failed-to-fetch-tasks", err)
