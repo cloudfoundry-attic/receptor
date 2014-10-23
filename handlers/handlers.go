@@ -13,10 +13,11 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) ht
 	taskHandler := NewTaskHandler(bbs, logger)
 
 	actions := rata.Handlers{
-		receptor.CreateTask:          http.HandlerFunc(taskHandler.Create),
-		receptor.GetAllTasks:         http.HandlerFunc(taskHandler.GetAll),
-		receptor.GetAllTasksByDomain: http.HandlerFunc(taskHandler.GetAllByDomain),
-		receptor.GetTask:             http.HandlerFunc(taskHandler.GetByGuid),
+		receptor.CreateTask:          route(taskHandler.Create),
+		receptor.GetAllTasks:         route(taskHandler.GetAll),
+		receptor.GetAllTasksByDomain: route(taskHandler.GetAllByDomain),
+		receptor.GetTask:             route(taskHandler.GetByGuid),
+		receptor.DeleteTask:          route(taskHandler.Delete),
 	}
 
 	handler, err := rata.NewRouter(receptor.Routes, actions)
@@ -31,4 +32,8 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) ht
 	handler = LogWrap(handler, logger)
 
 	return handler
+}
+
+func route(f func(w http.ResponseWriter, r *http.Request)) http.Handler {
+	return http.HandlerFunc(f)
 }

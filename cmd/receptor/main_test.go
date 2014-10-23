@@ -9,6 +9,7 @@ import (
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/cloudfoundry/gunk/timeprovider"
+	"github.com/cloudfoundry/storeadapter"
 	"github.com/cloudfoundry/storeadapter/storerunner/etcdstorerunner"
 	"github.com/pivotal-golang/lager"
 	"github.com/tedsuo/ifrit"
@@ -246,6 +247,63 @@ var _ = Describe("Receptor API", func() {
 		Context("when the task doesn't exist", func() {
 			It("responds with a TaskNotFound error", func() {
 				_, err := client.GetTask("some-other-task-guid")
+				Ω(err.(receptor.Error).Type).Should(Equal(receptor.TaskNotFound))
+			})
+		})
+	})
+
+	Describe("DELETE /tasks/:task_guid", func() {
+		BeforeEach(func() {
+			task := models.Task{
+				TaskGuid: "task-guid-1",
+				Domain:   "test-domain",
+				Stack:    "stack-1",
+				Actions: []models.ExecutorAction{
+					{Action: models.RunAction{Path: "/bin/true"}},
+				},
+			}
+
+			err := bbs.DesireTask(task)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			err = bbs.ClaimTask("task-guid-1", "the-executor-id")
+			Ω(err).ShouldNot(HaveOccurred())
+
+			err = bbs.StartTask("task-guid-1", "the-executor-id", "the-container-handle")
+			Ω(err).ShouldNot(HaveOccurred())
+		})
+
+		Context("when the task is in the COMPLETED state", func() {
+			BeforeEach(func() {
+				err := bbs.CompleteTask("task-guid-1", false, "", "the-task-result")
+				Ω(err).ShouldNot(HaveOccurred())
+			})
+
+			It("deletes the task", func() {
+				err := client.DeleteTask("task-guid-1")
+				Ω(err).ShouldNot(HaveOccurred())
+
+				_, err = bbs.GetTaskByGuid("task-guid-1")
+				Ω(err).Should(Equal(storeadapter.ErrorKeyNotFound))
+			})
+		})
+
+		Context("when the task is *not* in the COMPLETED state", func() {
+			It("returns an error", func() {
+				err := client.DeleteTask("task-guid-1")
+				Ω(err.(receptor.Error).Type).Should(Equal(receptor.TaskNotDeletable))
+			})
+
+			It("does not delete the task", func() {
+				client.DeleteTask("task-guid-1")
+				_, err := bbs.GetTaskByGuid("task-guid-1")
+				Ω(err).ShouldNot(HaveOccurred())
+			})
+		})
+
+		Context("when the task does not exist", func() {
+			It("returns a TaskNotFound error", func() {
+				err := client.DeleteTask("some-other-task-guid")
 				Ω(err.(receptor.Error).Type).Should(Equal(receptor.TaskNotFound))
 			})
 		})

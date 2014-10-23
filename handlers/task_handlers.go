@@ -93,6 +93,36 @@ func (h *TaskHandler) GetByGuid(w http.ResponseWriter, req *http.Request) {
 	writeJSONResponse(w, http.StatusOK, responseFromTask(task))
 }
 
+func (h *TaskHandler) Delete(w http.ResponseWriter, req *http.Request) {
+	guid := req.FormValue(":task_guid")
+
+	err := h.bbs.ResolvingTask(guid)
+	switch err {
+	case nil:
+	case Bbs.ErrTaskNotFound:
+		h.logger.Error("task-not-found", err)
+		writeJSONResponse(w, http.StatusConflict, receptor.Error{
+			Type:    receptor.TaskNotFound,
+			Message: "stuff",
+		})
+	case Bbs.ErrTaskNotResolvable:
+		h.logger.Error("task-not-completed", err)
+		writeJSONResponse(w, http.StatusConflict, receptor.Error{
+			Type:    receptor.TaskNotDeletable,
+			Message: "This task has not been completed. Please retry when it is completed.",
+		})
+	default:
+		h.logger.Error("failed-to-mark-task-resolving", err)
+		writeUnknownErrorResponse(w, err)
+	}
+
+	err = h.bbs.ResolveTask(guid)
+	if err != nil {
+		h.logger.Error("failed-to-resolve-task", err)
+		writeUnknownErrorResponse(w, err)
+	}
+}
+
 func writeTaskResponse(w http.ResponseWriter, logger lager.Logger, tasks []models.Task, err error) {
 	if err != nil {
 		logger.Error("failed-to-fetch-tasks", err)

@@ -22,6 +22,7 @@ var _ = Describe("TaskHandler", func() {
 		fakeBBS          *fake_bbs.FakeReceptorBBS
 		responseRecorder *httptest.ResponseRecorder
 		handler          *TaskHandler
+		request          *http.Request
 	)
 
 	BeforeEach(func() {
@@ -195,8 +196,6 @@ var _ = Describe("TaskHandler", func() {
 	})
 
 	Describe("GetAllByDomain", func() {
-		var request *http.Request
-
 		BeforeEach(func() {
 			var err error
 			request, err = http.NewRequest("", "http://example.com?:domain=a-domain", nil)
@@ -236,8 +235,6 @@ var _ = Describe("TaskHandler", func() {
 	})
 
 	Describe("GetByGuid", func() {
-		var request *http.Request
-
 		BeforeEach(func() {
 			var err error
 			request, err = http.NewRequest("", "http://example.com?:task_guid=the-task-guid", nil)
@@ -272,6 +269,36 @@ var _ = Describe("TaskHandler", func() {
 				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
 				Ω(responseRecorder.Body.String()).Should(ContainSubstring("task-guid-1"))
 				Ω(responseRecorder.Body.String()).ShouldNot(ContainSubstring("internal stuff"))
+			})
+		})
+	})
+
+	Describe("Delete", func() {
+		Context("when marking the task as resolving fails", func() {
+			BeforeEach(func() {
+				var err error
+				request, err = http.NewRequest("", "http://example.com?:task_guid=the-task-guid", nil)
+				Ω(err).ShouldNot(HaveOccurred())
+				fakeBBS.ResolvingTaskReturns(errors.New("Failed to resolve task"))
+			})
+
+			It("responds with an error", func() {
+				handler.Delete(responseRecorder, request)
+				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
+			})
+		})
+
+		Context("when task cannot be resolved", func() {
+			BeforeEach(func() {
+				var err error
+				request, err = http.NewRequest("", "http://example.com?:task_guid=the-task-guid", nil)
+				Ω(err).ShouldNot(HaveOccurred())
+				fakeBBS.ResolveTaskReturns(errors.New("Failed to resolve task"))
+			})
+
+			It("responds with an error", func() {
+				handler.Delete(responseRecorder, request)
+				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
 			})
 		})
 	})
