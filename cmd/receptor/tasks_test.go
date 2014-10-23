@@ -1,18 +1,11 @@
 package main_test
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/cloudfoundry-incubator/receptor"
-	"github.com/cloudfoundry-incubator/receptor/cmd/receptor/testrunner"
-	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
-	"github.com/cloudfoundry/gunk/timeprovider"
 	"github.com/cloudfoundry/storeadapter"
-	"github.com/cloudfoundry/storeadapter/storerunner/etcdstorerunner"
-	"github.com/pivotal-golang/lager"
-	"github.com/tedsuo/ifrit"
 	"github.com/tedsuo/ifrit/ginkgomon"
 
 	. "github.com/onsi/ginkgo"
@@ -20,72 +13,14 @@ import (
 	"github.com/onsi/gomega/ghttp"
 )
 
-var _ = Describe("Receptor API", func() {
-	var etcdUrl string
-	var etcdRunner *etcdstorerunner.ETCDClusterRunner
-	var bbs *Bbs.BBS
-	var receptorRunner *ginkgomon.Runner
-	var receptorProcess ifrit.Process
-	var client receptor.Client
+var _ = Describe("Task API", func() {
 
 	BeforeEach(func() {
-		etcdUrl = fmt.Sprintf("http://127.0.0.1:%d", etcdPort)
-		etcdRunner = etcdstorerunner.NewETCDClusterRunner(etcdPort, 1)
-		etcdRunner.Start()
-
-		logger := lager.NewLogger("bbs")
-		logger.RegisterSink(lager.NewWriterSink(GinkgoWriter, lager.DEBUG))
-
-		bbs = Bbs.NewBBS(etcdRunner.Adapter(), timeprovider.NewTimeProvider(), logger)
-
-		client = receptor.NewClient(receptorAddress, username, password)
-
-		receptorRunner = testrunner.New(receptorBinPath, receptorAddress, etcdUrl, username, password)
 		receptorProcess = ginkgomon.Invoke(receptorRunner)
 	})
 
 	AfterEach(func() {
-		defer etcdRunner.Stop()
 		ginkgomon.Kill(receptorProcess)
-	})
-
-	Describe("Basic Auth", func() {
-		var res *http.Response
-		var httpClient *http.Client
-
-		BeforeEach(func() {
-			httpClient = new(http.Client)
-		})
-
-		Context("when the username and password are blank", func() {
-			BeforeEach(func() {
-				var err error
-				ginkgomon.Kill(receptorProcess)
-				receptorRunner = testrunner.New(receptorBinPath, receptorAddress, etcdUrl, "", "")
-				receptorProcess = ginkgomon.Invoke(receptorRunner)
-
-				res, err = httpClient.Get("http://" + receptorAddress)
-				Ω(err).ShouldNot(HaveOccurred())
-				res.Body.Close()
-			})
-
-			It("does not return 401", func() {
-				Ω(res.StatusCode).Should(Equal(http.StatusNotFound))
-			})
-		})
-
-		Context("when the username and password are required but not sent", func() {
-			BeforeEach(func() {
-				var err error
-				res, err = httpClient.Get("http://" + receptorAddress)
-				Ω(err).ShouldNot(HaveOccurred())
-				res.Body.Close()
-			})
-
-			It("returns 401 for all requests", func() {
-				Ω(res.StatusCode).Should(Equal(http.StatusUnauthorized))
-			})
-		})
 	})
 
 	Describe("Headers", func() {
