@@ -8,6 +8,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-debug-server"
 	"github.com/cloudfoundry-incubator/cf-lager"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
+	"github.com/cloudfoundry-incubator/receptor/task_watcher"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry/gunk/timeprovider"
 	"github.com/cloudfoundry/gunk/workpool"
@@ -57,6 +58,7 @@ func main() {
 
 	group := grouper.NewOrdered(os.Interrupt, grouper.Members{
 		{"server", http_server.New(*serverAddress, handler)},
+		{"watcher", task_watcher.New(bbs, logger)},
 	})
 
 	monitor := ifrit.Invoke(sigmon.New(group))

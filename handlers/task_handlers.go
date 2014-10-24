@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/cloudfoundry-incubator/receptor"
+	"github.com/cloudfoundry-incubator/receptor/serialization"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/cloudfoundry/storeadapter"
@@ -37,7 +38,7 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	task, err := newTaskFromCreateRequest(taskRequest)
+	task, err := serialization.TaskFromRequest(taskRequest)
 	if err != nil {
 		log.Error("task-request-invalid", err)
 		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
@@ -90,7 +91,7 @@ func (h *TaskHandler) GetByGuid(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	writeJSONResponse(w, http.StatusOK, responseFromTask(task))
+	writeJSONResponse(w, http.StatusOK, serialization.TaskToResponse(task))
 }
 
 func (h *TaskHandler) Delete(w http.ResponseWriter, req *http.Request) {
@@ -132,43 +133,8 @@ func writeTaskResponse(w http.ResponseWriter, logger lager.Logger, tasks []model
 
 	taskResponses := make([]receptor.TaskResponse, 0, len(tasks))
 	for _, task := range tasks {
-		taskResponses = append(taskResponses, responseFromTask(task))
+		taskResponses = append(taskResponses, serialization.TaskToResponse(task))
 	}
 
 	writeJSONResponse(w, http.StatusOK, taskResponses)
-}
-
-func newTaskFromCreateRequest(req receptor.CreateTaskRequest) (models.Task, error) {
-	task := models.Task{
-		TaskGuid:   req.TaskGuid,
-		Domain:     req.Domain,
-		Actions:    req.Actions,
-		Stack:      req.Stack,
-		MemoryMB:   req.MemoryMB,
-		DiskMB:     req.DiskMB,
-		CpuPercent: req.CpuPercent,
-		Log:        req.Log,
-		ResultFile: req.ResultFile,
-		Annotation: req.Annotation,
-	}
-
-	err := task.Validate()
-	if err != nil {
-		return models.Task{}, err
-	}
-	return task, nil
-}
-
-func responseFromTask(task models.Task) receptor.TaskResponse {
-	return receptor.TaskResponse{
-		TaskGuid:   task.TaskGuid,
-		Domain:     task.Domain,
-		Actions:    task.Actions,
-		Stack:      task.Stack,
-		MemoryMB:   task.MemoryMB,
-		DiskMB:     task.DiskMB,
-		CpuPercent: task.CpuPercent,
-		Log:        task.Log,
-		Annotation: task.Annotation,
-	}
 }

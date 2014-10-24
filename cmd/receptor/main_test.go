@@ -17,6 +17,7 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/ghttp"
 )
 
 var _ = Describe("Receptor API", func() {
@@ -98,14 +99,32 @@ var _ = Describe("Receptor API", func() {
 	})
 
 	Describe("POST /tasks", func() {
-		var taskToCreate receptor.CreateTaskRequest
-		var err error
+		var (
+			taskToCreate receptor.CreateTaskRequest
+			err          error
+			testServer   *ghttp.Server
+		)
 
 		BeforeEach(func() {
+			testServer = ghttp.NewServer()
+			testServer.AppendHandlers(ghttp.CombineHandlers(
+				ghttp.VerifyRequest("POST", "/the/callback/path"),
+				ghttp.VerifyJSONRepresenting(receptor.TaskResponse{
+					TaskGuid: "task-guid-1",
+					Domain:   "test-domain",
+					Stack:    "some-stack",
+					CompletionCallbackURL: testServer.URL() + "/the/callback/path",
+					Actions: []models.ExecutorAction{
+						{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
+					},
+				}),
+			))
+
 			taskToCreate = receptor.CreateTaskRequest{
 				TaskGuid: "task-guid-1",
 				Domain:   "test-domain",
 				Stack:    "some-stack",
+				CompletionCallbackURL: testServer.URL() + "/the/callback/path",
 				Actions: []models.ExecutorAction{
 					{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
 				},
@@ -129,6 +148,25 @@ var _ = Describe("Receptor API", func() {
 
 			It("returns an error indicating that the key already exists", func() {
 				Ω(err.(receptor.Error).Type).Should(Equal(receptor.TaskGuidAlreadyExists))
+			})
+		})
+
+		Describe("when the task completes", func() {
+			BeforeEach(func() {
+				err := bbs.ClaimTask("task-guid-1", "the-executor-id")
+				Ω(err).ShouldNot(HaveOccurred())
+
+				err = bbs.StartTask("task-guid-1", "the-executor-id", "the-container-handle")
+				Ω(err).ShouldNot(HaveOccurred())
+			})
+
+			It("sends a POST request to the specified callback URL", func() {
+				Ω(testServer.ReceivedRequests()).Should(HaveLen(0))
+
+				err = bbs.CompleteTask("task-guid-1", true, "the-failure-reason", "the-result")
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Eventually(testServer.ReceivedRequests).Should(HaveLen(1))
 			})
 		})
 	})
