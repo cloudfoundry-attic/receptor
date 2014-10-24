@@ -55,5 +55,29 @@ func TaskToResponse(task models.Task) receptor.TaskResponse {
 		Log:                   task.Log,
 		Annotation:            task.Annotation,
 		CompletionCallbackURL: url,
+
+		FailureReason: task.FailureReason,
+		Failed:        task.Failed,
+		Result:        task.Result,
+		State:         taskStateToResponseState(task.State),
 	}
+}
+
+func taskStateToResponseState(state models.TaskState) string {
+	switch state {
+	case models.TaskStateInvalid:
+		return receptor.TaskStateInvalid
+	case models.TaskStatePending:
+		return receptor.TaskStatePending
+	case models.TaskStateClaimed:
+		return receptor.TaskStateClaimed
+	case models.TaskStateRunning:
+		return receptor.TaskStateRunning
+	case models.TaskStateCompleted:
+		return receptor.TaskStateCompleted
+	case models.TaskStateResolving:
+		return receptor.TaskStateResolving
+	}
+
+	return ""
 }

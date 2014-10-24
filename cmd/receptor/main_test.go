@@ -107,18 +107,6 @@ var _ = Describe("Receptor API", func() {
 
 		BeforeEach(func() {
 			testServer = ghttp.NewServer()
-			testServer.AppendHandlers(ghttp.CombineHandlers(
-				ghttp.VerifyRequest("POST", "/the/callback/path"),
-				ghttp.VerifyJSONRepresenting(receptor.TaskResponse{
-					TaskGuid: "task-guid-1",
-					Domain:   "test-domain",
-					Stack:    "some-stack",
-					CompletionCallbackURL: testServer.URL() + "/the/callback/path",
-					Actions: []models.ExecutorAction{
-						{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
-					},
-				}),
-			))
 
 			taskToCreate = receptor.CreateTaskRequest{
 				TaskGuid: "task-guid-1",
@@ -161,6 +149,23 @@ var _ = Describe("Receptor API", func() {
 			})
 
 			It("sends a POST request to the specified callback URL", func() {
+				testServer.AppendHandlers(ghttp.CombineHandlers(
+					ghttp.VerifyRequest("POST", "/the/callback/path"),
+					ghttp.VerifyJSONRepresenting(receptor.TaskResponse{
+						TaskGuid: "task-guid-1",
+						Domain:   "test-domain",
+						Stack:    "some-stack",
+						CompletionCallbackURL: testServer.URL() + "/the/callback/path",
+						State:         receptor.TaskStateCompleted,
+						Result:        "the-result",
+						Failed:        true,
+						FailureReason: "the-failure-reason",
+						Actions: []models.ExecutorAction{
+							{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
+						},
+					}),
+				))
+
 				Ω(testServer.ReceivedRequests()).Should(HaveLen(0))
 
 				err = bbs.CompleteTask("task-guid-1", true, "the-failure-reason", "the-result")
@@ -213,6 +218,7 @@ var _ = Describe("Receptor API", func() {
 				}
 				Ω(taskGuids).Should(ConsistOf([]string{"task-guid-1", "task-guid-2"}))
 			})
+
 		})
 	})
 
@@ -280,6 +286,23 @@ var _ = Describe("Receptor API", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(task.TaskGuid).Should(Equal("task-guid-1"))
 			Ω(task.Domain).Should(Equal("test-domain"))
+		})
+
+		It("includes all of the task's publicly-visible fields", func() {
+			err := bbs.ClaimTask("task-guid-1", "the-executor-id")
+			Ω(err).ShouldNot(HaveOccurred())
+			err = bbs.StartTask("task-guid-1", "the-executor-id", "the-container-handle")
+			Ω(err).ShouldNot(HaveOccurred())
+			err = bbs.CompleteTask("task-guid-1", true, "the-failure-reason", "the-task-result")
+			Ω(err).ShouldNot(HaveOccurred())
+
+			task, err := client.GetTask("task-guid-1")
+			Ω(err).ShouldNot(HaveOccurred())
+
+			Ω(task.FailureReason).Should(Equal("the-failure-reason"))
+			Ω(task.Failed).Should(Equal(true))
+			Ω(task.Result).Should(Equal("the-task-result"))
+			Ω(task.State).Should(Equal(receptor.TaskStateCompleted))
 		})
 
 		Context("when the task doesn't exist", func() {
