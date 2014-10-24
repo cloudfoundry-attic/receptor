@@ -1,6 +1,9 @@
 package serialization_test
 
 import (
+	"net/url"
+
+	"github.com/cloudfoundry-incubator/receptor"
 	. "github.com/cloudfoundry-incubator/receptor/serialization"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 
@@ -32,6 +35,62 @@ var _ = Describe("Task Serialization", func() {
 				task.State = modelState
 				Ω(TaskToResponse(task).State).Should(Equal(jsonState))
 			}
+		})
+
+		Context("when the task has a CompletionCallbackURL", func() {
+			BeforeEach(func() {
+				task.CompletionCallbackURL = &url.URL{
+					Scheme: "http",
+					Host:   "example.com",
+					Path:   "/the-path",
+				}
+			})
+
+			It("serializes the completion callback URL", func() {
+				Ω(TaskToResponse(task).CompletionCallbackURL).Should(Equal("http://example.com/the-path"))
+			})
+		})
+
+		Context("when the task doesn't have a CompletionCallbackURL", func() {
+			It("leaves the completion callback URL blank", func() {
+				Ω(TaskToResponse(task).CompletionCallbackURL).Should(Equal(""))
+			})
+		})
+	})
+
+	Describe("TaskFromRequest", func() {
+		var request receptor.CreateTaskRequest
+
+		BeforeEach(func() {
+			request = receptor.CreateTaskRequest{
+				TaskGuid: "the-task-guid",
+				Domain:   "the-domain",
+				Stack:    "the-stack",
+				Actions: []models.ExecutorAction{
+					{
+						Action: &models.RunAction{
+							Path: "the-path",
+						},
+					},
+				},
+			}
+		})
+
+		Context("when the request contains a completion_callback_url", func() {
+			BeforeEach(func() {
+				request.CompletionCallbackURL = "http://example.com/the-path"
+			})
+
+			It("parses the URL", func() {
+				task, err := TaskFromRequest(request)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(task.CompletionCallbackURL).Should(Equal(&url.URL{
+					Scheme: "http",
+					Host:   "example.com",
+					Path:   "/the-path",
+				}))
+			})
 		})
 	})
 })
