@@ -11,8 +11,8 @@ import (
 
 	"github.com/cloudfoundry-incubator/cf-debug-server"
 	"github.com/cloudfoundry-incubator/cf-lager"
+	"github.com/cloudfoundry-incubator/natbeat"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
-	"github.com/cloudfoundry-incubator/receptor/heartbeat"
 	"github.com/cloudfoundry-incubator/receptor/task_watcher"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry/gunk/timeprovider"
@@ -106,7 +106,7 @@ func main() {
 
 		members = append(members, grouper.Member{
 			Name:   "background_heartbeat",
-			Runner: heartbeat.NewBackgroundHeartbeat(*natsAddresses, *natsUsername, *natsPassword, logger, registration),
+			Runner: natbeat.NewBackgroundHeartbeat(*natsAddresses, *natsUsername, *natsPassword, logger, registration),
 		})
 	}
 
@@ -154,7 +154,7 @@ func initializeReceptorBBS(logger lager.Logger) Bbs.ReceptorBBS {
 	return Bbs.NewReceptorBBS(etcdAdapter, timeprovider.NewTimeProvider(), logger)
 }
 
-func initializeServerRegistration(logger lager.Logger) (registration heartbeat.RegistryMessage) {
+func initializeServerRegistration(logger lager.Logger) (registration natbeat.RegistryMessage) {
 	domains := strings.Split(*serverDomainNames, ",")
 
 	addressComponents := strings.Split(*serverAddress, ":")
@@ -171,7 +171,7 @@ func initializeServerRegistration(logger lager.Logger) (registration heartbeat.R
 		os.Exit(1)
 	}
 
-	return heartbeat.RegistryMessage{
+	return natbeat.RegistryMessage{
 		URIs: domains,
 		Host: host,
 		Port: port,
