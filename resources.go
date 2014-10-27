@@ -6,7 +6,7 @@ type CreateTaskRequest struct {
 	Actions               []models.ExecutorAction `json:"actions"`
 	Annotation            string                  `json:"annotation,omitempty"`
 	CompletionCallbackURL string                  `json:"completion_callback_url"`
-	CpuPercent            float64                 `json:"cpu_percent"`
+	CPUWeight             uint                    `json:"cpu_weight"`
 	DiskMB                int                     `json:"disk_mb"`
 	Domain                string                  `json:"domain"`
 	Log                   models.LogConfig        `json:"log"`
@@ -20,7 +20,7 @@ type TaskResponse struct {
 	Actions               []models.ExecutorAction `json:"actions"`
 	Annotation            string                  `json:"annotation,omitempty"`
 	CompletionCallbackURL string                  `json:"completion_callback_url"`
-	CpuPercent            float64                 `json:"cpu_percent"`
+	CPUWeight             uint                    `json:"cpu_weight"`
 	DiskMB                int                     `json:"disk_mb"`
 	Domain                string                  `json:"domain"`
 	Log                   models.LogConfig        `json:"log"`
