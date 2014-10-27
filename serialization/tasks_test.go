@@ -37,6 +37,14 @@ var _ = Describe("Task Serialization", func() {
 			}
 		})
 
+		It("serializes the task's fields", func() {
+			task := models.Task{
+				CreatedAt: 1234,
+			}
+
+			Ω(TaskToResponse(task).CreatedAt).Should(Equal(int64(1234)))
+		})
+
 		Context("when the task has a CompletionCallbackURL", func() {
 			BeforeEach(func() {
 				task.CompletionCallbackURL = &url.URL{

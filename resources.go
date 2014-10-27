@@ -29,6 +29,7 @@ type TaskResponse struct {
 	Stack                 string                  `json:"stack"`
 	TaskGuid              string                  `json:"task_guid"`
 
+	CreatedAt     int64  `json:"created_at"`
 	Failed        bool   `json:"failed"`
 	FailureReason string `json:"failure_reason"`
 	Result        string `json:"result"`

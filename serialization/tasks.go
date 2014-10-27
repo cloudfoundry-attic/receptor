@@ -56,6 +56,7 @@ func TaskToResponse(task models.Task) receptor.TaskResponse {
 		Annotation:            task.Annotation,
 		CompletionCallbackURL: url,
 
+		CreatedAt:     task.CreatedAt,
 		FailureReason: task.FailureReason,
 		Failed:        task.Failed,
 		Result:        task.Result,
