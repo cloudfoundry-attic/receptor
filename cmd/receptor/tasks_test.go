@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/cloudfoundry-incubator/receptor"
@@ -86,19 +87,22 @@ var _ = Describe("Task API", func() {
 			It("sends a POST request to the specified callback URL", func() {
 				testServer.AppendHandlers(ghttp.CombineHandlers(
 					ghttp.VerifyRequest("POST", "/the/callback/path"),
-					ghttp.VerifyJSONRepresenting(receptor.TaskResponse{
-						TaskGuid: "task-guid-1",
-						Domain:   "test-domain",
-						Stack:    "some-stack",
-						CompletionCallbackURL: testServer.URL() + "/the/callback/path",
-						State:         receptor.TaskStateCompleted,
-						Result:        "the-result",
-						Failed:        true,
-						FailureReason: "the-failure-reason",
-						Actions: []models.ExecutorAction{
+					func(res http.ResponseWriter, req *http.Request) {
+						var taskResponse receptor.TaskResponse
+						err := json.NewDecoder(req.Body).Decode(&taskResponse)
+						Ω(err).ShouldNot(HaveOccurred())
+
+						Ω(taskResponse.TaskGuid).Should(Equal("task-guid-1"))
+						Ω(taskResponse.Domain).Should(Equal("test-domain"))
+						Ω(taskResponse.Stack).Should(Equal("some-stack"))
+						Ω(taskResponse.State).Should(Equal(receptor.TaskStateCompleted))
+						Ω(taskResponse.Result).Should(Equal("the-result"))
+						Ω(taskResponse.Failed).Should(Equal(true))
+						Ω(taskResponse.FailureReason).Should(Equal("the-failure-reason"))
+						Ω(taskResponse.Actions).Should(Equal([]models.ExecutorAction{
 							{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
-						},
-					}),
+						}))
+					},
 				))
 
 				Ω(testServer.ReceivedRequests()).Should(HaveLen(0))
