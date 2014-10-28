@@ -182,7 +182,7 @@ var _ = Describe("TaskHandler", func() {
 		Context("when reading tasks from BBS succeeds", func() {
 			BeforeEach(func() {
 				fakeBBS.GetAllTasksReturns([]models.Task{
-					{TaskGuid: "task-guid-1", Domain: "domain-1", ContainerHandle: "internal stuff"},
+					{TaskGuid: "task-guid-1", Domain: "domain-1"},
 				}, nil)
 			})
 
@@ -216,7 +216,7 @@ var _ = Describe("TaskHandler", func() {
 		Context("when reading tasks from BBS succeeds", func() {
 			BeforeEach(func() {
 				fakeBBS.GetAllTasksByDomainReturns([]models.Task{
-					{TaskGuid: "task-guid-1", Domain: "domain-1", ContainerHandle: "internal stuff"},
+					{TaskGuid: "task-guid-1", Domain: "domain-1"},
 				}, nil)
 			})
 
@@ -255,7 +255,7 @@ var _ = Describe("TaskHandler", func() {
 		Context("when the task is successfully found in the BBS", func() {
 			BeforeEach(func() {
 				fakeBBS.GetTaskByGuidReturns(models.Task{
-					TaskGuid: "task-guid-1", Domain: "domain-1", ContainerHandle: "internal stuff",
+					TaskGuid: "task-guid-1", Domain: "domain-1",
 				}, nil)
 			})
 
