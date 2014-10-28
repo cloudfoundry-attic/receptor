@@ -36,7 +36,7 @@ var _ = Describe("TaskWatcher", func() {
 		errorChan = make(chan error, 1)
 
 		logger := lager.NewLogger("task-watcher-test")
-
+		logger.RegisterSink(lager.NewWriterSink(GinkgoWriter, lager.INFO))
 		fakeBBS = new(fake_bbs.FakeReceptorBBS)
 		fakeBBS.WatchForCompletedTaskReturns(taskChan, stopChan, errorChan)
 
@@ -50,22 +50,73 @@ var _ = Describe("TaskWatcher", func() {
 	})
 
 	Describe("shutting down", func() {
-		It("stops watching for completed tasks", func() {
-			taskWatcherProcess.Signal(os.Kill)
-			Eventually(stopChan).Should(Receive())
+		Context("when sent Interrupt", func() {
+			BeforeEach(func() {
+				taskWatcherProcess.Signal(os.Interrupt)
+			})
+
+			It("stops watching for completed tasks", func() {
+				Eventually(stopChan).Should(Receive())
+			})
+
+			It("exits", func() {
+				Eventually(taskWatcherProcess.Wait()).Should(Receive(BeNil()))
+			})
+		})
+
+		Context("when sent Kill", func() {
+			BeforeEach(func() {
+				taskWatcherProcess.Signal(os.Kill)
+			})
+
+			It("exits without cleaning up", func() {
+				Eventually(taskWatcherProcess.Wait()).Should(Receive())
+				Ω(stopChan).ShouldNot(Receive())
+			})
 		})
 	})
 
+	Describe("when the task channel is closed", func() {
+		BeforeEach(func() {
+			close(taskChan)
+		})
+
+		It("does not try to process the empty tasks", func() {
+			Consistently(fakeBBS.ResolvingTaskCallCount, .5).Should(Equal(0))
+		})
+	})
+
+	Describe("when the error channel is closed", func() {
+		BeforeEach(func() {
+			close(errorChan)
+		})
+
+		It("does not try to restart the bbs watcher", func() {
+			Consistently(fakeBBS.WatchForCompletedTaskCallCount, .5).Should(Equal(1))
+		})
+	})
+
+	Describe("when the watcher emits an error", func() {
+		BeforeEach(func() {
+			errorChan <- errors.New("burp")
+		})
+
+		It("attempts to restart watching for completed tasks", func() {
+			Eventually(fakeBBS.WatchForCompletedTaskCallCount).Should(Equal(2))
+		})
+	})
 	Describe("when a task is completed", func() {
 		var (
 			callbackURL *url.URL
 			statusCodes chan int
+			reqCount    chan struct{}
 		)
 
 		BeforeEach(func() {
 			statusCodes = make(chan int)
-
+			reqCount = make(chan struct{}, task_watcher.POOL_SIZE)
 			fakeServer.RouteToHandler("POST", "/the-callback/url", func(w http.ResponseWriter, req *http.Request) {
+				reqCount <- struct{}{}
 				w.WriteHeader(<-statusCodes)
 			})
 
@@ -88,6 +139,13 @@ var _ = Describe("TaskWatcher", func() {
 
 			Eventually(fakeBBS.ResolvingTaskCallCount).Should(Equal(1))
 			Ω(fakeBBS.ResolvingTaskArgsForCall(0)).Should(Equal("the-task-guid"))
+		})
+
+		It("processes tasks in parallel", func() {
+			for i := 0; i < task_watcher.POOL_SIZE; i++ {
+				simulateTaskCompleting()
+			}
+			Eventually(reqCount).Should(HaveLen(task_watcher.POOL_SIZE))
 		})
 
 		Context("when marking the task as resolving fails", func() {
@@ -134,17 +192,28 @@ var _ = Describe("TaskWatcher", func() {
 					})
 				})
 
-				Context("when the request fails with a 5xx response code", func() {
+				Context("when the request fails with a 500 response code", func() {
+					It("resolves the task", func() {
+						simulateTaskCompleting()
+
+						statusCodes <- 500
+
+						Eventually(fakeBBS.ResolveTaskCallCount).Should(Equal(1))
+						Ω(fakeBBS.ResolveTaskArgsForCall(0)).Should(Equal("the-task-guid"))
+					})
+				})
+
+				Context("when the request fails with a 503 or 504 response code", func() {
 					It("retries the request 2 more times", func() {
 						simulateTaskCompleting()
 						Eventually(fakeServer.ReceivedRequests).Should(HaveLen(1))
 
-						statusCodes <- 502
+						statusCodes <- 503
 
 						Consistently(fakeBBS.ResolveTaskCallCount, 0.25).Should(Equal(0))
 						Eventually(fakeServer.ReceivedRequests).Should(HaveLen(2))
 
-						statusCodes <- 502
+						statusCodes <- 504
 
 						Consistently(fakeBBS.ResolveTaskCallCount, 0.25).Should(Equal(0))
 						Eventually(fakeServer.ReceivedRequests).Should(HaveLen(3))
@@ -160,17 +229,17 @@ var _ = Describe("TaskWatcher", func() {
 							simulateTaskCompleting()
 							Eventually(fakeServer.ReceivedRequests).Should(HaveLen(1))
 
-							statusCodes <- 502
+							statusCodes <- 503
 
 							Consistently(fakeBBS.ResolveTaskCallCount, 0.25).Should(Equal(0))
 							Eventually(fakeServer.ReceivedRequests).Should(HaveLen(2))
 
-							statusCodes <- 502
+							statusCodes <- 504
 
 							Consistently(fakeBBS.ResolveTaskCallCount, 0.25).Should(Equal(0))
 							Eventually(fakeServer.ReceivedRequests).Should(HaveLen(3))
 
-							statusCodes <- 502
+							statusCodes <- 503
 
 							Consistently(fakeBBS.ResolveTaskCallCount, 0.25).Should(Equal(0))
 							Consistently(fakeServer.ReceivedRequests, 0.25).Should(HaveLen(3))

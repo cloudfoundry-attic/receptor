@@ -1,12 +1,9 @@
 package task_watcher
 
 import (
-	"bytes"
-	"encoding/json"
-	"net/http"
+	"errors"
 	"os"
 
-	"github.com/cloudfoundry-incubator/receptor/serialization"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/pivotal-golang/lager"
@@ -14,87 +11,67 @@ import (
 )
 
 const MAX_RETRIES = 3
+const POOL_SIZE = 20
 
-func New(bbs Bbs.ReceptorBBS, logger lager.Logger) ifrit.Runner {
-	return &taskWatcher{
-		bbs:        bbs,
-		logger:     logger,
-		httpClient: http.Client{},
+var ErrWatchFailed = errors.New("watching for completed tasks failed")
+
+func New(bbs Bbs.ReceptorBBS, logger lager.Logger) *TaskWatcher {
+	return &TaskWatcher{
+		bbs:    bbs,
+		logger: logger.Session("task-watcher"),
 	}
 }
 
-type taskWatcher struct {
-	bbs        Bbs.ReceptorBBS
-	logger     lager.Logger
-	httpClient http.Client
+type TaskWatcher struct {
+	bbs    Bbs.ReceptorBBS
+	logger lager.Logger
 }
 
-func (t *taskWatcher) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
+func (t *TaskWatcher) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
+	t.logger.Info("starting")
+
+	workQueue := make(chan models.Task, POOL_SIZE)
+	workers := ifrit.Invoke(newTaskWorkerPool(POOL_SIZE, workQueue, t.bbs, t.logger))
+	workersDone := workers.Wait()
+
 	close(ready)
 
-	tasks, stopChan, _ := t.bbs.WatchForCompletedTask()
+	taskChan, stopChan, errChan := t.bbs.WatchForCompletedTask()
+	t.logger.Info("watching")
 
-loop:
 	for {
 		select {
-		case task := <-tasks:
-			t.handleCompletedTask(task)
-		case <-signals:
-			break loop
+		case task, ok := <-taskChan:
+			if !ok {
+				taskChan = nil
+				break
+			}
+			select {
+			case workQueue <- task:
+			default:
+				t.logger.Info("queue-full-ignoring-task", lager.Data{"task-guid": task.TaskGuid})
+			}
+
+		case sig := <-signals:
+			t.logger.Info("stopping")
+			workers.Signal(sig)
+			if sig == os.Kill {
+				return nil
+			}
+			stopChan <- true
+
+		case <-workersDone:
+			t.logger.Info("exited")
+			return nil
+
+		case err, ok := <-errChan:
+			if !ok {
+				errChan = nil
+				break
+			}
+			t.logger.Error("watch-failed", err)
+			taskChan, stopChan, errChan = t.bbs.WatchForCompletedTask()
+			t.logger.Info("watching-again")
 		}
 	}
-
-	stopChan <- true
-	return nil
-}
-
-func (t *taskWatcher) handleCompletedTask(task models.Task) {
-	err := t.bbs.ResolvingTask(task.TaskGuid)
-	if err != nil {
-		t.logger.Error("marking-task-as-resolving-failed", err)
-		return
-	}
-
-	if task.CompletionCallbackURL != nil {
-		for i := 0; i < MAX_RETRIES; i++ {
-			json, err := json.Marshal(serialization.TaskToResponse(task))
-			if err != nil {
-				t.logger.Error("marshalling-task-failed", err)
-				return
-			}
-
-			request, err := http.NewRequest("POST", task.CompletionCallbackURL.String(), bytes.NewReader(json))
-			if err != nil {
-				t.logger.Error("building-request-failed", err)
-				return
-			}
-
-			request.Header.Set("Content-Type", "application/json")
-
-			response, err := t.httpClient.Do(request)
-			if err != nil {
-				t.logger.Error("doing-request-failed", err)
-				return
-			}
-
-			if isSuccess(response.StatusCode) || isBadRequest(response.StatusCode) {
-				err = t.bbs.ResolveTask(task.TaskGuid)
-				if err != nil {
-					t.logger.Error("resolving-task-failed", err)
-					return
-				}
-
-				t.logger.Info("resolved-task")
-				return
-			}
-		}
-	}
-}
-
-func isSuccess(status int) bool {
-	return 200 <= status && status < 300
-}
-
-func isBadRequest(status int) bool {
-	return 400 <= status && status < 500
 }

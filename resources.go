@@ -2,6 +2,15 @@ package receptor
 
 import "github.com/cloudfoundry-incubator/runtime-schema/models"
 
+const (
+	TaskStateInvalid   = "INVALID"
+	TaskStatePending   = "PENDING"
+	TaskStateClaimed   = "CLAIMED"
+	TaskStateRunning   = "RUNNING"
+	TaskStateCompleted = "COMPLETED"
+	TaskStateResolving = "RESOLVING"
+)
+
 type CreateTaskRequest struct {
 	Actions               []models.ExecutorAction `json:"actions"`
 	Annotation            string                  `json:"annotation,omitempty"`
@@ -35,12 +44,3 @@ type TaskResponse struct {
 	Result        string `json:"result"`
 	State         string `json:"state"`
 }
-
-const (
-	TaskStateInvalid   = "INVALID"
-	TaskStatePending   = "PENDING"
-	TaskStateClaimed   = "CLAIMED"
-	TaskStateRunning   = "RUNNING"
-	TaskStateCompleted = "COMPLETED"
-	TaskStateResolving = "RESOLVING"
-)
