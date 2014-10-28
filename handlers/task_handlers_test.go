@@ -286,6 +286,11 @@ var _ = Describe("TaskHandler", func() {
 				handler.Delete(responseRecorder, request)
 				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
 			})
+
+			It("does not try to resolve the task", func() {
+				handler.Delete(responseRecorder, request)
+				Ω(fakeBBS.ResolveTaskCallCount()).Should(BeZero())
+			})
 		})
 
 		Context("when task cannot be resolved", func() {

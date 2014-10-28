@@ -98,23 +98,25 @@ func (h *TaskHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	guid := req.FormValue(":task_guid")
 
 	err := h.bbs.ResolvingTask(guid)
-	switch err {
-	case nil:
-	case Bbs.ErrTaskNotFound:
-		h.logger.Error("task-not-found", err)
-		writeJSONResponse(w, http.StatusConflict, receptor.Error{
-			Type:    receptor.TaskNotFound,
-			Message: "stuff",
-		})
-	case Bbs.ErrTaskNotResolvable:
-		h.logger.Error("task-not-completed", err)
-		writeJSONResponse(w, http.StatusConflict, receptor.Error{
-			Type:    receptor.TaskNotDeletable,
-			Message: "This task has not been completed. Please retry when it is completed.",
-		})
-	default:
-		h.logger.Error("failed-to-mark-task-resolving", err)
-		writeUnknownErrorResponse(w, err)
+	if err != nil {
+		switch err {
+		case Bbs.ErrTaskNotFound:
+			h.logger.Error("task-not-found", err)
+			writeJSONResponse(w, http.StatusConflict, receptor.Error{
+				Type:    receptor.TaskNotFound,
+				Message: "stuff",
+			})
+		case Bbs.ErrTaskNotResolvable:
+			h.logger.Error("task-not-completed", err)
+			writeJSONResponse(w, http.StatusConflict, receptor.Error{
+				Type:    receptor.TaskNotDeletable,
+				Message: "This task has not been completed. Please retry when it is completed.",
+			})
+		default:
+			h.logger.Error("failed-to-mark-task-resolving", err)
+			writeUnknownErrorResponse(w, err)
+		}
+		return
 	}
 
 	err = h.bbs.ResolveTask(guid)
