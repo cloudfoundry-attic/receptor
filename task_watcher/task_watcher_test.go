@@ -11,6 +11,7 @@ import (
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/pivotal-golang/lager"
 	"github.com/tedsuo/ifrit"
+	"github.com/tedsuo/ifrit/ginkgomon"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -45,8 +46,8 @@ var _ = Describe("TaskWatcher", func() {
 	})
 
 	AfterEach(func() {
-		taskWatcherProcess.Signal(os.Kill)
-		Eventually(taskWatcherProcess.Wait()).Should(Receive())
+		fakeServer.Close()
+		ginkgomon.Kill(taskWatcherProcess)
 	})
 
 	Describe("shutting down", func() {
@@ -122,6 +123,10 @@ var _ = Describe("TaskWatcher", func() {
 
 			callbackURL, err = url.Parse(fakeServer.URL() + "/the-callback/url")
 			Ω(err).ShouldNot(HaveOccurred())
+		})
+
+		AfterEach(func() {
+			close(statusCodes)
 		})
 
 		simulateTaskCompleting := func() {
