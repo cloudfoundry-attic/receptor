@@ -35,9 +35,10 @@ var _ = Describe("TaskHandler", func() {
 
 	Describe("Create", func() {
 		validCreateRequest := receptor.CreateTaskRequest{
-			TaskGuid: "task-guid-1",
-			Domain:   "test-domain",
-			Stack:    "some-stack",
+			TaskGuid:   "task-guid-1",
+			Domain:     "test-domain",
+			RootFSPath: "docker://docker",
+			Stack:      "some-stack",
 			Actions: []models.ExecutorAction{
 				{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
 			},
@@ -50,9 +51,10 @@ var _ = Describe("TaskHandler", func() {
 		}
 
 		expectedTask := models.Task{
-			TaskGuid: "task-guid-1",
-			Domain:   "test-domain",
-			Stack:    "some-stack",
+			TaskGuid:   "task-guid-1",
+			Domain:     "test-domain",
+			RootFSPath: "docker://docker",
+			Stack:      "some-stack",
 			Actions: []models.ExecutorAction{
 				{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
 			},
@@ -255,7 +257,8 @@ var _ = Describe("TaskHandler", func() {
 		Context("when the task is successfully found in the BBS", func() {
 			BeforeEach(func() {
 				fakeBBS.GetTaskByGuidReturns(models.Task{
-					TaskGuid: "task-guid-1", Domain: "domain-1",
+					TaskGuid: "task-guid-1",
+					Domain:   "domain-1",
 				}, nil)
 			})
 

@@ -20,6 +20,7 @@ func TaskFromRequest(req receptor.CreateTaskRequest) (models.Task, error) {
 	task := models.Task{
 		TaskGuid:              req.TaskGuid,
 		Domain:                req.Domain,
+		RootFSPath:            req.RootFSPath,
 		Actions:               req.Actions,
 		Stack:                 req.Stack,
 		MemoryMB:              req.MemoryMB,
@@ -47,6 +48,7 @@ func TaskToResponse(task models.Task) receptor.TaskResponse {
 	return receptor.TaskResponse{
 		TaskGuid:              task.TaskGuid,
 		Domain:                task.Domain,
+		RootFSPath:            task.RootFSPath,
 		Actions:               task.Actions,
 		Stack:                 task.Stack,
 		MemoryMB:              task.MemoryMB,

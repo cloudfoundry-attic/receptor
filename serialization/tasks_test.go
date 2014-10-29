@@ -17,7 +17,9 @@ var _ = Describe("Task Serialization", func() {
 
 		BeforeEach(func() {
 			task = models.Task{
-				TaskGuid: "the-task-guid",
+				TaskGuid:   "the-task-guid",
+				RootFSPath: "the-rootfs-path",
+				CreatedAt:  1234,
 			}
 		})
 
@@ -38,11 +40,11 @@ var _ = Describe("Task Serialization", func() {
 		})
 
 		It("serializes the task's fields", func() {
-			task := models.Task{
-				CreatedAt: 1234,
-			}
+			response := TaskToResponse(task)
 
-			Ω(TaskToResponse(task).CreatedAt).Should(Equal(int64(1234)))
+			Ω(response.TaskGuid).Should(Equal("the-task-guid"))
+			Ω(response.RootFSPath).Should(Equal("the-rootfs-path"))
+			Ω(response.CreatedAt).Should(Equal(int64(1234)))
 		})
 
 		Context("when the task has a CompletionCallbackURL", func() {
@@ -71,9 +73,10 @@ var _ = Describe("Task Serialization", func() {
 
 		BeforeEach(func() {
 			request = receptor.CreateTaskRequest{
-				TaskGuid: "the-task-guid",
-				Domain:   "the-domain",
-				Stack:    "the-stack",
+				TaskGuid:   "the-task-guid",
+				Domain:     "the-domain",
+				Stack:      "the-stack",
+				RootFSPath: "the-rootfs-path",
 				Actions: []models.ExecutorAction{
 					{
 						Action: &models.RunAction{
@@ -85,14 +88,26 @@ var _ = Describe("Task Serialization", func() {
 		})
 
 		Context("when the request contains a completion_callback_url", func() {
+			var task models.Task
+
 			BeforeEach(func() {
 				request.CompletionCallbackURL = "http://example.com/the-path"
 			})
 
-			It("parses the URL", func() {
-				task, err := TaskFromRequest(request)
+			JustBeforeEach(func() {
+				var err error
+				task, err = TaskFromRequest(request)
 				Ω(err).ShouldNot(HaveOccurred())
+			})
 
+			It("translates the request into a task model, preserving attributes", func() {
+				Ω(task.TaskGuid).Should(Equal("the-task-guid"))
+				Ω(task.Domain).Should(Equal("the-domain"))
+				Ω(task.Stack).Should(Equal("the-stack"))
+				Ω(task.RootFSPath).Should(Equal("the-rootfs-path"))
+			})
+
+			It("parses the URL", func() {
 				Ω(task.CompletionCallbackURL).Should(Equal(&url.URL{
 					Scheme: "http",
 					Host:   "example.com",

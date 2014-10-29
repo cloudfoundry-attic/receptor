@@ -23,6 +23,7 @@ type CreateTaskRequest struct {
 	ResultFile            string                  `json:"result_file"`
 	Stack                 string                  `json:"stack"`
 	TaskGuid              string                  `json:"task_guid"`
+	RootFSPath            string                  `json:"root_fs"`
 }
 
 type TaskResponse struct {
@@ -37,6 +38,7 @@ type TaskResponse struct {
 	ResultFile            string                  `json:"result_file"`
 	Stack                 string                  `json:"stack"`
 	TaskGuid              string                  `json:"task_guid"`
+	RootFSPath            string                  `json:"root_fs"`
 
 	CreatedAt     int64  `json:"created_at"`
 	Failed        bool   `json:"failed"`
