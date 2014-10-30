@@ -11,6 +11,7 @@ import (
 
 func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) http.Handler {
 	taskHandler := NewTaskHandler(bbs, logger)
+	desiredLRPHandler := NewDesiredLRPHandler(bbs, logger)
 
 	actions := rata.Handlers{
 		receptor.CreateTask:          route(taskHandler.Create),
@@ -18,6 +19,8 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) ht
 		receptor.GetAllTasksByDomain: route(taskHandler.GetAllByDomain),
 		receptor.GetTask:             route(taskHandler.GetByGuid),
 		receptor.DeleteTask:          route(taskHandler.Delete),
+
+		receptor.CreateDesiredLRP: route(desiredLRPHandler.Create),
 	}
 
 	handler, err := rata.NewRouter(receptor.Routes, actions)

@@ -46,3 +46,19 @@ type TaskResponse struct {
 	Result        string `json:"result"`
 	State         string `json:"state"`
 }
+
+type CreateDesiredLRPRequest struct {
+	ProcessGuid          string                       `json:"process_guid"`
+	Domain               string                       `json:"domain"`
+	RootFSPath           string                       `json:"root_fs"`
+	Instances            int                          `json:"instances"`
+	Stack                string                       `json:"stack"`
+	EnvironmentVariables []models.EnvironmentVariable `json:"env,omitempty"`
+	Actions              []models.ExecutorAction      `json:"actions"`
+	DiskMB               int                          `json:"disk_mb"`
+	MemoryMB             int                          `json:"memory_mb"`
+	CPUWeight            uint                         `json:"cpu_weight"`
+	Ports                []models.PortMapping         `json:"ports"`
+	Routes               []string                     `json:"routes"`
+	Log                  models.LogConfig             `json:"log"`
+}
