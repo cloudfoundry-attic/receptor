@@ -26,7 +26,7 @@ func TaskFromRequest(req receptor.CreateTaskRequest) (models.Task, error) {
 		MemoryMB:              req.MemoryMB,
 		DiskMB:                req.DiskMB,
 		CPUWeight:             req.CPUWeight,
-		Log:                   req.Log,
+		Log:                   LogConfigToModel(req.Log),
 		ResultFile:            req.ResultFile,
 		Annotation:            req.Annotation,
 		CompletionCallbackURL: u,
@@ -54,7 +54,7 @@ func TaskToResponse(task models.Task) receptor.TaskResponse {
 		MemoryMB:              task.MemoryMB,
 		DiskMB:                task.DiskMB,
 		CPUWeight:             task.CPUWeight,
-		Log:                   task.Log,
+		Log:                   LogConfigFromModel(task.Log),
 		Annotation:            task.Annotation,
 		CompletionCallbackURL: url,
 

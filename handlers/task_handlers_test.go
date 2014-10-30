@@ -45,7 +45,7 @@ var _ = Describe("TaskHandler", func() {
 			MemoryMB:   24,
 			DiskMB:     12,
 			CPUWeight:  10,
-			Log:        models.LogConfig{"guid", "source-name"},
+			Log:        receptor.LogConfig{"guid", "source-name"},
 			ResultFile: "result-file",
 			Annotation: "some annotation",
 		}
