@@ -8,10 +8,10 @@ import (
 )
 
 func TaskFromRequest(req receptor.CreateTaskRequest) (models.Task, error) {
-	var url *url.URL
+	var u *url.URL
 	if req.CompletionCallbackURL != "" {
 		var err error
-		url, err = url.Parse(req.CompletionCallbackURL)
+		u, err = url.ParseRequestURI(req.CompletionCallbackURL)
 		if err != nil {
 			return models.Task{}, err
 		}
@@ -29,7 +29,7 @@ func TaskFromRequest(req receptor.CreateTaskRequest) (models.Task, error) {
 		Log:                   req.Log,
 		ResultFile:            req.ResultFile,
 		Annotation:            req.Annotation,
-		CompletionCallbackURL: url,
+		CompletionCallbackURL: u,
 	}
 
 	err := task.Validate()

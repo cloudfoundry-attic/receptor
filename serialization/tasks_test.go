@@ -18,8 +18,31 @@ var _ = Describe("Task Serialization", func() {
 		BeforeEach(func() {
 			task = models.Task{
 				TaskGuid:   "the-task-guid",
+				Domain:     "the-domain",
 				RootFSPath: "the-rootfs-path",
-				CreatedAt:  1234,
+				Actions: []models.ExecutorAction{
+					{
+						Action: models.UploadAction{
+							From: "from",
+							To:   "to",
+						},
+					},
+				},
+				Stack:     "the-stack",
+				MemoryMB:  100,
+				DiskMB:    100,
+				CPUWeight: 50,
+				Log: models.LogConfig{
+					Guid:       "the-log-config-guid",
+					SourceName: "the-source-name",
+				},
+				Annotation: "the-annotation",
+
+				CreatedAt:     1234,
+				FailureReason: "the-failure-reason",
+				Failed:        true,
+				Result:        "the-result",
+				State:         models.TaskStateInvalid,
 			}
 		})
 
@@ -40,11 +63,38 @@ var _ = Describe("Task Serialization", func() {
 		})
 
 		It("serializes the task's fields", func() {
-			response := TaskToResponse(task)
+			actualResponse := TaskToResponse(task)
 
-			Ω(response.TaskGuid).Should(Equal("the-task-guid"))
-			Ω(response.RootFSPath).Should(Equal("the-rootfs-path"))
-			Ω(response.CreatedAt).Should(Equal(int64(1234)))
+			expectedResponse := receptor.TaskResponse{
+				TaskGuid:   "the-task-guid",
+				Domain:     "the-domain",
+				RootFSPath: "the-rootfs-path",
+				Actions: []models.ExecutorAction{
+					{
+						Action: models.UploadAction{
+							From: "from",
+							To:   "to",
+						},
+					},
+				},
+				Stack:     "the-stack",
+				MemoryMB:  100,
+				DiskMB:    100,
+				CPUWeight: 50,
+				Log: models.LogConfig{
+					Guid:       "the-log-config-guid",
+					SourceName: "the-source-name",
+				},
+				Annotation: "the-annotation",
+
+				CreatedAt:     1234,
+				FailureReason: "the-failure-reason",
+				Failed:        true,
+				Result:        "the-result",
+				State:         receptor.TaskStateInvalid,
+			}
+
+			Ω(actualResponse).Should(Equal(expectedResponse))
 		})
 
 		Context("when the task has a CompletionCallbackURL", func() {
@@ -70,12 +120,12 @@ var _ = Describe("Task Serialization", func() {
 
 	Describe("TaskFromRequest", func() {
 		var request receptor.CreateTaskRequest
+		var expectedTask models.Task
 
 		BeforeEach(func() {
 			request = receptor.CreateTaskRequest{
 				TaskGuid:   "the-task-guid",
 				Domain:     "the-domain",
-				Stack:      "the-stack",
 				RootFSPath: "the-rootfs-path",
 				Actions: []models.ExecutorAction{
 					{
@@ -84,35 +134,74 @@ var _ = Describe("Task Serialization", func() {
 						},
 					},
 				},
+				Stack:     "the-stack",
+				MemoryMB:  100,
+				DiskMB:    100,
+				CPUWeight: 50,
+				Log: models.LogConfig{
+					Guid:       "the-log-config-guid",
+					SourceName: "the-source-name",
+				},
+				ResultFile: "the/result/file",
+				Annotation: "the-annotation",
+			}
+
+			expectedTask = models.Task{
+				TaskGuid:   "the-task-guid",
+				Domain:     "the-domain",
+				RootFSPath: "the-rootfs-path",
+				Actions: []models.ExecutorAction{
+					{
+						Action: &models.RunAction{
+							Path: "the-path",
+						},
+					},
+				},
+				Stack:     "the-stack",
+				MemoryMB:  100,
+				DiskMB:    100,
+				CPUWeight: 50,
+				Log: models.LogConfig{
+					Guid:       "the-log-config-guid",
+					SourceName: "the-source-name",
+				},
+				ResultFile: "the/result/file",
+				Annotation: "the-annotation",
 			}
 		})
 
-		Context("when the request contains a completion_callback_url", func() {
-			var task models.Task
+		It("translates the request into a task model, preserving attributes", func() {
+			actualTask, err := TaskFromRequest(request)
+			Ω(err).ShouldNot(HaveOccurred())
 
+			Ω(actualTask).Should(Equal(expectedTask))
+		})
+
+		Context("when the request contains a parseable completion_callback_url", func() {
 			BeforeEach(func() {
-				request.CompletionCallbackURL = "http://example.com/the-path"
-			})
-
-			JustBeforeEach(func() {
-				var err error
-				task, err = TaskFromRequest(request)
-				Ω(err).ShouldNot(HaveOccurred())
-			})
-
-			It("translates the request into a task model, preserving attributes", func() {
-				Ω(task.TaskGuid).Should(Equal("the-task-guid"))
-				Ω(task.Domain).Should(Equal("the-domain"))
-				Ω(task.Stack).Should(Equal("the-stack"))
-				Ω(task.RootFSPath).Should(Equal("the-rootfs-path"))
+				request.CompletionCallbackURL = "http://stager.service.discovery.thing/endpoint"
 			})
 
 			It("parses the URL", func() {
-				Ω(task.CompletionCallbackURL).Should(Equal(&url.URL{
+				actualTask, err := TaskFromRequest(request)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(actualTask.CompletionCallbackURL).Should(Equal(&url.URL{
 					Scheme: "http",
-					Host:   "example.com",
-					Path:   "/the-path",
+					Host:   "stager.service.discovery.thing",
+					Path:   "/endpoint",
 				}))
+			})
+		})
+
+		Context("when the request contains an unparseable completion_callback_url", func() {
+			BeforeEach(func() {
+				request.CompletionCallbackURL = "ಠ_ಠ"
+			})
+
+			It("errors", func() {
+				_, err := TaskFromRequest(request)
+				Ω(err).Should(HaveOccurred())
 			})
 		})
 	})
