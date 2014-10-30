@@ -3,21 +3,25 @@ package receptor
 import "github.com/tedsuo/rata"
 
 const (
-	CreateTask          = "CreateTask"
-	GetAllTasks         = "GetAllTasks"
-	GetAllTasksByDomain = "GetAllTasksByDomain"
-	GetTask             = "GetTask"
-	DeleteTask          = "DeleteTask"
+	// Tasks
+	CreateTaskRoute          = "CreateTask"
+	GetAllTasksRoute         = "GetAllTasks"
+	GetAllTasksByDomainRoute = "GetAllTasksByDomain"
+	GetTaskRoute             = "GetTask"
+	DeleteTaskRoute          = "DeleteTask"
 
-	CreateDesiredLRP = "CreateDesiredLRP"
+	// DesiredLRPs
+	CreateDesiredLRPRoute = "CreateDesiredLRP"
 )
 
 var Routes = rata.Routes{
-	{Path: "/tasks", Method: "POST", Name: CreateTask},
-	{Path: "/tasks", Method: "GET", Name: GetAllTasks},
-	{Path: "/domains/:domain/tasks", Method: "GET", Name: GetAllTasksByDomain},
-	{Path: "/tasks/:task_guid", Method: "GET", Name: GetTask},
-	{Path: "/tasks/:task_guid", Method: "DELETE", Name: DeleteTask},
+	// Tasks
+	{Path: "/tasks", Method: "POST", Name: CreateTaskRoute},
+	{Path: "/tasks", Method: "GET", Name: GetAllTasksRoute},
+	{Path: "/domains/:domain/tasks", Method: "GET", Name: GetAllTasksByDomainRoute},
+	{Path: "/tasks/:task_guid", Method: "GET", Name: GetTaskRoute},
+	{Path: "/tasks/:task_guid", Method: "DELETE", Name: DeleteTaskRoute},
 
-	{Path: "/desired_lrps", Method: "POST", Name: CreateDesiredLRP},
+	// DesiredLRPS
+	{Path: "/desired_lrps", Method: "POST", Name: CreateDesiredLRPRoute},
 }

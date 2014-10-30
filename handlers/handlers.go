@@ -14,13 +14,15 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) ht
 	desiredLRPHandler := NewDesiredLRPHandler(bbs, logger)
 
 	actions := rata.Handlers{
-		receptor.CreateTask:          route(taskHandler.Create),
-		receptor.GetAllTasks:         route(taskHandler.GetAll),
-		receptor.GetAllTasksByDomain: route(taskHandler.GetAllByDomain),
-		receptor.GetTask:             route(taskHandler.GetByGuid),
-		receptor.DeleteTask:          route(taskHandler.Delete),
+		// Tasks
+		receptor.CreateTaskRoute:          route(taskHandler.Create),
+		receptor.GetAllTasksRoute:         route(taskHandler.GetAll),
+		receptor.GetAllTasksByDomainRoute: route(taskHandler.GetAllByDomain),
+		receptor.GetTaskRoute:             route(taskHandler.GetByGuid),
+		receptor.DeleteTaskRoute:          route(taskHandler.Delete),
 
-		receptor.CreateDesiredLRP: route(desiredLRPHandler.Create),
+		// DesiredLRPs
+		receptor.CreateDesiredLRPRoute: route(desiredLRPHandler.Create),
 	}
 
 	handler, err := rata.NewRouter(receptor.Routes, actions)

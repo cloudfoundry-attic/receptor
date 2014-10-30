@@ -36,33 +36,33 @@ type client struct {
 }
 
 func (c *client) CreateTask(request CreateTaskRequest) error {
-	return c.doRequest(CreateTask, nil, request, nil)
+	return c.doRequest(CreateTaskRoute, nil, request, nil)
 }
 
 func (c *client) GetAllTasks() ([]TaskResponse, error) {
 	tasks := []TaskResponse{}
-	err := c.doRequest(GetAllTasks, nil, nil, &tasks)
+	err := c.doRequest(GetAllTasksRoute, nil, nil, &tasks)
 	return tasks, err
 }
 
 func (c *client) GetAllTasksByDomain(domain string) ([]TaskResponse, error) {
 	tasks := []TaskResponse{}
-	err := c.doRequest(GetAllTasksByDomain, rata.Params{"domain": domain}, nil, &tasks)
+	err := c.doRequest(GetAllTasksByDomainRoute, rata.Params{"domain": domain}, nil, &tasks)
 	return tasks, err
 }
 
 func (c *client) GetTask(taskId string) (TaskResponse, error) {
 	task := TaskResponse{}
-	err := c.doRequest(GetTask, rata.Params{"task_guid": taskId}, nil, &task)
+	err := c.doRequest(GetTaskRoute, rata.Params{"task_guid": taskId}, nil, &task)
 	return task, err
 }
 
 func (c *client) DeleteTask(taskId string) error {
-	return c.doRequest(DeleteTask, rata.Params{"task_guid": taskId}, nil, nil)
+	return c.doRequest(DeleteTaskRoute, rata.Params{"task_guid": taskId}, nil, nil)
 }
 
 func (c *client) CreateDesiredLRP(request CreateDesiredLRPRequest) error {
-	return c.doRequest(CreateDesiredLRP, nil, request, nil)
+	return c.doRequest(CreateDesiredLRPRoute, nil, request, nil)
 }
 
 func (c *client) doRequest(requestName string, params rata.Params, request, response interface{}) error {
