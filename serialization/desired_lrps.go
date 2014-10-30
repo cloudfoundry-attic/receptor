@@ -12,14 +12,14 @@ func DesiredLRPFromRequest(req receptor.CreateDesiredLRPRequest) (models.Desired
 		RootFSPath:           req.RootFSPath,
 		Instances:            req.Instances,
 		Stack:                req.Stack,
-		EnvironmentVariables: req.EnvironmentVariables,
+		EnvironmentVariables: EnvironmentVariablesToModel(req.EnvironmentVariables),
 		Actions:              req.Actions,
 		DiskMB:               req.DiskMB,
 		MemoryMB:             req.MemoryMB,
 		CPUWeight:            req.CPUWeight,
-		Ports:                req.Ports,
+		Ports:                PortMappingToModel(req.Ports),
 		Routes:               req.Routes,
-		Log:                  req.Log,
+		Log:                  LogConfigToModel(req.Log),
 	}
 
 	err := lrp.Validate()

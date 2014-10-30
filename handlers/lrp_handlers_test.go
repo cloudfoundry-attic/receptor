@@ -37,6 +37,7 @@ var _ = Describe("LRP Handlers", func() {
 			Domain:      "the-domain",
 			Stack:       "the-stack",
 			RootFSPath:  "the-rootfs-path",
+			Instances:   1,
 			Actions: []models.ExecutorAction{
 				{
 					Action: models.RunAction{
@@ -51,6 +52,7 @@ var _ = Describe("LRP Handlers", func() {
 			Domain:      "the-domain",
 			Stack:       "the-stack",
 			RootFSPath:  "the-rootfs-path",
+			Instances:   1,
 			Actions: []models.ExecutorAction{
 				{
 					Action: models.RunAction{

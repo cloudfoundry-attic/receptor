@@ -30,6 +30,7 @@ var _ = Describe("Desired LRP API", func() {
 				ProcessGuid: "process-guid-1",
 				Domain:      "test-domain",
 				Stack:       "some-stack",
+				Instances:   1,
 				Actions: []models.ExecutorAction{
 					{
 						models.RunAction{

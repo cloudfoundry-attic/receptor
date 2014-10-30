@@ -20,6 +20,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				Domain:      "the-domain",
 				Stack:       "the-stack",
 				RootFSPath:  "the-rootfs-path",
+				Instances:   1,
 				Actions: []models.ExecutorAction{
 					{
 						Action: &models.RunAction{

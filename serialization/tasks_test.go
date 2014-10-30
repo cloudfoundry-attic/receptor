@@ -81,7 +81,7 @@ var _ = Describe("Task Serialization", func() {
 				MemoryMB:  100,
 				DiskMB:    100,
 				CPUWeight: 50,
-				Log: models.LogConfig{
+				Log: receptor.LogConfig{
 					Guid:       "the-log-config-guid",
 					SourceName: "the-source-name",
 				},
@@ -138,7 +138,7 @@ var _ = Describe("Task Serialization", func() {
 				MemoryMB:  100,
 				DiskMB:    100,
 				CPUWeight: 50,
-				Log: models.LogConfig{
+				Log: receptor.LogConfig{
 					Guid:       "the-log-config-guid",
 					SourceName: "the-source-name",
 				},
