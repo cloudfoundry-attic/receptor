@@ -20,6 +20,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				Domain:      "the-domain",
 				Stack:       "the-stack",
 				RootFSPath:  "the-rootfs-path",
+				Annotation:  "foo",
 				Instances:   1,
 				Actions: []models.ExecutorAction{
 					{
@@ -41,6 +42,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 			Ω(desiredLRP.Domain).Should(Equal("the-domain"))
 			Ω(desiredLRP.Stack).Should(Equal("the-stack"))
 			Ω(desiredLRP.RootFSPath).Should(Equal("the-rootfs-path"))
+			Ω(desiredLRP.Annotation).Should(Equal("foo"))
 		})
 	})
 })

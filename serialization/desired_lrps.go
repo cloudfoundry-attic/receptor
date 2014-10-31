@@ -20,6 +20,7 @@ func DesiredLRPFromRequest(req receptor.CreateDesiredLRPRequest) (models.Desired
 		Ports:                PortMappingToModel(req.Ports),
 		Routes:               req.Routes,
 		Log:                  LogConfigToModel(req.Log),
+		Annotation:           req.Annotation,
 	}
 
 	err := lrp.Validate()

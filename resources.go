@@ -76,4 +76,5 @@ type CreateDesiredLRPRequest struct {
 	Ports                []PortMapping           `json:"ports"`
 	Routes               []string                `json:"routes"`
 	Log                  LogConfig               `json:"log"`
+	Annotation           string                  `json:"annotation,omitempty"`
 }
