@@ -17,6 +17,7 @@ type Client interface {
 	DeleteTask(taskId string) error
 
 	CreateDesiredLRP(CreateDesiredLRPRequest) error
+	GetAllDesiredLRPs() ([]DesiredLRPResponse, error)
 }
 
 func NewClient(addr, user, password string) Client {
@@ -63,6 +64,12 @@ func (c *client) DeleteTask(taskId string) error {
 
 func (c *client) CreateDesiredLRP(request CreateDesiredLRPRequest) error {
 	return c.doRequest(CreateDesiredLRPRoute, nil, request, nil)
+}
+
+func (c *client) GetAllDesiredLRPs() ([]DesiredLRPResponse, error) {
+	desiredLRPs := []DesiredLRPResponse{}
+	err := c.doRequest(GetAllDesiredLRPsRoute, nil, nil, &desiredLRPs)
+	return desiredLRPs, err
 }
 
 func (c *client) doRequest(requestName string, params rata.Params, request, response interface{}) error {

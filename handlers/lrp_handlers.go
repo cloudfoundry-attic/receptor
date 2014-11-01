@@ -8,6 +8,7 @@ import (
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
+	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/pivotal-golang/lager"
 )
 
@@ -57,4 +58,24 @@ func (h *DesiredLRPHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (h *DesiredLRPHandler) GetAll(w http.ResponseWriter, req *http.Request) {
+	desiredLRPs, err := h.bbs.GetAllDesiredLRPs()
+	writeDesiredLRPResponse(w, h.logger.Session("get-all-desired-lrps-handler"), desiredLRPs, err)
+}
+
+func writeDesiredLRPResponse(w http.ResponseWriter, logger lager.Logger, desiredLRPs []models.DesiredLRP, err error) {
+	if err != nil {
+		logger.Error("failed-to-fetch-desired-lrps", err)
+		writeUnknownErrorResponse(w, err)
+		return
+	}
+
+	responses := make([]receptor.DesiredLRPResponse, 0, len(desiredLRPs))
+	for _, desiredLRP := range desiredLRPs {
+		responses = append(responses, serialization.DesiredLRPToResponse(desiredLRP))
+	}
+
+	writeJSONResponse(w, http.StatusOK, responses)
 }

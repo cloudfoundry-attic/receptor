@@ -162,4 +162,56 @@ var _ = Describe("LRP Handlers", func() {
 			})
 		})
 	})
+
+	Describe("GetAll", func() {
+		JustBeforeEach(func() {
+			handler.GetAll(responseRecorder, newTestRequest(""))
+		})
+
+		Context("when reading tasks from BBS succeeds", func() {
+			BeforeEach(func() {
+				fakeBBS.GetAllDesiredLRPsReturns([]models.DesiredLRP{
+					{ProcessGuid: "process-guid-0", Domain: "domain-1"},
+					{ProcessGuid: "process-guid-1", Domain: "domain-1"},
+				}, nil)
+			})
+
+			It("responds with 200 Status OK", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
+			})
+
+			It("returns a list of desired lrp responses", func() {
+				response := []receptor.DesiredLRPResponse{}
+				err := json.Unmarshal(responseRecorder.Body.Bytes(), &response)
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(response).Should(HaveLen(2))
+				Ω(response[0].ProcessGuid).Should(Equal("process-guid-0"))
+				Ω(response[1].ProcessGuid).Should(Equal("process-guid-1"))
+			})
+		})
+
+		Context("when the BBS returns no lrps", func() {
+			BeforeEach(func() {
+				fakeBBS.GetAllDesiredLRPsReturns([]models.DesiredLRP{}, nil)
+			})
+
+			It("responds with 200 Status OK", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
+			})
+
+			It("returns an empty list", func() {
+				Ω(responseRecorder.Body.String()).Should(Equal("[]"))
+			})
+		})
+
+		Context("when reading from the BBS fails", func() {
+			BeforeEach(func() {
+				fakeBBS.GetAllDesiredLRPsReturns([]models.DesiredLRP{}, errors.New("Something went wrong"))
+			})
+
+			It("responds with an error", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
+			})
+		})
+	})
 })

@@ -11,7 +11,8 @@ const (
 	DeleteTaskRoute          = "DeleteTask"
 
 	// DesiredLRPs
-	CreateDesiredLRPRoute = "CreateDesiredLRP"
+	CreateDesiredLRPRoute  = "CreateDesiredLRP"
+	GetAllDesiredLRPsRoute = "GetAllDesiredLRPs"
 )
 
 var Routes = rata.Routes{
@@ -24,4 +25,5 @@ var Routes = rata.Routes{
 
 	// DesiredLRPS
 	{Path: "/desired_lrps", Method: "POST", Name: CreateDesiredLRPRoute},
+	{Path: "/desired_lrps", Method: "GET", Name: GetAllDesiredLRPsRoute},
 }

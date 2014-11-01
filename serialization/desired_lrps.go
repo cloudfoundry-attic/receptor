@@ -29,3 +29,22 @@ func DesiredLRPFromRequest(req receptor.CreateDesiredLRPRequest) (models.Desired
 	}
 	return lrp, nil
 }
+
+func DesiredLRPToResponse(lrp models.DesiredLRP) receptor.DesiredLRPResponse {
+	return receptor.DesiredLRPResponse{
+		ProcessGuid:          lrp.ProcessGuid,
+		Domain:               lrp.Domain,
+		RootFSPath:           lrp.RootFSPath,
+		Instances:            lrp.Instances,
+		Stack:                lrp.Stack,
+		EnvironmentVariables: EnvironmentVariablesFromModel(lrp.EnvironmentVariables),
+		Actions:              lrp.Actions,
+		DiskMB:               lrp.DiskMB,
+		MemoryMB:             lrp.MemoryMB,
+		CPUWeight:            lrp.CPUWeight,
+		Ports:                PortMappingFromModel(lrp.Ports),
+		Routes:               lrp.Routes,
+		Log:                  LogConfigFromModel(lrp.Log),
+		Annotation:           lrp.Annotation,
+	}
+}
