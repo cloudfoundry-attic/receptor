@@ -136,37 +136,37 @@ var _ = Describe("TaskWatcher", func() {
 			}
 		}
 
-		It("marks the task as resolving", func() {
-			Ω(fakeBBS.ResolvingTaskCallCount()).Should(Equal(0))
+		Context("when the task has a completion callback URL", func() {
+			It("marks the task as resolving", func() {
+				Ω(fakeBBS.ResolvingTaskCallCount()).Should(Equal(0))
 
-			simulateTaskCompleting()
-			statusCodes <- 200
-
-			Eventually(fakeBBS.ResolvingTaskCallCount).Should(Equal(1))
-			Ω(fakeBBS.ResolvingTaskArgsForCall(0)).Should(Equal("the-task-guid"))
-		})
-
-		It("processes tasks in parallel", func() {
-			for i := 0; i < task_watcher.POOL_SIZE; i++ {
 				simulateTaskCompleting()
-			}
-			Eventually(reqCount).Should(HaveLen(task_watcher.POOL_SIZE))
-		})
+				statusCodes <- 200
 
-		Context("when marking the task as resolving fails", func() {
-			BeforeEach(func() {
-				fakeBBS.ResolvingTaskReturns(errors.New("failed to resolve task"))
+				Eventually(fakeBBS.ResolvingTaskCallCount).Should(Equal(1))
+				Ω(fakeBBS.ResolvingTaskArgsForCall(0)).Should(Equal("the-task-guid"))
 			})
 
-			It("does not make a request to the task's callback URL", func() {
-				simulateTaskCompleting()
-
-				Consistently(fakeServer.ReceivedRequests, 0.25).Should(BeEmpty())
+			It("processes tasks in parallel", func() {
+				for i := 0; i < task_watcher.POOL_SIZE; i++ {
+					simulateTaskCompleting()
+				}
+				Eventually(reqCount).Should(HaveLen(task_watcher.POOL_SIZE))
 			})
-		})
 
-		Context("when marking the task as resolving succeeds", func() {
-			Context("when the task has a completion callback URL", func() {
+			Context("when marking the task as resolving fails", func() {
+				BeforeEach(func() {
+					fakeBBS.ResolvingTaskReturns(errors.New("failed to resolve task"))
+				})
+
+				It("does not make a request to the task's callback URL", func() {
+					simulateTaskCompleting()
+
+					Consistently(fakeServer.ReceivedRequests, 0.25).Should(BeEmpty())
+				})
+			})
+
+			Context("when marking the task as resolving succeeds", func() {
 				It("POSTs to the task's callback URL", func() {
 					simulateTaskCompleting()
 
@@ -252,13 +252,18 @@ var _ = Describe("TaskWatcher", func() {
 					})
 				})
 			})
+		})
 
-			Context("when the task doesn't have a completion callback URL", func() {
-				It("doesn't blow up", func() {
-					callbackURL = nil
-					simulateTaskCompleting()
-				})
+		Context("when the task doesn't have a completion callback URL", func() {
+			BeforeEach(func() {
+				callbackURL = nil
+				simulateTaskCompleting()
 			})
+
+			It("does not mark the task as resolving", func() {
+				Consistently(fakeBBS.ResolvingTaskCallCount).Should(Equal(0))
+			})
+
 		})
 	})
 })

@@ -57,14 +57,14 @@ func (t *taskWorker) Run(signals <-chan os.Signal, ready chan<- struct{}) error 
 func (t *taskWorker) handleCompletedTask(task models.Task) {
 	logger := t.logger.WithData(lager.Data{"task-guid": task.TaskGuid})
 
-	logger.Info("resolving-task")
-	err := t.bbs.ResolvingTask(task.TaskGuid)
-	if err != nil {
-		logger.Error("marking-task-as-resolving-failed", err)
-		return
-	}
-
 	if task.CompletionCallbackURL != nil {
+		logger.Info("resolving-task")
+		err := t.bbs.ResolvingTask(task.TaskGuid)
+		if err != nil {
+			logger.Error("marking-task-as-resolving-failed", err)
+			return
+		}
+
 		logger = logger.WithData(lager.Data{"callback_url": task.CompletionCallbackURL.String()})
 
 		json, err := json.Marshal(serialization.TaskToResponse(task))
