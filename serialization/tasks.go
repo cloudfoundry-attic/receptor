@@ -30,6 +30,7 @@ func TaskFromRequest(req receptor.CreateTaskRequest) (models.Task, error) {
 		ResultFile:            req.ResultFile,
 		Annotation:            req.Annotation,
 		CompletionCallbackURL: u,
+		EnvironmentVariables:  EnvironmentVariablesToModel(req.EnvironmentVariables),
 	}
 
 	err := task.Validate()
@@ -57,6 +58,7 @@ func TaskToResponse(task models.Task) receptor.TaskResponse {
 		Log:                   LogConfigFromModel(task.Log),
 		Annotation:            task.Annotation,
 		CompletionCallbackURL: url,
+		EnvironmentVariables:  EnvironmentVariablesFromModel(task.EnvironmentVariables),
 
 		CreatedAt:     task.CreatedAt,
 		FailureReason: task.FailureReason,

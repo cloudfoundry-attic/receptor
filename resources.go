@@ -39,6 +39,7 @@ type CreateTaskRequest struct {
 	Stack                 string                  `json:"stack"`
 	TaskGuid              string                  `json:"task_guid"`
 	RootFSPath            string                  `json:"root_fs"`
+	EnvironmentVariables  []EnvironmentVariable   `json:"env,omitempty"`
 }
 
 type TaskResponse struct {
@@ -54,6 +55,7 @@ type TaskResponse struct {
 	Stack                 string                  `json:"stack"`
 	TaskGuid              string                  `json:"task_guid"`
 	RootFSPath            string                  `json:"root_fs"`
+	EnvironmentVariables  []EnvironmentVariable   `json:"env,omitempty"`
 
 	CreatedAt     int64  `json:"created_at"`
 	Failed        bool   `json:"failed"`

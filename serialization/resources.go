@@ -20,9 +20,6 @@ func LogConfigFromModel(config models.LogConfig) receptor.LogConfig {
 }
 
 func EnvironmentVariablesToModel(envVars []receptor.EnvironmentVariable) []models.EnvironmentVariable {
-	if len(envVars) == 0 {
-		return nil
-	}
 	out := make([]models.EnvironmentVariable, len(envVars))
 	for i, val := range envVars {
 		out[i].Name = val.Name
@@ -32,9 +29,6 @@ func EnvironmentVariablesToModel(envVars []receptor.EnvironmentVariable) []model
 }
 
 func EnvironmentVariablesFromModel(envVars []models.EnvironmentVariable) []receptor.EnvironmentVariable {
-	if len(envVars) == 0 {
-		return nil
-	}
 	out := make([]receptor.EnvironmentVariable, len(envVars))
 	for i, val := range envVars {
 		out[i].Name = val.Name

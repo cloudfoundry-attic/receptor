@@ -43,6 +43,10 @@ var _ = Describe("Task Serialization", func() {
 				Failed:        true,
 				Result:        "the-result",
 				State:         models.TaskStateInvalid,
+				EnvironmentVariables: []models.EnvironmentVariable{
+					{Name: "var1", Value: "val1"},
+					{Name: "var2", Value: "val2"},
+				},
 			}
 		})
 
@@ -92,6 +96,10 @@ var _ = Describe("Task Serialization", func() {
 				Failed:        true,
 				Result:        "the-result",
 				State:         receptor.TaskStateInvalid,
+				EnvironmentVariables: []receptor.EnvironmentVariable{
+					{Name: "var1", Value: "val1"},
+					{Name: "var2", Value: "val2"},
+				},
 			}
 
 			Ω(actualResponse).Should(Equal(expectedResponse))
@@ -144,7 +152,10 @@ var _ = Describe("Task Serialization", func() {
 				},
 				ResultFile: "the/result/file",
 				Annotation: "the-annotation",
-			}
+				EnvironmentVariables: []receptor.EnvironmentVariable{
+					{Name: "var1", Value: "val1"},
+					{Name: "var2", Value: "val2"},
+				}}
 
 			expectedTask = models.Task{
 				TaskGuid:   "the-task-guid",
@@ -167,7 +178,10 @@ var _ = Describe("Task Serialization", func() {
 				},
 				ResultFile: "the/result/file",
 				Annotation: "the-annotation",
-			}
+				EnvironmentVariables: []models.EnvironmentVariable{
+					{Name: "var1", Value: "val1"},
+					{Name: "var2", Value: "val2"},
+				}}
 		})
 
 		It("translates the request into a task model, preserving attributes", func() {

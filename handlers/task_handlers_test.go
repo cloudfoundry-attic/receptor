@@ -58,16 +58,17 @@ var _ = Describe("TaskHandler", func() {
 			Actions: []models.ExecutorAction{
 				{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
 			},
-			MemoryMB:   24,
-			DiskMB:     12,
-			CPUWeight:  10,
-			Log:        models.LogConfig{"guid", "source-name"},
-			ResultFile: "result-file",
-			Annotation: "some annotation",
+			MemoryMB:             24,
+			DiskMB:               12,
+			CPUWeight:            10,
+			Log:                  models.LogConfig{"guid", "source-name"},
+			ResultFile:           "result-file",
+			Annotation:           "some annotation",
+			EnvironmentVariables: []models.EnvironmentVariable{},
 		}
 
 		Context("when everything succeeds", func() {
-			BeforeEach(func(done Done) {
+			JustBeforeEach(func(done Done) {
 				defer close(done)
 				handler.Create(responseRecorder, newTestRequest(validCreateRequest))
 			})
@@ -84,6 +85,37 @@ var _ = Describe("TaskHandler", func() {
 
 			It("responds with an empty body", func() {
 				Ω(responseRecorder.Body.String()).Should(Equal(""))
+			})
+
+			Context("when env vars are specified", func() {
+				BeforeEach(func() {
+					validCreateRequest.EnvironmentVariables = []receptor.EnvironmentVariable{
+						{Name: "var1", Value: "val1"},
+						{Name: "var2", Value: "val2"},
+					}
+				})
+
+				It("passes them to the BBS", func() {
+					Ω(fakeBBS.DesireTaskCallCount()).Should(Equal(1))
+					task := fakeBBS.DesireTaskArgsForCall(0)
+					Ω(task.EnvironmentVariables).Should(Equal([]models.EnvironmentVariable{
+						{Name: "var1", Value: "val1"},
+						{Name: "var2", Value: "val2"},
+					}))
+				})
+			})
+
+			Context("when no env vars are specified", func() {
+				BeforeEach(func() {
+					validCreateRequest.EnvironmentVariables = []receptor.EnvironmentVariable{}
+				})
+
+				It("passes an empty list to the BBS", func() {
+					Ω(fakeBBS.DesireTaskCallCount()).Should(Equal(1))
+					task := fakeBBS.DesireTaskArgsForCall(0)
+					Ω(task.EnvironmentVariables).Should(Equal([]models.EnvironmentVariable{}))
+
+				})
 			})
 		})
 
