@@ -88,14 +88,15 @@ var _ = BeforeEach(func() {
 	receptorAddress = fmt.Sprintf("127.0.0.1:%d", 6700+GinkgoParallelNode())
 	client = receptor.NewClient(receptorAddress, username, password)
 	receptorArgs = testrunner.Args{
-		DomainNames:   "example.com",
-		Address:       receptorAddress,
-		EtcdCluster:   etcdUrl,
-		Username:      username,
-		Password:      password,
-		NatsAddresses: natsAddress,
-		NatsUsername:  "nats",
-		NatsPassword:  "nats",
+		RegisterWithRouter: true,
+		DomainNames:        "example.com",
+		Address:            receptorAddress,
+		EtcdCluster:        etcdUrl,
+		Username:           username,
+		Password:           password,
+		NatsAddresses:      natsAddress,
+		NatsUsername:       "nats",
+		NatsPassword:       "nats",
 	}
 	receptorRunner = testrunner.New(receptorBinPath, receptorArgs)
 })

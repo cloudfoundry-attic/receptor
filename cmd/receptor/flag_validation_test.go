@@ -12,6 +12,7 @@ import (
 
 var _ = Describe("Flag Validation", func() {
 	JustBeforeEach(func() {
+		receptorRunner = testrunner.New(receptorBinPath, receptorArgs)
 		receptorProcess = ifrit.Background(receptorRunner)
 	})
 
@@ -19,40 +20,48 @@ var _ = Describe("Flag Validation", func() {
 		ginkgomon.Kill(receptorProcess)
 	})
 
-	Context("when the nats address is not specified but the nats username is", func() {
+	Context("when registerWithRouter is set", func() {
 		BeforeEach(func() {
-			receptorArgs.NatsAddresses = ""
-			receptorArgs.NatsUsername = "nats"
-			receptorArgs.NatsPassword = ""
-			receptorRunner = testrunner.New(receptorBinPath, receptorArgs)
+			receptorArgs.RegisterWithRouter = true
 		})
 
-		It("exits with a non zero error code if nats user name is provided and nats address is not", func() {
-			Eventually(receptorRunner).Should(gexec.Exit(1))
+		Context("when all necessary router registration parameters are set", func() {
+			BeforeEach(func() {
+				receptorArgs.DomainNames = "domain-names"
+				receptorArgs.NatsAddresses = "nats-addresses"
+			})
+			It("does not exit", func() {
+				Consistently(receptorRunner).ShouldNot(gexec.Exit())
+			})
+		})
+
+		Context("when domain names is missing", func() {
+			BeforeEach(func() {
+				receptorArgs.DomainNames = ""
+				receptorArgs.NatsAddresses = "nats-addresses"
+			})
+			It("exits with a non-zero exitcode", func() {
+				Eventually(receptorRunner).Should(gexec.Exit(1))
+			})
+		})
+
+		Context("when nats addresses is missing", func() {
+			BeforeEach(func() {
+				receptorArgs.DomainNames = "domain-names"
+				receptorArgs.NatsAddresses = ""
+			})
+			It("exits with a non-zero exitcode", func() {
+				Eventually(receptorRunner).Should(gexec.Exit(1))
+			})
 		})
 	})
 
-	Context("when the nats address is not specified but the nats password is", func() {
+	Context("when registerWithRouter is not set", func() {
 		BeforeEach(func() {
-			receptorArgs.NatsAddresses = ""
-			receptorArgs.NatsUsername = ""
-			receptorArgs.NatsPassword = "nats"
-			receptorRunner = testrunner.New(receptorBinPath, receptorArgs)
+			receptorArgs.RegisterWithRouter = false
 		})
-
-		It("exits with a non zero error code if nats user name is provided and nats address is not", func() {
-			Eventually(receptorRunner).Should(gexec.Exit(1))
-		})
-	})
-
-	Context("when the nats info is specified but the domains are not", func() {
-		BeforeEach(func() {
-			receptorArgs.DomainNames = ""
-			receptorRunner = testrunner.New(receptorBinPath, receptorArgs)
-		})
-
-		It("exits with a non zero error code if nats user name is provided and nats address is not", func() {
-			Eventually(receptorRunner).Should(gexec.Exit(1))
+		It("does not exit", func() {
+			Consistently(receptorRunner).ShouldNot(gexec.Exit())
 		})
 	})
 })

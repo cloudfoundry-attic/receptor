@@ -25,58 +25,64 @@ import (
 	"github.com/tedsuo/ifrit/sigmon"
 )
 
+var registerWithRouter = flag.Bool(
+	"registerWithRouter",
+	false,
+	"Register this receptor instance with the router.",
+)
+
 var serverDomainNames = flag.String(
 	"domainNames",
 	"",
-	"Comma separated list of domains that should route to this server",
+	"Comma separated list of domains that should route to this server.",
 )
 
 var serverAddress = flag.String(
 	"address",
 	"",
-	"the host:port that the server is bound to",
+	"The host:port that the server is bound to.",
 )
 
 var etcdCluster = flag.String(
 	"etcdCluster",
 	"http://127.0.0.1:4001",
-	"comma-separated list of etcd addresses (http://ip:port)",
+	"Comma-separated list of etcd addresses (http://ip:port).",
 )
 
 var username = flag.String(
 	"username",
 	"",
-	"username for basic auth, enables basic auth if set",
+	"Username for basic auth, enables basic auth if set.",
 )
 
 var password = flag.String(
 	"password",
 	"",
-	"password for basic auth",
+	"Password for basic auth.",
 )
 
 var natsAddresses = flag.String(
 	"natsAddresses",
 	"",
-	"comma-separated list of NATS addresses (ip:port)",
+	"Comma-separated list of NATS addresses (ip:port).",
 )
 
 var natsUsername = flag.String(
 	"natsUsername",
 	"",
-	"Username to connect to nats",
+	"Username to connect to nats.",
 )
 
 var natsPassword = flag.String(
 	"natsPassword",
 	"",
-	"Password for nats user",
+	"Password for nats user.",
 )
 
 var initialHeartbeatInterval = flag.Duration(
 	"initialHeartbeatInterval",
 	time.Second,
-	"Heartbeat interval to use prior to router greeting",
+	"Heartbeat interval to use prior to router greeting.",
 )
 
 func main() {
@@ -101,7 +107,7 @@ func main() {
 		{"watcher", task_watcher.New(bbs, logger)},
 	}
 
-	if shouldRegisterRoutes() {
+	if *registerWithRouter {
 		registration := initializeServerRegistration(logger)
 
 		members = append(members, grouper.Member{
@@ -127,17 +133,12 @@ func main() {
 }
 
 func validateNatsArguments() error {
-	if *natsAddresses == "" && (*natsUsername != "" || *natsPassword != "") {
-		return errors.New("nats username/password set, but nats address was blank")
-	}
-	if *natsAddresses != "" && *serverDomainNames == "" {
-		return errors.New("nats address specified, but no domain names to register were specified")
+	if *registerWithRouter {
+		if *natsAddresses == "" || *serverDomainNames == "" {
+			return errors.New("registerWithRouter is set, but nats addresses or domain names were left blank")
+		}
 	}
 	return nil
-}
-
-func shouldRegisterRoutes() bool {
-	return *natsAddresses != ""
 }
 
 func initializeReceptorBBS(logger lager.Logger) Bbs.ReceptorBBS {
