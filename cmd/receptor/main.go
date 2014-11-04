@@ -9,12 +9,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cloudfoundry-incubator/cf-debug-server"
-	"github.com/cloudfoundry-incubator/cf-lager"
+	cf_debug_server "github.com/cloudfoundry-incubator/cf-debug-server"
+	cf_lager "github.com/cloudfoundry-incubator/cf-lager"
 	"github.com/cloudfoundry-incubator/natbeat"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
 	"github.com/cloudfoundry-incubator/receptor/task_watcher"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
+	"github.com/cloudfoundry/gunk/localip"
 	"github.com/cloudfoundry/gunk/timeprovider"
 	"github.com/cloudfoundry/gunk/workpool"
 	"github.com/cloudfoundry/storeadapter/etcdstoreadapter"
@@ -164,7 +165,11 @@ func initializeServerRegistration(logger lager.Logger) (registration natbeat.Reg
 		os.Exit(1)
 	}
 
-	host := addressComponents[0]
+	host, err := localip.LocalIP()
+	if err != nil {
+		logger.Error("local-ip-invalid", err)
+		os.Exit(1)
+	}
 
 	port, err := strconv.Atoi(addressComponents[1])
 	if err != nil {
