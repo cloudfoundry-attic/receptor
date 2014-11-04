@@ -127,11 +127,11 @@ var _ = Describe("Task Serialization", func() {
 	})
 
 	Describe("TaskFromRequest", func() {
-		var request receptor.CreateTaskRequest
+		var request receptor.TaskCreateRequest
 		var expectedTask models.Task
 
 		BeforeEach(func() {
-			request = receptor.CreateTaskRequest{
+			request = receptor.TaskCreateRequest{
 				TaskGuid:   "the-task-guid",
 				Domain:     "the-domain",
 				RootFSPath: "the-rootfs-path",

@@ -10,14 +10,14 @@ import (
 )
 
 type Client interface {
-	CreateTask(CreateTaskRequest) error
+	CreateTask(TaskCreateRequest) error
 	GetAllTasks() ([]TaskResponse, error)
 	GetAllTasksByDomain(domain string) ([]TaskResponse, error)
 	GetTask(taskId string) (TaskResponse, error)
 	DeleteTask(taskId string) error
 
-	CreateDesiredLRP(CreateDesiredLRPRequest) error
-	UpdateDesiredLRP(processGuid string, update UpdateDesiredLRPRequest) error
+	CreateDesiredLRP(DesiredLRPCreateRequest) error
+	UpdateDesiredLRP(processGuid string, update DesiredLRPUpdateRequest) error
 	GetAllDesiredLRPs() ([]DesiredLRPResponse, error)
 }
 
@@ -37,7 +37,7 @@ type client struct {
 	reqGen     *rata.RequestGenerator
 }
 
-func (c *client) CreateTask(request CreateTaskRequest) error {
+func (c *client) CreateTask(request TaskCreateRequest) error {
 	return c.doRequest(CreateTaskRoute, nil, request, nil)
 }
 
@@ -63,11 +63,11 @@ func (c *client) DeleteTask(taskId string) error {
 	return c.doRequest(DeleteTaskRoute, rata.Params{"task_guid": taskId}, nil, nil)
 }
 
-func (c *client) CreateDesiredLRP(req CreateDesiredLRPRequest) error {
+func (c *client) CreateDesiredLRP(req DesiredLRPCreateRequest) error {
 	return c.doRequest(CreateDesiredLRPRoute, nil, req, nil)
 }
 
-func (c *client) UpdateDesiredLRP(processGuid string, req UpdateDesiredLRPRequest) (err error) {
+func (c *client) UpdateDesiredLRP(processGuid string, req DesiredLRPUpdateRequest) (err error) {
 	err = c.doRequest(UpdateDesiredLRPRoute, rata.Params{"process_guid": processGuid}, req, nil)
 	return err
 }

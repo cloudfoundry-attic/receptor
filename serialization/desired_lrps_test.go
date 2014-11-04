@@ -11,11 +11,11 @@ import (
 
 var _ = Describe("DesiredLRP Serialization", func() {
 	Describe("DesiredLRPFromRequest", func() {
-		var request receptor.CreateDesiredLRPRequest
+		var request receptor.DesiredLRPCreateRequest
 		var desiredLRP models.DesiredLRP
 
 		BeforeEach(func() {
-			request = receptor.CreateDesiredLRPRequest{
+			request = receptor.DesiredLRPCreateRequest{
 				ProcessGuid: "the-process-guid",
 				Domain:      "the-domain",
 				Stack:       "the-stack",

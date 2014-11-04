@@ -23,11 +23,11 @@ var _ = Describe("Desired LRP API", func() {
 	})
 
 	Describe("POST /desired_lrps/", func() {
-		var lrpToCreate receptor.CreateDesiredLRPRequest
+		var lrpToCreate receptor.DesiredLRPCreateRequest
 		var createErr error
 
 		BeforeEach(func() {
-			lrpToCreate = newValidCreateDesiredLRPRequest()
+			lrpToCreate = newValidDesiredLRPCreateRequest()
 			createErr = client.CreateDesiredLRP(lrpToCreate)
 		})
 
@@ -51,11 +51,11 @@ var _ = Describe("Desired LRP API", func() {
 		routes := []string{"updated-route"}
 
 		BeforeEach(func() {
-			createLRPReq := newValidCreateDesiredLRPRequest()
+			createLRPReq := newValidDesiredLRPCreateRequest()
 			err := client.CreateDesiredLRP(createLRPReq)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			update := receptor.UpdateDesiredLRPRequest{
+			update := receptor.DesiredLRPUpdateRequest{
 				Instances:  &instances,
 				Annotation: &annotation,
 				Routes:     routes,
@@ -79,15 +79,15 @@ var _ = Describe("Desired LRP API", func() {
 	})
 
 	Describe("GET /desired_lrps", func() {
-		var lrpRequests []receptor.CreateDesiredLRPRequest
+		var lrpRequests []receptor.DesiredLRPCreateRequest
 		var lrpResponses []receptor.DesiredLRPResponse
 		const expectedLRPcount = 6
 		var getErr error
 
 		BeforeEach(func() {
-			lrpRequests = make([]receptor.CreateDesiredLRPRequest, expectedLRPcount)
+			lrpRequests = make([]receptor.DesiredLRPCreateRequest, expectedLRPcount)
 			for i := 0; i < expectedLRPcount; i++ {
-				lrpRequests[i] = newValidCreateDesiredLRPRequest()
+				lrpRequests[i] = newValidDesiredLRPCreateRequest()
 				err := client.CreateDesiredLRP(lrpRequests[i])
 				Ω(err).ShouldNot(HaveOccurred())
 			}
@@ -106,10 +106,10 @@ var _ = Describe("Desired LRP API", func() {
 
 var processId int64
 
-func newValidCreateDesiredLRPRequest() receptor.CreateDesiredLRPRequest {
+func newValidDesiredLRPCreateRequest() receptor.DesiredLRPCreateRequest {
 	atomic.AddInt64(&processId, 1)
 
-	return receptor.CreateDesiredLRPRequest{
+	return receptor.DesiredLRPCreateRequest{
 		ProcessGuid: fmt.Sprintf("process-guid-%d", processId),
 		Domain:      "test-domain",
 		Stack:       "some-stack",

@@ -33,7 +33,7 @@ var _ = Describe("LRP Handlers", func() {
 	})
 
 	Describe("Create", func() {
-		validCreateLRPRequest := receptor.CreateDesiredLRPRequest{
+		validCreateLRPRequest := receptor.DesiredLRPCreateRequest{
 			ProcessGuid: "the-process-guid",
 			Domain:      "the-domain",
 			Stack:       "the-stack",
@@ -113,7 +113,7 @@ var _ = Describe("LRP Handlers", func() {
 		})
 
 		Context("when the desired LRP is invalid", func() {
-			var invalidDesiredLRP = receptor.CreateDesiredLRPRequest{}
+			var invalidDesiredLRP = receptor.DesiredLRPCreateRequest{}
 
 			BeforeEach(func(done Done) {
 				defer close(done)
@@ -138,7 +138,7 @@ var _ = Describe("LRP Handlers", func() {
 			})
 		})
 
-		Context("when the request does not contain a CreateDesiredLRPRequest", func() {
+		Context("when the request does not contain a DesiredLRPCreateRequest", func() {
 			var garbageRequest = []byte(`farewell`)
 
 			BeforeEach(func(done Done) {
@@ -155,7 +155,7 @@ var _ = Describe("LRP Handlers", func() {
 			})
 
 			It("responds with a relevant error message", func() {
-				err := json.Unmarshal(garbageRequest, &receptor.CreateDesiredLRPRequest{})
+				err := json.Unmarshal(garbageRequest, &receptor.DesiredLRPCreateRequest{})
 				expectedBody, _ := json.Marshal(receptor.Error{
 					Type:    receptor.InvalidJSON,
 					Message: err.Error(),
@@ -171,7 +171,7 @@ var _ = Describe("LRP Handlers", func() {
 		annotation := "new-annotation"
 		routes := []string{"new-route-1", "new-route-2"}
 
-		validUpdateRequest := receptor.UpdateDesiredLRPRequest{
+		validUpdateRequest := receptor.DesiredLRPUpdateRequest{
 			Instances:  &instances,
 			Annotation: &annotation,
 			Routes:     routes,
@@ -260,7 +260,7 @@ var _ = Describe("LRP Handlers", func() {
 			})
 		})
 
-		Context("when the request does not contain an UpdateDesiredLRPRequest", func() {
+		Context("when the request does not contain an DesiredLRPUpdateRequest", func() {
 			var garbageRequest = []byte(`farewell`)
 
 			BeforeEach(func(done Done) {
@@ -279,7 +279,7 @@ var _ = Describe("LRP Handlers", func() {
 			})
 
 			It("responds with a relevant error message", func() {
-				err := json.Unmarshal(garbageRequest, &receptor.UpdateDesiredLRPRequest{})
+				err := json.Unmarshal(garbageRequest, &receptor.DesiredLRPUpdateRequest{})
 				expectedBody, _ := json.Marshal(receptor.Error{
 					Type:    receptor.InvalidJSON,
 					Message: err.Error(),

@@ -26,7 +26,7 @@ func NewTaskHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) *TaskHandler {
 
 func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 	log := h.logger.Session("create-task-handler")
-	taskRequest := receptor.CreateTaskRequest{}
+	taskRequest := receptor.TaskCreateRequest{}
 
 	err := json.NewDecoder(r.Body).Decode(&taskRequest)
 	if err != nil {

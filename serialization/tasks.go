@@ -7,7 +7,7 @@ import (
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 )
 
-func TaskFromRequest(req receptor.CreateTaskRequest) (models.Task, error) {
+func TaskFromRequest(req receptor.TaskCreateRequest) (models.Task, error) {
 	var u *url.URL
 	if req.CompletionCallbackURL != "" {
 		var err error

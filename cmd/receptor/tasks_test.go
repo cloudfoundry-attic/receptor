@@ -36,7 +36,7 @@ var _ = Describe("Task API", func() {
 
 	Describe("POST /tasks", func() {
 		var (
-			taskToCreate receptor.CreateTaskRequest
+			taskToCreate receptor.TaskCreateRequest
 			err          error
 			testServer   *ghttp.Server
 		)
@@ -44,7 +44,7 @@ var _ = Describe("Task API", func() {
 		BeforeEach(func() {
 			testServer = ghttp.NewServer()
 
-			taskToCreate = receptor.CreateTaskRequest{
+			taskToCreate = receptor.TaskCreateRequest{
 				TaskGuid: "task-guid-1",
 				Domain:   "test-domain",
 				Stack:    "some-stack",

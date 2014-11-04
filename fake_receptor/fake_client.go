@@ -8,10 +8,10 @@ import (
 )
 
 type FakeClient struct {
-	CreateTaskStub        func(receptor.CreateTaskRequest) error
+	CreateTaskStub        func(receptor.TaskCreateRequest) error
 	createTaskMutex       sync.RWMutex
 	createTaskArgsForCall []struct {
-		arg1 receptor.CreateTaskRequest
+		arg1 receptor.TaskCreateRequest
 	}
 	createTaskReturns struct {
 		result1 error
@@ -49,19 +49,19 @@ type FakeClient struct {
 	deleteTaskReturns struct {
 		result1 error
 	}
-	CreateDesiredLRPStub        func(receptor.CreateDesiredLRPRequest) error
+	CreateDesiredLRPStub        func(receptor.DesiredLRPCreateRequest) error
 	createDesiredLRPMutex       sync.RWMutex
 	createDesiredLRPArgsForCall []struct {
-		arg1 receptor.CreateDesiredLRPRequest
+		arg1 receptor.DesiredLRPCreateRequest
 	}
 	createDesiredLRPReturns struct {
 		result1 error
 	}
-	UpdateDesiredLRPStub        func(processGuid string, update receptor.UpdateDesiredLRPRequest) error
+	UpdateDesiredLRPStub        func(processGuid string, update receptor.DesiredLRPUpdateRequest) error
 	updateDesiredLRPMutex       sync.RWMutex
 	updateDesiredLRPArgsForCall []struct {
 		processGuid string
-		update      receptor.UpdateDesiredLRPRequest
+		update      receptor.DesiredLRPUpdateRequest
 	}
 	updateDesiredLRPReturns struct {
 		result1 error
@@ -75,10 +75,10 @@ type FakeClient struct {
 	}
 }
 
-func (fake *FakeClient) CreateTask(arg1 receptor.CreateTaskRequest) error {
+func (fake *FakeClient) CreateTask(arg1 receptor.TaskCreateRequest) error {
 	fake.createTaskMutex.Lock()
 	fake.createTaskArgsForCall = append(fake.createTaskArgsForCall, struct {
-		arg1 receptor.CreateTaskRequest
+		arg1 receptor.TaskCreateRequest
 	}{arg1})
 	fake.createTaskMutex.Unlock()
 	if fake.CreateTaskStub != nil {
@@ -94,7 +94,7 @@ func (fake *FakeClient) CreateTaskCallCount() int {
 	return len(fake.createTaskArgsForCall)
 }
 
-func (fake *FakeClient) CreateTaskArgsForCall(i int) receptor.CreateTaskRequest {
+func (fake *FakeClient) CreateTaskArgsForCall(i int) receptor.TaskCreateRequest {
 	fake.createTaskMutex.RLock()
 	defer fake.createTaskMutex.RUnlock()
 	return fake.createTaskArgsForCall[i].arg1
@@ -230,10 +230,10 @@ func (fake *FakeClient) DeleteTaskReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeClient) CreateDesiredLRP(arg1 receptor.CreateDesiredLRPRequest) error {
+func (fake *FakeClient) CreateDesiredLRP(arg1 receptor.DesiredLRPCreateRequest) error {
 	fake.createDesiredLRPMutex.Lock()
 	fake.createDesiredLRPArgsForCall = append(fake.createDesiredLRPArgsForCall, struct {
-		arg1 receptor.CreateDesiredLRPRequest
+		arg1 receptor.DesiredLRPCreateRequest
 	}{arg1})
 	fake.createDesiredLRPMutex.Unlock()
 	if fake.CreateDesiredLRPStub != nil {
@@ -249,7 +249,7 @@ func (fake *FakeClient) CreateDesiredLRPCallCount() int {
 	return len(fake.createDesiredLRPArgsForCall)
 }
 
-func (fake *FakeClient) CreateDesiredLRPArgsForCall(i int) receptor.CreateDesiredLRPRequest {
+func (fake *FakeClient) CreateDesiredLRPArgsForCall(i int) receptor.DesiredLRPCreateRequest {
 	fake.createDesiredLRPMutex.RLock()
 	defer fake.createDesiredLRPMutex.RUnlock()
 	return fake.createDesiredLRPArgsForCall[i].arg1
@@ -262,11 +262,11 @@ func (fake *FakeClient) CreateDesiredLRPReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeClient) UpdateDesiredLRP(processGuid string, update receptor.UpdateDesiredLRPRequest) error {
+func (fake *FakeClient) UpdateDesiredLRP(processGuid string, update receptor.DesiredLRPUpdateRequest) error {
 	fake.updateDesiredLRPMutex.Lock()
 	fake.updateDesiredLRPArgsForCall = append(fake.updateDesiredLRPArgsForCall, struct {
 		processGuid string
-		update      receptor.UpdateDesiredLRPRequest
+		update      receptor.DesiredLRPUpdateRequest
 	}{processGuid, update})
 	fake.updateDesiredLRPMutex.Unlock()
 	if fake.UpdateDesiredLRPStub != nil {
@@ -282,7 +282,7 @@ func (fake *FakeClient) UpdateDesiredLRPCallCount() int {
 	return len(fake.updateDesiredLRPArgsForCall)
 }
 
-func (fake *FakeClient) UpdateDesiredLRPArgsForCall(i int) (string, receptor.UpdateDesiredLRPRequest) {
+func (fake *FakeClient) UpdateDesiredLRPArgsForCall(i int) (string, receptor.DesiredLRPUpdateRequest) {
 	fake.updateDesiredLRPMutex.RLock()
 	defer fake.updateDesiredLRPMutex.RUnlock()
 	return fake.updateDesiredLRPArgsForCall[i].processGuid, fake.updateDesiredLRPArgsForCall[i].update

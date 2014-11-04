@@ -26,7 +26,7 @@ const (
 	TaskStateResolving = "RESOLVING"
 )
 
-type CreateTaskRequest struct {
+type TaskCreateRequest struct {
 	Actions               []models.ExecutorAction `json:"actions"`
 	Annotation            string                  `json:"annotation,omitempty"`
 	CompletionCallbackURL string                  `json:"completion_callback_url"`
@@ -64,7 +64,7 @@ type TaskResponse struct {
 	State         string `json:"state"`
 }
 
-type CreateDesiredLRPRequest struct {
+type DesiredLRPCreateRequest struct {
 	ProcessGuid          string                  `json:"process_guid"`
 	Domain               string                  `json:"domain"`
 	RootFSPath           string                  `json:"root_fs"`
@@ -81,7 +81,7 @@ type CreateDesiredLRPRequest struct {
 	Annotation           string                  `json:"annotation,omitempty"`
 }
 
-type UpdateDesiredLRPRequest struct {
+type DesiredLRPUpdateRequest struct {
 	Instances  *int     `json:"instances,omitempty"`
 	Routes     []string `json:"routes,omitempty"`
 	Annotation *string  `json:"annotation,omitempty"`

@@ -27,7 +27,7 @@ func NewDesiredLRPHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) *DesiredLRPH
 
 func (h *DesiredLRPHandler) Create(w http.ResponseWriter, r *http.Request) {
 	log := h.logger.Session("create-desired-lrp-handler")
-	desireLRPRequest := receptor.CreateDesiredLRPRequest{}
+	desireLRPRequest := receptor.DesiredLRPCreateRequest{}
 
 	err := json.NewDecoder(r.Body).Decode(&desireLRPRequest)
 	if err != nil {
@@ -74,7 +74,7 @@ func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	desireLRPRequest := receptor.UpdateDesiredLRPRequest{}
+	desireLRPRequest := receptor.DesiredLRPUpdateRequest{}
 
 	err := json.NewDecoder(r.Body).Decode(&desireLRPRequest)
 	if err != nil {

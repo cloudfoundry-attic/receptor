@@ -34,7 +34,7 @@ var _ = Describe("TaskHandler", func() {
 	})
 
 	Describe("Create", func() {
-		validCreateRequest := receptor.CreateTaskRequest{
+		validCreateRequest := receptor.TaskCreateRequest{
 			TaskGuid:   "task-guid-1",
 			Domain:     "test-domain",
 			RootFSPath: "docker://docker",
@@ -147,7 +147,7 @@ var _ = Describe("TaskHandler", func() {
 		})
 
 		Context("when the requested task is invalid", func() {
-			var invalidTask = receptor.CreateTaskRequest{
+			var invalidTask = receptor.TaskCreateRequest{
 				TaskGuid: "invalid-task",
 			}
 
@@ -174,7 +174,7 @@ var _ = Describe("TaskHandler", func() {
 			})
 		})
 
-		Context("when the request does not contain a CreateTaskRequest", func() {
+		Context("when the request does not contain a TaskCreateRequest", func() {
 			var garbageRequest = []byte(`hello`)
 
 			BeforeEach(func(done Done) {
@@ -191,7 +191,7 @@ var _ = Describe("TaskHandler", func() {
 			})
 
 			It("responds with a relevant error message", func() {
-				err := json.Unmarshal(garbageRequest, &receptor.CreateTaskRequest{})
+				err := json.Unmarshal(garbageRequest, &receptor.TaskCreateRequest{})
 				expectedBody, _ := json.Marshal(receptor.Error{
 					Type:    receptor.InvalidJSON,
 					Message: err.Error(),
