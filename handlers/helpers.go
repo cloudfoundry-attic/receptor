@@ -8,14 +8,14 @@ import (
 	"github.com/cloudfoundry-incubator/receptor"
 )
 
-func writeUnknownErrorResponse(w http.ResponseWriter, err error) error {
-	return writeJSONResponse(w, http.StatusInternalServerError, receptor.Error{
+func writeUnknownErrorResponse(w http.ResponseWriter, err error) {
+	writeJSONResponse(w, http.StatusInternalServerError, receptor.Error{
 		Type:    receptor.UnknownError,
 		Message: err.Error(),
 	})
 }
 
-func writeJSONResponse(w http.ResponseWriter, statusCode int, jsonObj interface{}) error {
+func writeJSONResponse(w http.ResponseWriter, statusCode int, jsonObj interface{}) {
 	jsonBytes, err := json.Marshal(jsonObj)
 	if err != nil {
 		panic("Unable to encode JSON: " + err.Error())
@@ -26,5 +26,7 @@ func writeJSONResponse(w http.ResponseWriter, statusCode int, jsonObj interface{
 	w.WriteHeader(statusCode)
 
 	_, err = w.Write(jsonBytes)
-	return err
+	if err != nil {
+		panic("Unable to write response: " + err.Error())
+	}
 }

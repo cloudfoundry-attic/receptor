@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
@@ -155,6 +156,130 @@ var _ = Describe("LRP Handlers", func() {
 
 			It("responds with a relevant error message", func() {
 				err := json.Unmarshal(garbageRequest, &receptor.CreateDesiredLRPRequest{})
+				expectedBody, _ := json.Marshal(receptor.Error{
+					Type:    receptor.InvalidJSON,
+					Message: err.Error(),
+				})
+				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
+			})
+		})
+	})
+
+	Describe("Update", func() {
+		expectedProcessGuid := "some-guid"
+		instances := 15
+		annotation := "new-annotation"
+		routes := []string{"new-route-1", "new-route-2"}
+
+		validUpdateRequest := receptor.UpdateDesiredLRPRequest{
+			Instances:  &instances,
+			Annotation: &annotation,
+			Routes:     routes,
+		}
+
+		expectedUpdate := models.DesiredLRPUpdate{
+			Instances:  &instances,
+			Annotation: &annotation,
+			Routes:     routes,
+		}
+
+		var req *http.Request
+
+		BeforeEach(func() {
+			req = newTestRequest(validUpdateRequest)
+			req.Form = url.Values{":process_guid": []string{expectedProcessGuid}}
+		})
+
+		Context("when everything succeeds", func() {
+			BeforeEach(func(done Done) {
+				defer close(done)
+				handler.Update(responseRecorder, req)
+			})
+
+			It("calls UpdateDesiredLRP on the BBS", func() {
+				Ω(fakeBBS.UpdateDesiredLRPCallCount()).Should(Equal(1))
+				processGuid, update := fakeBBS.UpdateDesiredLRPArgsForCall(0)
+				Ω(processGuid).Should(Equal(expectedProcessGuid))
+				Ω(update).Should(Equal(expectedUpdate))
+			})
+
+			It("responds with 204 NO CONTENT", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusNoContent))
+			})
+
+			It("responds with an empty body", func() {
+				Ω(responseRecorder.Body.String()).Should(Equal(""))
+			})
+		})
+
+		Context("when the :process_guid is blank", func() {
+			BeforeEach(func() {
+				req = newTestRequest(validUpdateRequest)
+				handler.Update(responseRecorder, req)
+			})
+
+			It("responds with 400 BAD REQUEST", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusBadRequest))
+			})
+
+			It("responds with a relevant error message", func() {
+				expectedBody, _ := json.Marshal(receptor.Error{
+					Type:    receptor.InvalidRequest,
+					Message: "process_guid missing from request",
+				})
+
+				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
+			})
+		})
+
+		Context("when the BBS responds with an error", func() {
+			BeforeEach(func(done Done) {
+				defer close(done)
+				fakeBBS.UpdateDesiredLRPReturns(errors.New("ka-boom"))
+				handler.Update(responseRecorder, req)
+			})
+
+			It("calls UpdateDesiredLRP on the BBS", func() {
+				Ω(fakeBBS.UpdateDesiredLRPCallCount()).Should(Equal(1))
+				processGuid, update := fakeBBS.UpdateDesiredLRPArgsForCall(0)
+				Ω(processGuid).Should(Equal(expectedProcessGuid))
+				Ω(update).Should(Equal(expectedUpdate))
+			})
+
+			It("responds with 500 INTERNAL ERROR", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
+			})
+
+			It("responds with a relevant error message", func() {
+				expectedBody, _ := json.Marshal(receptor.Error{
+					Type:    receptor.UnknownError,
+					Message: "ka-boom",
+				})
+
+				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
+			})
+		})
+
+		Context("when the request does not contain an UpdateDesiredLRPRequest", func() {
+			var garbageRequest = []byte(`farewell`)
+
+			BeforeEach(func(done Done) {
+				defer close(done)
+				req = newTestRequest(garbageRequest)
+				req.Form = url.Values{":process_guid": []string{expectedProcessGuid}}
+				handler.Update(responseRecorder, req)
+			})
+
+			It("does not call DesireLRP on the BBS", func() {
+				Ω(fakeBBS.UpdateDesiredLRPCallCount()).Should(Equal(0))
+			})
+
+			It("responds with 400 BAD REQUEST", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusBadRequest))
+			})
+
+			It("responds with a relevant error message", func() {
+				err := json.Unmarshal(garbageRequest, &receptor.UpdateDesiredLRPRequest{})
 				expectedBody, _ := json.Marshal(receptor.Error{
 					Type:    receptor.InvalidJSON,
 					Message: err.Error(),

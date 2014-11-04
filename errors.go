@@ -15,6 +15,7 @@ const (
 	TaskNotFound          = "TaskNotFound"
 	InvalidJSON           = "InvalidJSON"
 	InvalidTask           = "InvalidTask"
+	InvalidRequest        = "InvalidRequest"
 	InvalidLRP            = "InvalidLRP"
 	UnknownError          = "UnknownError"
 	Unauthorized          = "Unauthorized"

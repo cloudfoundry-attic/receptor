@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 )
 import (
@@ -58,6 +59,45 @@ func (h *DesiredLRPHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
+	log := h.logger.Session("update-desired-lrp-handler")
+	processGuid := r.FormValue(":process_guid")
+	if processGuid == "" {
+		err := errors.New("process_guid missing from request")
+		log.Error("missing-process-guid", err)
+		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
+			Type:    receptor.InvalidRequest,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	desireLRPRequest := receptor.UpdateDesiredLRPRequest{}
+
+	err := json.NewDecoder(r.Body).Decode(&desireLRPRequest)
+	if err != nil {
+		log.Error("invalid-json", err)
+		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
+			Type:    receptor.InvalidJSON,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	update := serialization.DesiredLRPUpdateFromRequest(desireLRPRequest)
+
+	err = h.bbs.UpdateDesiredLRP(processGuid, update)
+	if err != nil {
+		writeJSONResponse(w, http.StatusInternalServerError, receptor.Error{
+			Type:    receptor.UnknownError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func (h *DesiredLRPHandler) GetAll(w http.ResponseWriter, req *http.Request) {

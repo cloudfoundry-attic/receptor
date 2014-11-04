@@ -22,7 +22,7 @@ var _ = Describe("Desired LRP API", func() {
 		ginkgomon.Kill(receptorProcess)
 	})
 
-	Describe("POST /desired_lrps", func() {
+	Describe("POST /desired_lrps/", func() {
 		var lrpToCreate receptor.CreateDesiredLRPRequest
 		var createErr error
 
@@ -40,6 +40,41 @@ var _ = Describe("Desired LRP API", func() {
 			desiredLRPs, err := bbs.GetAllDesiredLRPs()
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(desiredLRPs[0].ProcessGuid).To(Equal(lrpToCreate.ProcessGuid))
+		})
+	})
+
+	Describe("PUT /desired_lrps/:process_guid", func() {
+		var updateErr error
+
+		instances := 6
+		annotation := "update-annotation"
+		routes := []string{"updated-route"}
+
+		BeforeEach(func() {
+			createLRPReq := newValidCreateDesiredLRPRequest()
+			err := client.CreateDesiredLRP(createLRPReq)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			update := receptor.UpdateDesiredLRPRequest{
+				Instances:  &instances,
+				Annotation: &annotation,
+				Routes:     routes,
+			}
+
+			updateErr = client.UpdateDesiredLRP(createLRPReq.ProcessGuid, update)
+		})
+
+		It("responds without an error", func() {
+			Ω(updateErr).ShouldNot(HaveOccurred())
+		})
+
+		It("updates the LRP in the BBS", func() {
+			Eventually(bbs.GetAllDesiredLRPs).Should(HaveLen(1))
+			desiredLRPs, err := bbs.GetAllDesiredLRPs()
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(desiredLRPs[0].Instances).To(Equal(instances))
+			Ω(desiredLRPs[0].Routes).To(Equal(routes))
+			Ω(desiredLRPs[0].Annotation).To(Equal(annotation))
 		})
 	})
 

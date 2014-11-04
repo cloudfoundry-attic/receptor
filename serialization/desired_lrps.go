@@ -48,3 +48,11 @@ func DesiredLRPToResponse(lrp models.DesiredLRP) receptor.DesiredLRPResponse {
 		Annotation:           lrp.Annotation,
 	}
 }
+
+func DesiredLRPUpdateFromRequest(req receptor.UpdateDesiredLRPRequest) models.DesiredLRPUpdate {
+	return models.DesiredLRPUpdate{
+		Instances:  req.Instances,
+		Routes:     req.Routes,
+		Annotation: req.Annotation,
+	}
+}

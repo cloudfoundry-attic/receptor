@@ -23,6 +23,7 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) ht
 
 		// DesiredLRPs
 		receptor.CreateDesiredLRPRoute:  route(desiredLRPHandler.Create),
+		receptor.UpdateDesiredLRPRoute:  route(desiredLRPHandler.Update),
 		receptor.GetAllDesiredLRPsRoute: route(desiredLRPHandler.GetAll),
 	}
 

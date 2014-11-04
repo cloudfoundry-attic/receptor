@@ -81,6 +81,12 @@ type CreateDesiredLRPRequest struct {
 	Annotation           string                  `json:"annotation,omitempty"`
 }
 
+type UpdateDesiredLRPRequest struct {
+	Instances  *int     `json:"instances,omitempty"`
+	Routes     []string `json:"routes,omitempty"`
+	Annotation *string  `json:"annotation,omitempty"`
+}
+
 type DesiredLRPResponse struct {
 	ProcessGuid          string                  `json:"process_guid"`
 	Domain               string                  `json:"domain"`

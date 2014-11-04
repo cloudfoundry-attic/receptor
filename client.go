@@ -17,6 +17,7 @@ type Client interface {
 	DeleteTask(taskId string) error
 
 	CreateDesiredLRP(CreateDesiredLRPRequest) error
+	UpdateDesiredLRP(processGuid string, update UpdateDesiredLRPRequest) error
 	GetAllDesiredLRPs() ([]DesiredLRPResponse, error)
 }
 
@@ -62,13 +63,17 @@ func (c *client) DeleteTask(taskId string) error {
 	return c.doRequest(DeleteTaskRoute, rata.Params{"task_guid": taskId}, nil, nil)
 }
 
-func (c *client) CreateDesiredLRP(request CreateDesiredLRPRequest) error {
-	return c.doRequest(CreateDesiredLRPRoute, nil, request, nil)
+func (c *client) CreateDesiredLRP(req CreateDesiredLRPRequest) error {
+	return c.doRequest(CreateDesiredLRPRoute, nil, req, nil)
 }
 
-func (c *client) GetAllDesiredLRPs() ([]DesiredLRPResponse, error) {
-	desiredLRPs := []DesiredLRPResponse{}
-	err := c.doRequest(GetAllDesiredLRPsRoute, nil, nil, &desiredLRPs)
+func (c *client) UpdateDesiredLRP(processGuid string, req UpdateDesiredLRPRequest) (err error) {
+	err = c.doRequest(UpdateDesiredLRPRoute, rata.Params{"process_guid": processGuid}, req, nil)
+	return err
+}
+
+func (c *client) GetAllDesiredLRPs() (desiredLRPs []DesiredLRPResponse, err error) {
+	err = c.doRequest(GetAllDesiredLRPsRoute, nil, nil, &desiredLRPs)
 	return desiredLRPs, err
 }
 
