@@ -95,6 +95,10 @@ var _ = Describe("TaskHandler", func() {
 					}
 				})
 
+				AfterEach(func() {
+					validCreateRequest.EnvironmentVariables = []receptor.EnvironmentVariable{}
+				})
+
 				It("passes them to the BBS", func() {
 					Ω(fakeBBS.DesireTaskCallCount()).Should(Equal(1))
 					task := fakeBBS.DesireTaskArgsForCall(0)
@@ -106,10 +110,6 @@ var _ = Describe("TaskHandler", func() {
 			})
 
 			Context("when no env vars are specified", func() {
-				BeforeEach(func() {
-					validCreateRequest.EnvironmentVariables = []receptor.EnvironmentVariable{}
-				})
-
 				It("passes an empty list to the BBS", func() {
 					Ω(fakeBBS.DesireTaskCallCount()).Should(Equal(1))
 					task := fakeBBS.DesireTaskArgsForCall(0)
