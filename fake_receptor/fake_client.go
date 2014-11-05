@@ -73,6 +73,15 @@ type FakeClient struct {
 		result1 []receptor.DesiredLRPResponse
 		result2 error
 	}
+	GetAllDesiredLRPsByDomainStub        func(domain string) ([]receptor.DesiredLRPResponse, error)
+	getAllDesiredLRPsByDomainMutex       sync.RWMutex
+	getAllDesiredLRPsByDomainArgsForCall []struct {
+		domain string
+	}
+	getAllDesiredLRPsByDomainReturns struct {
+		result1 []receptor.DesiredLRPResponse
+		result2 error
+	}
 }
 
 func (fake *FakeClient) CreateTask(arg1 receptor.TaskCreateRequest) error {
@@ -315,6 +324,39 @@ func (fake *FakeClient) GetAllDesiredLRPsCallCount() int {
 func (fake *FakeClient) GetAllDesiredLRPsReturns(result1 []receptor.DesiredLRPResponse, result2 error) {
 	fake.GetAllDesiredLRPsStub = nil
 	fake.getAllDesiredLRPsReturns = struct {
+		result1 []receptor.DesiredLRPResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) GetAllDesiredLRPsByDomain(domain string) ([]receptor.DesiredLRPResponse, error) {
+	fake.getAllDesiredLRPsByDomainMutex.Lock()
+	fake.getAllDesiredLRPsByDomainArgsForCall = append(fake.getAllDesiredLRPsByDomainArgsForCall, struct {
+		domain string
+	}{domain})
+	fake.getAllDesiredLRPsByDomainMutex.Unlock()
+	if fake.GetAllDesiredLRPsByDomainStub != nil {
+		return fake.GetAllDesiredLRPsByDomainStub(domain)
+	} else {
+		return fake.getAllDesiredLRPsByDomainReturns.result1, fake.getAllDesiredLRPsByDomainReturns.result2
+	}
+}
+
+func (fake *FakeClient) GetAllDesiredLRPsByDomainCallCount() int {
+	fake.getAllDesiredLRPsByDomainMutex.RLock()
+	defer fake.getAllDesiredLRPsByDomainMutex.RUnlock()
+	return len(fake.getAllDesiredLRPsByDomainArgsForCall)
+}
+
+func (fake *FakeClient) GetAllDesiredLRPsByDomainArgsForCall(i int) string {
+	fake.getAllDesiredLRPsByDomainMutex.RLock()
+	defer fake.getAllDesiredLRPsByDomainMutex.RUnlock()
+	return fake.getAllDesiredLRPsByDomainArgsForCall[i].domain
+}
+
+func (fake *FakeClient) GetAllDesiredLRPsByDomainReturns(result1 []receptor.DesiredLRPResponse, result2 error) {
+	fake.GetAllDesiredLRPsByDomainStub = nil
+	fake.getAllDesiredLRPsByDomainReturns = struct {
 		result1 []receptor.DesiredLRPResponse
 		result2 error
 	}{result1, result2}

@@ -339,4 +339,82 @@ var _ = Describe("LRP Handlers", func() {
 			})
 		})
 	})
+
+	Describe("GetAllByDomain", func() {
+		var req *http.Request
+
+		BeforeEach(func() {
+			req = newTestRequest("")
+			req.Form = url.Values{":domain": []string{"domain-1"}}
+		})
+
+		JustBeforeEach(func() {
+			handler.GetAllByDomain(responseRecorder, req)
+		})
+
+		Context("when reading LRPs by domain from BBS succeeds", func() {
+			BeforeEach(func() {
+				fakeBBS.GetAllDesiredLRPsByDomainReturns([]models.DesiredLRP{
+					{ProcessGuid: "process-guid-0", Domain: "domain-1"},
+					{ProcessGuid: "process-guid-1", Domain: "domain-1"},
+				}, nil)
+			})
+
+			It("responds with 200 Status OK", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
+			})
+
+			It("returns a list of desired lrp responses", func() {
+				response := []receptor.DesiredLRPResponse{}
+				err := json.Unmarshal(responseRecorder.Body.Bytes(), &response)
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(response).Should(HaveLen(2))
+				Ω(response[0].ProcessGuid).Should(Equal("process-guid-0"))
+				Ω(response[1].ProcessGuid).Should(Equal("process-guid-1"))
+			})
+		})
+
+		Context("when the BBS returns no lrps", func() {
+			BeforeEach(func() {
+				fakeBBS.GetAllDesiredLRPsByDomainReturns([]models.DesiredLRP{}, nil)
+			})
+
+			It("responds with 200 Status OK", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
+			})
+
+			It("returns an empty list", func() {
+				Ω(responseRecorder.Body.String()).Should(Equal("[]"))
+			})
+		})
+
+		Context("when the :domain is blank", func() {
+			BeforeEach(func() {
+				req.Form = url.Values{}
+			})
+
+			It("responds with 400 BAD REQUEST", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusBadRequest))
+			})
+
+			It("responds with a relevant error message", func() {
+				expectedBody, _ := json.Marshal(receptor.Error{
+					Type:    receptor.InvalidRequest,
+					Message: "domain missing from request",
+				})
+
+				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
+			})
+		})
+
+		Context("when reading from the BBS fails", func() {
+			BeforeEach(func() {
+				fakeBBS.GetAllDesiredLRPsByDomainReturns([]models.DesiredLRP{}, errors.New("Something went wrong"))
+			})
+
+			It("responds with an error", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
+			})
+		})
+	})
 })

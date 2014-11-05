@@ -84,16 +84,13 @@ var _ = Describe("Desired LRP API", func() {
 	})
 
 	Describe("GET /desired_lrps", func() {
-		var lrpRequests []receptor.DesiredLRPCreateRequest
 		var lrpResponses []receptor.DesiredLRPResponse
-		const expectedLRPcount = 6
+		const expectedLRPCount = 6
 		var getErr error
 
 		BeforeEach(func() {
-			lrpRequests = make([]receptor.DesiredLRPCreateRequest, expectedLRPcount)
-			for i := 0; i < expectedLRPcount; i++ {
-				lrpRequests[i] = newValidDesiredLRPCreateRequest()
-				err := client.CreateDesiredLRP(lrpRequests[i])
+			for i := 0; i < expectedLRPCount; i++ {
+				err := client.CreateDesiredLRP(newValidDesiredLRPCreateRequest())
 				Ω(err).ShouldNot(HaveOccurred())
 			}
 			lrpResponses, getErr = client.GetAllDesiredLRPs()
@@ -104,7 +101,38 @@ var _ = Describe("Desired LRP API", func() {
 		})
 
 		It("fetches all of the desired lrps", func() {
-			Ω(lrpResponses).Should(HaveLen(expectedLRPcount))
+			Ω(lrpResponses).Should(HaveLen(expectedLRPCount))
+		})
+	})
+
+	Describe("GET /domains/:domain/desired_lrps", func() {
+		const expectedDomain = "domain-1"
+		const expectedLRPCount = 5
+		var lrpResponses []receptor.DesiredLRPResponse
+		var getErr error
+
+		BeforeEach(func() {
+			for i := 0; i < expectedLRPCount; i++ {
+				lrp := newValidDesiredLRPCreateRequest()
+				lrp.Domain = expectedDomain
+				err := client.CreateDesiredLRP(lrp)
+				Ω(err).ShouldNot(HaveOccurred())
+			}
+			for i := 0; i < expectedLRPCount; i++ {
+				lrp := newValidDesiredLRPCreateRequest()
+				lrp.Domain = "wrong-domain"
+				err := client.CreateDesiredLRP(lrp)
+				Ω(err).ShouldNot(HaveOccurred())
+			}
+			lrpResponses, getErr = client.GetAllDesiredLRPsByDomain(expectedDomain)
+		})
+
+		It("responds without an error", func() {
+			Ω(getErr).ShouldNot(HaveOccurred())
+		})
+
+		It("fetches all of the desired lrps", func() {
+			Ω(lrpResponses).Should(HaveLen(expectedLRPCount))
 		})
 	})
 })

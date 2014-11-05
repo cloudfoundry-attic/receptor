@@ -19,6 +19,7 @@ type Client interface {
 	CreateDesiredLRP(DesiredLRPCreateRequest) error
 	UpdateDesiredLRP(processGuid string, update DesiredLRPUpdateRequest) error
 	GetAllDesiredLRPs() ([]DesiredLRPResponse, error)
+	GetAllDesiredLRPsByDomain(domain string) ([]DesiredLRPResponse, error)
 }
 
 func NewClient(addr, user, password string) Client {
@@ -74,6 +75,11 @@ func (c *client) UpdateDesiredLRP(processGuid string, req DesiredLRPUpdateReques
 
 func (c *client) GetAllDesiredLRPs() (desiredLRPs []DesiredLRPResponse, err error) {
 	err = c.doRequest(GetAllDesiredLRPsRoute, nil, nil, &desiredLRPs)
+	return desiredLRPs, err
+}
+
+func (c *client) GetAllDesiredLRPsByDomain(domain string) (desiredLRPs []DesiredLRPResponse, err error) {
+	err = c.doRequest(GetAllDesiredLRPsByDomainRoute, rata.Params{"domain": domain}, nil, &desiredLRPs)
 	return desiredLRPs, err
 }
 

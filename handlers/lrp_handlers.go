@@ -105,6 +105,24 @@ func (h *DesiredLRPHandler) GetAll(w http.ResponseWriter, req *http.Request) {
 	writeDesiredLRPResponse(w, h.logger.Session("get-all-desired-lrps-handler"), desiredLRPs, err)
 }
 
+func (h *DesiredLRPHandler) GetAllByDomain(w http.ResponseWriter, req *http.Request) {
+	log := h.logger.Session("get-all-desired-lrps-by-domain-handler")
+
+	lrpDomain := req.FormValue(":domain")
+	if lrpDomain == "" {
+		err := errors.New("domain missing from request")
+		log.Error("missing-domain", err)
+		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
+			Type:    receptor.InvalidRequest,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	desiredLRPs, err := h.bbs.GetAllDesiredLRPsByDomain(lrpDomain)
+	writeDesiredLRPResponse(w, log, desiredLRPs, err)
+}
+
 func writeDesiredLRPResponse(w http.ResponseWriter, logger lager.Logger, desiredLRPs []models.DesiredLRP, err error) {
 	if err != nil {
 		logger.Error("failed-to-fetch-desired-lrps", err)
