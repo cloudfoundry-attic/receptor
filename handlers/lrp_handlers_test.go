@@ -49,12 +49,11 @@ var _ = Describe("LRP Handlers", func() {
 		}
 
 		expectedDesiredLRP := models.DesiredLRP{
-			ProcessGuid:          "the-process-guid",
-			Domain:               "the-domain",
-			Stack:                "the-stack",
-			RootFSPath:           "the-rootfs-path",
-			Instances:            1,
-			EnvironmentVariables: []models.EnvironmentVariable{},
+			ProcessGuid: "the-process-guid",
+			Domain:      "the-domain",
+			Stack:       "the-stack",
+			RootFSPath:  "the-rootfs-path",
+			Instances:   1,
 			Actions: []models.ExecutorAction{
 				{
 					Action: models.RunAction{

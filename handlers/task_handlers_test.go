@@ -58,13 +58,12 @@ var _ = Describe("TaskHandler", func() {
 			Actions: []models.ExecutorAction{
 				{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
 			},
-			MemoryMB:             24,
-			DiskMB:               12,
-			CPUWeight:            10,
-			Log:                  models.LogConfig{"guid", "source-name"},
-			ResultFile:           "result-file",
-			Annotation:           "some annotation",
-			EnvironmentVariables: []models.EnvironmentVariable{},
+			MemoryMB:   24,
+			DiskMB:     12,
+			CPUWeight:  10,
+			Log:        models.LogConfig{"guid", "source-name"},
+			ResultFile: "result-file",
+			Annotation: "some annotation",
 		}
 
 		Context("when everything succeeds", func() {
@@ -110,11 +109,10 @@ var _ = Describe("TaskHandler", func() {
 			})
 
 			Context("when no env vars are specified", func() {
-				It("passes an empty list to the BBS", func() {
+				It("passes a nil slice to the BBS", func() {
 					Ω(fakeBBS.DesireTaskCallCount()).Should(Equal(1))
 					task := fakeBBS.DesireTaskArgsForCall(0)
-					Ω(task.EnvironmentVariables).Should(Equal([]models.EnvironmentVariable{}))
-
+					Ω(task.EnvironmentVariables).Should(BeNil())
 				})
 			})
 		})

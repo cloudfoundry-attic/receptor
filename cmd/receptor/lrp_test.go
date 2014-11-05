@@ -41,6 +41,11 @@ var _ = Describe("Desired LRP API", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(desiredLRPs[0].ProcessGuid).To(Equal(lrpToCreate.ProcessGuid))
 		})
+
+		It("is idempotent", func() {
+			err := client.CreateDesiredLRP(lrpToCreate)
+			Ω(err).ShouldNot(HaveOccurred())
+		})
 	})
 
 	Describe("PUT /desired_lrps/:process_guid", func() {
