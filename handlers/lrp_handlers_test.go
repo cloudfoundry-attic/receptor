@@ -184,6 +184,11 @@ var _ = Describe("LRP Handlers", func() {
 				}, nil)
 			})
 
+			It("calls GetDesiredLRPByProcessGuid on the BBS", func() {
+				Ω(fakeBBS.GetDesiredLRPByProcessGuidCallCount()).Should(Equal(1))
+				Ω(fakeBBS.GetDesiredLRPByProcessGuidArgsForCall(0)).Should(Equal("process-guid-0"))
+			})
+
 			It("responds with 200 Status OK", func() {
 				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
 			})
@@ -211,6 +216,11 @@ var _ = Describe("LRP Handlers", func() {
 				fakeBBS.GetDesiredLRPByProcessGuidReturns(models.DesiredLRP{}, storeadapter.ErrorKeyNotFound)
 			})
 
+			It("calls GetDesiredLRPByProcessGuid on the BBS", func() {
+				Ω(fakeBBS.GetDesiredLRPByProcessGuidCallCount()).Should(Equal(1))
+				Ω(fakeBBS.GetDesiredLRPByProcessGuidArgsForCall(0)).Should(Equal("process-guid-0"))
+			})
+
 			It("responds with 404 Status NOT FOUND", func() {
 				Ω(responseRecorder.Code).Should(Equal(http.StatusNotFound))
 			})
@@ -230,6 +240,10 @@ var _ = Describe("LRP Handlers", func() {
 		Context("when the process guid is not provided", func() {
 			BeforeEach(func() {
 				req.Form = url.Values{}
+			})
+
+			It("does not call GetDesiredLRPByProcessGuid on the BBS", func() {
+				Ω(fakeBBS.GetDesiredLRPByProcessGuidCallCount()).Should(Equal(0))
 			})
 
 			It("responds with 400 BAD REQUEST", func() {
@@ -300,6 +314,10 @@ var _ = Describe("LRP Handlers", func() {
 			BeforeEach(func() {
 				req = newTestRequest(validUpdateRequest)
 				handler.Update(responseRecorder, req)
+			})
+
+			It("does not call UpdateDesiredLRP on the BBS", func() {
+				Ω(fakeBBS.UpdateDesiredLRPCallCount()).Should(Equal(0))
 			})
 
 			It("responds with 400 BAD REQUEST", func() {
@@ -418,7 +436,7 @@ var _ = Describe("LRP Handlers", func() {
 				fakeBBS.RemoveDesiredLRPByProcessGuidReturns(nil)
 			})
 
-			It("tells the BBS to remove the desired LRP", func() {
+			It("calls the BBS to remove the desired LRP", func() {
 				Ω(fakeBBS.RemoveDesiredLRPByProcessGuidCallCount()).Should(Equal(1))
 				Ω(fakeBBS.RemoveDesiredLRPByProcessGuidArgsForCall(0)).Should(Equal("process-guid-0"))
 			})
@@ -479,6 +497,10 @@ var _ = Describe("LRP Handlers", func() {
 				req.Form = url.Values{}
 			})
 
+			It("does not call the BBS to remove the desired LRP", func() {
+				Ω(fakeBBS.RemoveDesiredLRPByProcessGuidCallCount()).Should(Equal(0))
+			})
+
 			It("responds with 400 BAD REQUEST", func() {
 				Ω(responseRecorder.Code).Should(Equal(http.StatusBadRequest))
 			})
@@ -509,6 +531,10 @@ var _ = Describe("LRP Handlers", func() {
 				}, nil)
 			})
 
+			It("call the BBS to retrieve the desired LRP", func() {
+				Ω(fakeBBS.GetAllDesiredLRPsCallCount()).Should(Equal(1))
+			})
+
 			It("responds with 200 Status OK", func() {
 				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
 			})
@@ -528,6 +554,10 @@ var _ = Describe("LRP Handlers", func() {
 				fakeBBS.GetAllDesiredLRPsReturns([]models.DesiredLRP{}, nil)
 			})
 
+			It("call the BBS to retrieve the desired LRP", func() {
+				Ω(fakeBBS.GetAllDesiredLRPsCallCount()).Should(Equal(1))
+			})
+
 			It("responds with 200 Status OK", func() {
 				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
 			})
@@ -544,6 +574,17 @@ var _ = Describe("LRP Handlers", func() {
 
 			It("responds with an error", func() {
 				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
+			})
+
+			It("provides relevant error information", func() {
+				var receptorError receptor.Error
+				err := json.Unmarshal(responseRecorder.Body.Bytes(), &receptorError)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(receptorError).Should(Equal(receptor.Error{
+					Type:    receptor.UnknownError,
+					Message: "Something went wrong",
+				}))
 			})
 		})
 	})
@@ -568,6 +609,11 @@ var _ = Describe("LRP Handlers", func() {
 				}, nil)
 			})
 
+			It("call the BBS to retrieve the desired LRP", func() {
+				Ω(fakeBBS.GetAllDesiredLRPsByDomainCallCount()).Should(Equal(1))
+				Ω(fakeBBS.GetAllDesiredLRPsByDomainArgsForCall(0)).Should(Equal("domain-1"))
+			})
+
 			It("responds with 200 Status OK", func() {
 				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
 			})
@@ -587,6 +633,11 @@ var _ = Describe("LRP Handlers", func() {
 				fakeBBS.GetAllDesiredLRPsByDomainReturns([]models.DesiredLRP{}, nil)
 			})
 
+			It("call the BBS to retrieve the desired LRP", func() {
+				Ω(fakeBBS.GetAllDesiredLRPsByDomainCallCount()).Should(Equal(1))
+				Ω(fakeBBS.GetAllDesiredLRPsByDomainArgsForCall(0)).Should(Equal("domain-1"))
+			})
+
 			It("responds with 200 Status OK", func() {
 				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
 			})
@@ -599,6 +650,10 @@ var _ = Describe("LRP Handlers", func() {
 		Context("when the :domain is blank", func() {
 			BeforeEach(func() {
 				req.Form = url.Values{}
+			})
+
+			It("should not call the BBS to retrieve the desired LRP", func() {
+				Ω(fakeBBS.GetAllDesiredLRPsByDomainCallCount()).Should(Equal(0))
 			})
 
 			It("responds with 400 BAD REQUEST", func() {
@@ -622,6 +677,15 @@ var _ = Describe("LRP Handlers", func() {
 
 			It("responds with an error", func() {
 				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
+			})
+
+			It("responds with a relevant error message", func() {
+				expectedBody, _ := json.Marshal(receptor.Error{
+					Type:    receptor.UnknownError,
+					Message: "Something went wrong",
+				})
+
+				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
 			})
 		})
 	})
