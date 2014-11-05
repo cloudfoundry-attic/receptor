@@ -10,6 +10,7 @@ import (
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
+	"github.com/cloudfoundry/storeadapter"
 	"github.com/pivotal-golang/lager"
 )
 
@@ -61,16 +62,53 @@ func (h *DesiredLRPHandler) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
-	log := h.logger.Session("update-desired-lrp-handler")
+func (h *DesiredLRPHandler) GetByProcessGuid(w http.ResponseWriter, r *http.Request) {
 	processGuid := r.FormValue(":process_guid")
+	log := h.logger.Session("get-desired-lrp-by-process-guid-handler", lager.Data{
+		"ProcessGuid": processGuid,
+	})
+
 	if processGuid == "" {
 		err := errors.New("process_guid missing from request")
 		log.Error("missing-process-guid", err)
-		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
-			Type:    receptor.InvalidRequest,
+		writeBadRequestResponse(w, err)
+		return
+	}
+
+	desiredLRP, err := h.bbs.GetDesiredLRPByProcessGuid(processGuid)
+	if err == storeadapter.ErrorKeyNotFound {
+		writeJSONResponse(w, http.StatusNotFound, receptor.Error{
+			Type:    receptor.LRPNotFound,
+			Message: "LRP not found",
+		})
+		return
+	}
+
+	if err != nil {
+		log.Error("unknown-error", err)
+		writeJSONResponse(w, http.StatusInternalServerError, receptor.Error{
+			Type:    receptor.UnknownError,
 			Message: err.Error(),
 		})
+		return
+	}
+
+	response := serialization.DesiredLRPToResponse(desiredLRP)
+
+	writeJSONResponse(w, http.StatusOK, response)
+	return
+}
+
+func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
+	processGuid := r.FormValue(":process_guid")
+	log := h.logger.Session("update-desired-lrp-handler", lager.Data{
+		"ProcessGuid": processGuid,
+	})
+
+	if processGuid == "" {
+		err := errors.New("process_guid missing from request")
+		log.Error("missing-process-guid", err)
+		writeBadRequestResponse(w, err)
 		return
 	}
 

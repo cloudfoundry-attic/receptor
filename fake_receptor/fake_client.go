@@ -82,6 +82,15 @@ type FakeClient struct {
 		result1 []receptor.DesiredLRPResponse
 		result2 error
 	}
+	GetDesiredLRPByProcessGuidStub        func(processGuid string) (receptor.DesiredLRPResponse, error)
+	getDesiredLRPByProcessGuidMutex       sync.RWMutex
+	getDesiredLRPByProcessGuidArgsForCall []struct {
+		processGuid string
+	}
+	getDesiredLRPByProcessGuidReturns struct {
+		result1 receptor.DesiredLRPResponse
+		result2 error
+	}
 }
 
 func (fake *FakeClient) CreateTask(arg1 receptor.TaskCreateRequest) error {
@@ -358,6 +367,39 @@ func (fake *FakeClient) GetAllDesiredLRPsByDomainReturns(result1 []receptor.Desi
 	fake.GetAllDesiredLRPsByDomainStub = nil
 	fake.getAllDesiredLRPsByDomainReturns = struct {
 		result1 []receptor.DesiredLRPResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) GetDesiredLRPByProcessGuid(processGuid string) (receptor.DesiredLRPResponse, error) {
+	fake.getDesiredLRPByProcessGuidMutex.Lock()
+	fake.getDesiredLRPByProcessGuidArgsForCall = append(fake.getDesiredLRPByProcessGuidArgsForCall, struct {
+		processGuid string
+	}{processGuid})
+	fake.getDesiredLRPByProcessGuidMutex.Unlock()
+	if fake.GetDesiredLRPByProcessGuidStub != nil {
+		return fake.GetDesiredLRPByProcessGuidStub(processGuid)
+	} else {
+		return fake.getDesiredLRPByProcessGuidReturns.result1, fake.getDesiredLRPByProcessGuidReturns.result2
+	}
+}
+
+func (fake *FakeClient) GetDesiredLRPByProcessGuidCallCount() int {
+	fake.getDesiredLRPByProcessGuidMutex.RLock()
+	defer fake.getDesiredLRPByProcessGuidMutex.RUnlock()
+	return len(fake.getDesiredLRPByProcessGuidArgsForCall)
+}
+
+func (fake *FakeClient) GetDesiredLRPByProcessGuidArgsForCall(i int) string {
+	fake.getDesiredLRPByProcessGuidMutex.RLock()
+	defer fake.getDesiredLRPByProcessGuidMutex.RUnlock()
+	return fake.getDesiredLRPByProcessGuidArgsForCall[i].processGuid
+}
+
+func (fake *FakeClient) GetDesiredLRPByProcessGuidReturns(result1 receptor.DesiredLRPResponse, result2 error) {
+	fake.GetDesiredLRPByProcessGuidStub = nil
+	fake.getDesiredLRPByProcessGuidReturns = struct {
+		result1 receptor.DesiredLRPResponse
 		result2 error
 	}{result1, result2}
 }

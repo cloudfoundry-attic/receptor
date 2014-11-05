@@ -20,6 +20,7 @@ type Client interface {
 	UpdateDesiredLRP(processGuid string, update DesiredLRPUpdateRequest) error
 	GetAllDesiredLRPs() ([]DesiredLRPResponse, error)
 	GetAllDesiredLRPsByDomain(domain string) ([]DesiredLRPResponse, error)
+	GetDesiredLRPByProcessGuid(processGuid string) (DesiredLRPResponse, error)
 }
 
 func NewClient(addr, user, password string) Client {
@@ -68,19 +69,27 @@ func (c *client) CreateDesiredLRP(req DesiredLRPCreateRequest) error {
 	return c.doRequest(CreateDesiredLRPRoute, nil, req, nil)
 }
 
-func (c *client) UpdateDesiredLRP(processGuid string, req DesiredLRPUpdateRequest) (err error) {
-	err = c.doRequest(UpdateDesiredLRPRoute, rata.Params{"process_guid": processGuid}, req, nil)
+func (c *client) UpdateDesiredLRP(processGuid string, req DesiredLRPUpdateRequest) error {
+	err := c.doRequest(UpdateDesiredLRPRoute, rata.Params{"process_guid": processGuid}, req, nil)
 	return err
 }
 
-func (c *client) GetAllDesiredLRPs() (desiredLRPs []DesiredLRPResponse, err error) {
-	err = c.doRequest(GetAllDesiredLRPsRoute, nil, nil, &desiredLRPs)
+func (c *client) GetAllDesiredLRPs() ([]DesiredLRPResponse, error) {
+	var desiredLRPs []DesiredLRPResponse
+	err := c.doRequest(GetAllDesiredLRPsRoute, nil, nil, &desiredLRPs)
 	return desiredLRPs, err
 }
 
-func (c *client) GetAllDesiredLRPsByDomain(domain string) (desiredLRPs []DesiredLRPResponse, err error) {
-	err = c.doRequest(GetAllDesiredLRPsByDomainRoute, rata.Params{"domain": domain}, nil, &desiredLRPs)
+func (c *client) GetAllDesiredLRPsByDomain(domain string) ([]DesiredLRPResponse, error) {
+	var desiredLRPs []DesiredLRPResponse
+	err := c.doRequest(GetAllDesiredLRPsByDomainRoute, rata.Params{"domain": domain}, nil, &desiredLRPs)
 	return desiredLRPs, err
+}
+
+func (c *client) GetDesiredLRPByProcessGuid(processGuid string) (DesiredLRPResponse, error) {
+	var desiredLRP DesiredLRPResponse
+	err := c.doRequest(GetDesiredLRPByProcessGuidRoute, rata.Params{"process_guid": processGuid}, nil, &desiredLRP)
+	return desiredLRP, err
 }
 
 func (c *client) doRequest(requestName string, params rata.Params, request, response interface{}) error {

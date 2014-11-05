@@ -15,6 +15,13 @@ func writeUnknownErrorResponse(w http.ResponseWriter, err error) {
 	})
 }
 
+func writeBadRequestResponse(w http.ResponseWriter, err error) {
+	writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
+		Type:    receptor.InvalidRequest,
+		Message: err.Error(),
+	})
+}
+
 func writeJSONResponse(w http.ResponseWriter, statusCode int, jsonObj interface{}) {
 	jsonBytes, err := json.Marshal(jsonObj)
 	if err != nil {

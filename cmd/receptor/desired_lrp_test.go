@@ -5,6 +5,7 @@ import (
 	"sync/atomic"
 
 	"github.com/cloudfoundry-incubator/receptor"
+	"github.com/cloudfoundry-incubator/receptor/serialization"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/tedsuo/ifrit/ginkgomon"
 
@@ -102,6 +103,32 @@ var _ = Describe("Desired LRP API", func() {
 
 		It("fetches all of the desired lrps", func() {
 			Ω(lrpResponses).Should(HaveLen(expectedLRPCount))
+		})
+	})
+
+	Describe("GET /desired_lrps/:process_guid", func() {
+		var lrpRequest receptor.DesiredLRPCreateRequest
+		var lrpResponse receptor.DesiredLRPResponse
+		var getErr error
+
+		BeforeEach(func() {
+			lrpRequest = newValidDesiredLRPCreateRequest()
+			err := client.CreateDesiredLRP(lrpRequest)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			lrpResponse, getErr = client.GetDesiredLRPByProcessGuid(lrpRequest.ProcessGuid)
+		})
+
+		It("responds without an error", func() {
+			Ω(getErr).ShouldNot(HaveOccurred())
+		})
+
+		It("fetches the desired lrp with the matching process guid", func() {
+			desiredLRP, err := serialization.DesiredLRPFromRequest(lrpRequest)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			expectedLRPResponse := serialization.DesiredLRPToResponse(desiredLRP)
+			Ω(lrpResponse).Should(Equal(expectedLRPResponse))
 		})
 	})
 

@@ -10,6 +10,7 @@ import (
 	. "github.com/cloudfoundry-incubator/receptor/handlers"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
+	"github.com/cloudfoundry/storeadapter"
 	"github.com/pivotal-golang/lager"
 
 	. "github.com/onsi/ginkgo"
@@ -271,6 +272,30 @@ var _ = Describe("TaskHandler", func() {
 			var err error
 			request, err = http.NewRequest("", "http://example.com?:task_guid=the-task-guid", nil)
 			Ω(err).ShouldNot(HaveOccurred())
+		})
+
+		Context("when the task cannot be found in the BBS", func() {
+			BeforeEach(func() {
+				fakeBBS.GetTaskByGuidReturns(models.Task{}, storeadapter.ErrorKeyNotFound)
+			})
+
+			It("responds with a 404 NOT FOUND", func() {
+				handler.GetByGuid(responseRecorder, request)
+				Ω(responseRecorder.Code).Should(Equal(http.StatusNotFound))
+			})
+
+			It("responds with a TaskNotFound error in the body", func() {
+				handler.GetByGuid(responseRecorder, request)
+
+				var taskError receptor.Error
+				err := json.Unmarshal(responseRecorder.Body.Bytes(), &taskError)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(taskError).Should(Equal(receptor.Error{
+					Type:    receptor.TaskNotFound,
+					Message: "task guid not found",
+				}))
+			})
 		})
 
 		Context("when reading the task from the BBS fails", func() {

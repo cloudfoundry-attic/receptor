@@ -22,10 +22,11 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) ht
 		receptor.DeleteTaskRoute:          route(taskHandler.Delete),
 
 		// DesiredLRPs
-		receptor.CreateDesiredLRPRoute:          route(desiredLRPHandler.Create),
-		receptor.UpdateDesiredLRPRoute:          route(desiredLRPHandler.Update),
-		receptor.GetAllDesiredLRPsRoute:         route(desiredLRPHandler.GetAll),
-		receptor.GetAllDesiredLRPsByDomainRoute: route(desiredLRPHandler.GetAllByDomain),
+		receptor.CreateDesiredLRPRoute:           route(desiredLRPHandler.Create),
+		receptor.GetDesiredLRPByProcessGuidRoute: route(desiredLRPHandler.GetByProcessGuid),
+		receptor.UpdateDesiredLRPRoute:           route(desiredLRPHandler.Update),
+		receptor.GetAllDesiredLRPsRoute:          route(desiredLRPHandler.GetAll),
+		receptor.GetAllDesiredLRPsByDomainRoute:  route(desiredLRPHandler.GetAllByDomain),
 	}
 
 	handler, err := rata.NewRouter(receptor.Routes, actions)

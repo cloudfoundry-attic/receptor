@@ -11,10 +11,11 @@ const (
 	DeleteTaskRoute          = "DeleteTask"
 
 	// DesiredLRPs
-	CreateDesiredLRPRoute          = "CreateDesiredLRP"
-	UpdateDesiredLRPRoute          = "UpdateDesiredLRP"
-	GetAllDesiredLRPsRoute         = "GetAllDesiredLRPs"
-	GetAllDesiredLRPsByDomainRoute = "GetAllDesiredLRPsByDomain"
+	CreateDesiredLRPRoute           = "CreateDesiredLRP"
+	UpdateDesiredLRPRoute           = "UpdateDesiredLRP"
+	GetAllDesiredLRPsRoute          = "GetAllDesiredLRPs"
+	GetAllDesiredLRPsByDomainRoute  = "GetAllDesiredLRPsByDomain"
+	GetDesiredLRPByProcessGuidRoute = "GetDesiredLRPByProcessGuid"
 )
 
 var Routes = rata.Routes{
@@ -27,6 +28,7 @@ var Routes = rata.Routes{
 
 	// DesiredLRPS
 	{Path: "/desired_lrps", Method: "POST", Name: CreateDesiredLRPRoute},
+	{Path: "/desired_lrps/:process_guid", Method: "GET", Name: GetDesiredLRPByProcessGuidRoute},
 	{Path: "/desired_lrps/:process_guid", Method: "PUT", Name: UpdateDesiredLRPRoute},
 	{Path: "/desired_lrps", Method: "GET", Name: GetAllDesiredLRPsRoute},
 	{Path: "/domains/:domain/desired_lrps", Method: "GET", Name: GetAllDesiredLRPsByDomainRoute},

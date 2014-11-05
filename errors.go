@@ -13,10 +13,14 @@ const (
 	TaskGuidAlreadyExists = "TaskGuidAlreadyExists"
 	TaskNotDeletable      = "TaskNotDeletable"
 	TaskNotFound          = "TaskNotFound"
-	InvalidJSON           = "InvalidJSON"
 	InvalidTask           = "InvalidTask"
-	InvalidRequest        = "InvalidRequest"
-	InvalidLRP            = "InvalidLRP"
-	UnknownError          = "UnknownError"
-	Unauthorized          = "Unauthorized"
+
+	LRPNotFound = "LRPNotFound"
+	InvalidLRP  = "InvalidLRP"
+
+	InvalidJSON    = "InvalidJSON"
+	InvalidRequest = "InvalidRequest"
+
+	UnknownError = "UnknownError"
+	Unauthorized = "Unauthorized"
 )
