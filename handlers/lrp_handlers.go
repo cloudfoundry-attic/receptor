@@ -127,7 +127,16 @@ func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
 	update := serialization.DesiredLRPUpdateFromRequest(desireLRPRequest)
 
 	err = h.bbs.UpdateDesiredLRP(processGuid, update)
+	if err == storeadapter.ErrorKeyNotFound {
+		writeJSONResponse(w, http.StatusNotFound, receptor.Error{
+			Type:    receptor.LRPNotFound,
+			Message: "LRP not found",
+		})
+		return
+	}
+
 	if err != nil {
+		log.Error("unknown-error", err)
 		writeJSONResponse(w, http.StatusInternalServerError, receptor.Error{
 			Type:    receptor.UnknownError,
 			Message: err.Error(),

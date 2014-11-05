@@ -344,6 +344,34 @@ var _ = Describe("LRP Handlers", func() {
 			})
 		})
 
+		Context("when the BBS indicates the LRP was not found", func() {
+			BeforeEach(func(done Done) {
+				defer close(done)
+				fakeBBS.UpdateDesiredLRPReturns(storeadapter.ErrorKeyNotFound)
+				handler.Update(responseRecorder, req)
+			})
+
+			It("calls UpdateDesiredLRP on the BBS", func() {
+				Ω(fakeBBS.UpdateDesiredLRPCallCount()).Should(Equal(1))
+				processGuid, update := fakeBBS.UpdateDesiredLRPArgsForCall(0)
+				Ω(processGuid).Should(Equal(expectedProcessGuid))
+				Ω(update).Should(Equal(expectedUpdate))
+			})
+
+			It("responds with 404 NOT FOUND", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusNotFound))
+			})
+
+			It("responds with a relevant error message", func() {
+				expectedBody, _ := json.Marshal(receptor.Error{
+					Type:    receptor.LRPNotFound,
+					Message: "LRP not found",
+				})
+
+				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
+			})
+		})
+
 		Context("when the request does not contain an DesiredLRPUpdateRequest", func() {
 			var garbageRequest = []byte(`farewell`)
 
