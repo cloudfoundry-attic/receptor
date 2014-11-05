@@ -165,7 +165,7 @@ var _ = Describe("LRP Handlers", func() {
 		})
 	})
 
-	Describe("GetByProcessGuid", func() {
+	Describe("Get", func() {
 		var req *http.Request
 
 		BeforeEach(func() {
@@ -174,7 +174,7 @@ var _ = Describe("LRP Handlers", func() {
 		})
 
 		JustBeforeEach(func() {
-			handler.GetByProcessGuid(responseRecorder, req)
+			handler.Get(responseRecorder, req)
 		})
 
 		Context("when reading tasks from BBS succeeds", func() {

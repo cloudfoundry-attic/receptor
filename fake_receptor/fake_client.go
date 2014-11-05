@@ -57,6 +57,15 @@ type FakeClient struct {
 	createDesiredLRPReturns struct {
 		result1 error
 	}
+	GetDesiredLRPStub        func(processGuid string) (receptor.DesiredLRPResponse, error)
+	getDesiredLRPMutex       sync.RWMutex
+	getDesiredLRPArgsForCall []struct {
+		processGuid string
+	}
+	getDesiredLRPReturns struct {
+		result1 receptor.DesiredLRPResponse
+		result2 error
+	}
 	UpdateDesiredLRPStub        func(processGuid string, update receptor.DesiredLRPUpdateRequest) error
 	updateDesiredLRPMutex       sync.RWMutex
 	updateDesiredLRPArgsForCall []struct {
@@ -88,15 +97,6 @@ type FakeClient struct {
 	}
 	getAllDesiredLRPsByDomainReturns struct {
 		result1 []receptor.DesiredLRPResponse
-		result2 error
-	}
-	GetDesiredLRPByProcessGuidStub        func(processGuid string) (receptor.DesiredLRPResponse, error)
-	getDesiredLRPByProcessGuidMutex       sync.RWMutex
-	getDesiredLRPByProcessGuidArgsForCall []struct {
-		processGuid string
-	}
-	getDesiredLRPByProcessGuidReturns struct {
-		result1 receptor.DesiredLRPResponse
 		result2 error
 	}
 }
@@ -288,6 +288,39 @@ func (fake *FakeClient) CreateDesiredLRPReturns(result1 error) {
 	}{result1}
 }
 
+func (fake *FakeClient) GetDesiredLRP(processGuid string) (receptor.DesiredLRPResponse, error) {
+	fake.getDesiredLRPMutex.Lock()
+	fake.getDesiredLRPArgsForCall = append(fake.getDesiredLRPArgsForCall, struct {
+		processGuid string
+	}{processGuid})
+	fake.getDesiredLRPMutex.Unlock()
+	if fake.GetDesiredLRPStub != nil {
+		return fake.GetDesiredLRPStub(processGuid)
+	} else {
+		return fake.getDesiredLRPReturns.result1, fake.getDesiredLRPReturns.result2
+	}
+}
+
+func (fake *FakeClient) GetDesiredLRPCallCount() int {
+	fake.getDesiredLRPMutex.RLock()
+	defer fake.getDesiredLRPMutex.RUnlock()
+	return len(fake.getDesiredLRPArgsForCall)
+}
+
+func (fake *FakeClient) GetDesiredLRPArgsForCall(i int) string {
+	fake.getDesiredLRPMutex.RLock()
+	defer fake.getDesiredLRPMutex.RUnlock()
+	return fake.getDesiredLRPArgsForCall[i].processGuid
+}
+
+func (fake *FakeClient) GetDesiredLRPReturns(result1 receptor.DesiredLRPResponse, result2 error) {
+	fake.GetDesiredLRPStub = nil
+	fake.getDesiredLRPReturns = struct {
+		result1 receptor.DesiredLRPResponse
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeClient) UpdateDesiredLRP(processGuid string, update receptor.DesiredLRPUpdateRequest) error {
 	fake.updateDesiredLRPMutex.Lock()
 	fake.updateDesiredLRPArgsForCall = append(fake.updateDesiredLRPArgsForCall, struct {
@@ -407,39 +440,6 @@ func (fake *FakeClient) GetAllDesiredLRPsByDomainReturns(result1 []receptor.Desi
 	fake.GetAllDesiredLRPsByDomainStub = nil
 	fake.getAllDesiredLRPsByDomainReturns = struct {
 		result1 []receptor.DesiredLRPResponse
-		result2 error
-	}{result1, result2}
-}
-
-func (fake *FakeClient) GetDesiredLRPByProcessGuid(processGuid string) (receptor.DesiredLRPResponse, error) {
-	fake.getDesiredLRPByProcessGuidMutex.Lock()
-	fake.getDesiredLRPByProcessGuidArgsForCall = append(fake.getDesiredLRPByProcessGuidArgsForCall, struct {
-		processGuid string
-	}{processGuid})
-	fake.getDesiredLRPByProcessGuidMutex.Unlock()
-	if fake.GetDesiredLRPByProcessGuidStub != nil {
-		return fake.GetDesiredLRPByProcessGuidStub(processGuid)
-	} else {
-		return fake.getDesiredLRPByProcessGuidReturns.result1, fake.getDesiredLRPByProcessGuidReturns.result2
-	}
-}
-
-func (fake *FakeClient) GetDesiredLRPByProcessGuidCallCount() int {
-	fake.getDesiredLRPByProcessGuidMutex.RLock()
-	defer fake.getDesiredLRPByProcessGuidMutex.RUnlock()
-	return len(fake.getDesiredLRPByProcessGuidArgsForCall)
-}
-
-func (fake *FakeClient) GetDesiredLRPByProcessGuidArgsForCall(i int) string {
-	fake.getDesiredLRPByProcessGuidMutex.RLock()
-	defer fake.getDesiredLRPByProcessGuidMutex.RUnlock()
-	return fake.getDesiredLRPByProcessGuidArgsForCall[i].processGuid
-}
-
-func (fake *FakeClient) GetDesiredLRPByProcessGuidReturns(result1 receptor.DesiredLRPResponse, result2 error) {
-	fake.GetDesiredLRPByProcessGuidStub = nil
-	fake.getDesiredLRPByProcessGuidReturns = struct {
-		result1 receptor.DesiredLRPResponse
 		result2 error
 	}{result1, result2}
 }

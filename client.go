@@ -17,11 +17,11 @@ type Client interface {
 	DeleteTask(taskId string) error
 
 	CreateDesiredLRP(DesiredLRPCreateRequest) error
+	GetDesiredLRP(processGuid string) (DesiredLRPResponse, error)
 	UpdateDesiredLRP(processGuid string, update DesiredLRPUpdateRequest) error
 	DeleteDesiredLRP(processGuid string) error
 	GetAllDesiredLRPs() ([]DesiredLRPResponse, error)
 	GetAllDesiredLRPsByDomain(domain string) ([]DesiredLRPResponse, error)
-	GetDesiredLRPByProcessGuid(processGuid string) (DesiredLRPResponse, error)
 }
 
 func NewClient(addr, user, password string) Client {
@@ -70,12 +70,18 @@ func (c *client) CreateDesiredLRP(req DesiredLRPCreateRequest) error {
 	return c.doRequest(CreateDesiredLRPRoute, nil, req, nil)
 }
 
+func (c *client) GetDesiredLRP(processGuid string) (DesiredLRPResponse, error) {
+	var desiredLRP DesiredLRPResponse
+	err := c.doRequest(GetDesiredLRPRoute, rata.Params{"process_guid": processGuid}, nil, &desiredLRP)
+	return desiredLRP, err
+}
+
 func (c *client) UpdateDesiredLRP(processGuid string, req DesiredLRPUpdateRequest) error {
 	return c.doRequest(UpdateDesiredLRPRoute, rata.Params{"process_guid": processGuid}, req, nil)
 }
 
 func (c *client) DeleteDesiredLRP(processGuid string) error {
-  return c.doRequest(DeleteDesiredLRPRoute, rata.Params{"process_guid": processGuid}, nil, nil)
+	return c.doRequest(DeleteDesiredLRPRoute, rata.Params{"process_guid": processGuid}, nil, nil)
 }
 
 func (c *client) GetAllDesiredLRPs() ([]DesiredLRPResponse, error) {
@@ -88,12 +94,6 @@ func (c *client) GetAllDesiredLRPsByDomain(domain string) ([]DesiredLRPResponse,
 	var desiredLRPs []DesiredLRPResponse
 	err := c.doRequest(GetAllDesiredLRPsByDomainRoute, rata.Params{"domain": domain}, nil, &desiredLRPs)
 	return desiredLRPs, err
-}
-
-func (c *client) GetDesiredLRPByProcessGuid(processGuid string) (DesiredLRPResponse, error) {
-	var desiredLRP DesiredLRPResponse
-	err := c.doRequest(GetDesiredLRPByProcessGuidRoute, rata.Params{"process_guid": processGuid}, nil, &desiredLRP)
-	return desiredLRP, err
 }
 
 func (c *client) doRequest(requestName string, params rata.Params, request, response interface{}) error {

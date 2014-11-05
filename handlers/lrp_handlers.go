@@ -62,7 +62,7 @@ func (h *DesiredLRPHandler) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-func (h *DesiredLRPHandler) GetByProcessGuid(w http.ResponseWriter, r *http.Request) {
+func (h *DesiredLRPHandler) Get(w http.ResponseWriter, r *http.Request) {
 	processGuid := r.FormValue(":process_guid")
 	log := h.logger.Session("get-desired-lrp-by-process-guid-handler", lager.Data{
 		"ProcessGuid": processGuid,
