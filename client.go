@@ -18,6 +18,7 @@ type Client interface {
 
 	CreateDesiredLRP(DesiredLRPCreateRequest) error
 	UpdateDesiredLRP(processGuid string, update DesiredLRPUpdateRequest) error
+	DeleteDesiredLRP(processGuid string) error
 	GetAllDesiredLRPs() ([]DesiredLRPResponse, error)
 	GetAllDesiredLRPsByDomain(domain string) ([]DesiredLRPResponse, error)
 	GetDesiredLRPByProcessGuid(processGuid string) (DesiredLRPResponse, error)
@@ -70,8 +71,11 @@ func (c *client) CreateDesiredLRP(req DesiredLRPCreateRequest) error {
 }
 
 func (c *client) UpdateDesiredLRP(processGuid string, req DesiredLRPUpdateRequest) error {
-	err := c.doRequest(UpdateDesiredLRPRoute, rata.Params{"process_guid": processGuid}, req, nil)
-	return err
+	return c.doRequest(UpdateDesiredLRPRoute, rata.Params{"process_guid": processGuid}, req, nil)
+}
+
+func (c *client) DeleteDesiredLRP(processGuid string) error {
+  return c.doRequest(DeleteDesiredLRPRoute, rata.Params{"process_guid": processGuid}, nil, nil)
 }
 
 func (c *client) GetAllDesiredLRPs() ([]DesiredLRPResponse, error) {

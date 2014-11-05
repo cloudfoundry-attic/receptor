@@ -401,12 +401,107 @@ var _ = Describe("LRP Handlers", func() {
 		})
 	})
 
+	Describe("Delete", func() {
+		var req *http.Request
+
+		BeforeEach(func() {
+			req = newTestRequest("")
+			req.Form = url.Values{":process_guid": []string{"process-guid-0"}}
+		})
+
+		JustBeforeEach(func() {
+			handler.Delete(responseRecorder, req)
+		})
+
+		Context("when deleting lrp from BBS succeeds", func() {
+			BeforeEach(func() {
+				fakeBBS.RemoveDesiredLRPByProcessGuidReturns(nil)
+			})
+
+			It("tells the BBS to remove the desired LRP", func() {
+				Ω(fakeBBS.RemoveDesiredLRPByProcessGuidCallCount()).Should(Equal(1))
+				Ω(fakeBBS.RemoveDesiredLRPByProcessGuidArgsForCall(0)).Should(Equal("process-guid-0"))
+			})
+
+			It("responds with 204 NO CONTENT", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusNoContent))
+			})
+
+			It("returns no body", func() {
+				Ω(responseRecorder.Body.Bytes()).Should(BeEmpty())
+			})
+		})
+
+		Context("when reading from the BBS fails", func() {
+			BeforeEach(func() {
+				fakeBBS.RemoveDesiredLRPByProcessGuidReturns(errors.New("Something went wrong"))
+			})
+
+			It("responds with 500 INTERNAL SERVER ERROR", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
+			})
+
+			It("provides relevant error information", func() {
+				var deleteError receptor.Error
+				err := json.Unmarshal(responseRecorder.Body.Bytes(), &deleteError)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(deleteError).Should(Equal(receptor.Error{
+					Type:    receptor.UnknownError,
+					Message: "Something went wrong",
+				}))
+			})
+		})
+
+		Context("when the BBS returns no lrp", func() {
+			BeforeEach(func() {
+				fakeBBS.RemoveDesiredLRPByProcessGuidReturns(storeadapter.ErrorKeyNotFound)
+			})
+
+			It("responds with 404 Status NOT FOUND", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusNotFound))
+			})
+
+			It("returns an LRPNotFound error", func() {
+				var responseError receptor.Error
+				err := json.Unmarshal(responseRecorder.Body.Bytes(), &responseError)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(responseError).Should(Equal(receptor.Error{
+					Type:    receptor.LRPNotFound,
+					Message: "LRP not found",
+				}))
+			})
+		})
+
+		Context("when the process guid is not provided", func() {
+			BeforeEach(func() {
+				req.Form = url.Values{}
+			})
+
+			It("responds with 400 BAD REQUEST", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusBadRequest))
+			})
+
+			It("returns an unknown error", func() {
+				var responseError receptor.Error
+				err := json.Unmarshal(responseRecorder.Body.Bytes(), &responseError)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(responseError).Should(Equal(receptor.Error{
+					Type:    receptor.InvalidRequest,
+					Message: "process_guid missing from request",
+				}))
+			})
+		})
+	})
+
 	Describe("GetAll", func() {
 		JustBeforeEach(func() {
 			handler.GetAll(responseRecorder, newTestRequest(""))
 		})
 
-		Context("when reading tasks from BBS succeeds", func() {
+		Context("when reading LRPs from BBS succeeds", func() {
 			BeforeEach(func() {
 				fakeBBS.GetAllDesiredLRPsReturns([]models.DesiredLRP{
 					{ProcessGuid: "process-guid-0", Domain: "domain-1"},

@@ -49,6 +49,32 @@ var _ = Describe("Desired LRP API", func() {
 		})
 	})
 
+	Describe("GET /desired_lrps/:process_guid", func() {
+		var lrpRequest receptor.DesiredLRPCreateRequest
+		var lrpResponse receptor.DesiredLRPResponse
+		var getErr error
+
+		BeforeEach(func() {
+			lrpRequest = newValidDesiredLRPCreateRequest()
+			err := client.CreateDesiredLRP(lrpRequest)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			lrpResponse, getErr = client.GetDesiredLRPByProcessGuid(lrpRequest.ProcessGuid)
+		})
+
+		It("responds without an error", func() {
+			Ω(getErr).ShouldNot(HaveOccurred())
+		})
+
+		It("fetches the desired lrp with the matching process guid", func() {
+			desiredLRP, err := serialization.DesiredLRPFromRequest(lrpRequest)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			expectedLRPResponse := serialization.DesiredLRPToResponse(desiredLRP)
+			Ω(lrpResponse).Should(Equal(expectedLRPResponse))
+		})
+	})
+
 	Describe("PUT /desired_lrps/:process_guid", func() {
 		var updateErr error
 
@@ -84,6 +110,29 @@ var _ = Describe("Desired LRP API", func() {
 		})
 	})
 
+	Describe("DELETE /desired_lrps/:process_guid", func() {
+		var lrpRequest receptor.DesiredLRPCreateRequest
+		var deleteErr error
+
+		BeforeEach(func() {
+			lrpRequest = newValidDesiredLRPCreateRequest()
+			err := client.CreateDesiredLRP(lrpRequest)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			deleteErr = client.DeleteDesiredLRP(lrpRequest.ProcessGuid)
+		})
+
+		It("responds without an error", func() {
+			Ω(deleteErr).ShouldNot(HaveOccurred())
+		})
+
+		It("deletes the desired lrp with the matching process guid", func() {
+			_, getErr := client.GetDesiredLRPByProcessGuid(lrpRequest.ProcessGuid)
+			Ω(getErr).Should(BeAssignableToTypeOf(receptor.Error{}))
+			Ω(getErr.(receptor.Error).Type).Should(Equal(receptor.LRPNotFound))
+		})
+	})
+
 	Describe("GET /desired_lrps", func() {
 		var lrpResponses []receptor.DesiredLRPResponse
 		const expectedLRPCount = 6
@@ -103,32 +152,6 @@ var _ = Describe("Desired LRP API", func() {
 
 		It("fetches all of the desired lrps", func() {
 			Ω(lrpResponses).Should(HaveLen(expectedLRPCount))
-		})
-	})
-
-	Describe("GET /desired_lrps/:process_guid", func() {
-		var lrpRequest receptor.DesiredLRPCreateRequest
-		var lrpResponse receptor.DesiredLRPResponse
-		var getErr error
-
-		BeforeEach(func() {
-			lrpRequest = newValidDesiredLRPCreateRequest()
-			err := client.CreateDesiredLRP(lrpRequest)
-			Ω(err).ShouldNot(HaveOccurred())
-
-			lrpResponse, getErr = client.GetDesiredLRPByProcessGuid(lrpRequest.ProcessGuid)
-		})
-
-		It("responds without an error", func() {
-			Ω(getErr).ShouldNot(HaveOccurred())
-		})
-
-		It("fetches the desired lrp with the matching process guid", func() {
-			desiredLRP, err := serialization.DesiredLRPFromRequest(lrpRequest)
-			Ω(err).ShouldNot(HaveOccurred())
-
-			expectedLRPResponse := serialization.DesiredLRPToResponse(desiredLRP)
-			Ω(lrpResponse).Should(Equal(expectedLRPResponse))
 		})
 	})
 

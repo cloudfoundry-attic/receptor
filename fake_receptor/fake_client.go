@@ -66,6 +66,14 @@ type FakeClient struct {
 	updateDesiredLRPReturns struct {
 		result1 error
 	}
+	DeleteDesiredLRPStub        func(processGuid string) error
+	deleteDesiredLRPMutex       sync.RWMutex
+	deleteDesiredLRPArgsForCall []struct {
+		processGuid string
+	}
+	deleteDesiredLRPReturns struct {
+		result1 error
+	}
 	GetAllDesiredLRPsStub        func() ([]receptor.DesiredLRPResponse, error)
 	getAllDesiredLRPsMutex       sync.RWMutex
 	getAllDesiredLRPsArgsForCall []struct{}
@@ -309,6 +317,38 @@ func (fake *FakeClient) UpdateDesiredLRPArgsForCall(i int) (string, receptor.Des
 func (fake *FakeClient) UpdateDesiredLRPReturns(result1 error) {
 	fake.UpdateDesiredLRPStub = nil
 	fake.updateDesiredLRPReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeClient) DeleteDesiredLRP(processGuid string) error {
+	fake.deleteDesiredLRPMutex.Lock()
+	fake.deleteDesiredLRPArgsForCall = append(fake.deleteDesiredLRPArgsForCall, struct {
+		processGuid string
+	}{processGuid})
+	fake.deleteDesiredLRPMutex.Unlock()
+	if fake.DeleteDesiredLRPStub != nil {
+		return fake.DeleteDesiredLRPStub(processGuid)
+	} else {
+		return fake.deleteDesiredLRPReturns.result1
+	}
+}
+
+func (fake *FakeClient) DeleteDesiredLRPCallCount() int {
+	fake.deleteDesiredLRPMutex.RLock()
+	defer fake.deleteDesiredLRPMutex.RUnlock()
+	return len(fake.deleteDesiredLRPArgsForCall)
+}
+
+func (fake *FakeClient) DeleteDesiredLRPArgsForCall(i int) string {
+	fake.deleteDesiredLRPMutex.RLock()
+	defer fake.deleteDesiredLRPMutex.RUnlock()
+	return fake.deleteDesiredLRPArgsForCall[i].processGuid
+}
+
+func (fake *FakeClient) DeleteDesiredLRPReturns(result1 error) {
+	fake.DeleteDesiredLRPStub = nil
+	fake.deleteDesiredLRPReturns = struct {
 		result1 error
 	}{result1}
 }

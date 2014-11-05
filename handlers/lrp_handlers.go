@@ -147,6 +147,41 @@ func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
+func (h *DesiredLRPHandler) Delete(w http.ResponseWriter, req *http.Request) {
+	processGuid := req.FormValue(":process_guid")
+	log := h.logger.Session("delete-desired-lrp-handler", lager.Data{
+		"ProcessGuid": processGuid,
+	})
+
+	if processGuid == "" {
+		err := errors.New("process_guid missing from request")
+		log.Error("missing-process-guid", err)
+		writeBadRequestResponse(w, err)
+		return
+	}
+
+	err := h.bbs.RemoveDesiredLRPByProcessGuid(processGuid)
+
+	if err == storeadapter.ErrorKeyNotFound {
+		writeJSONResponse(w, http.StatusNotFound, receptor.Error{
+			Type:    receptor.LRPNotFound,
+			Message: "LRP not found",
+		})
+		return
+	}
+
+	if err != nil {
+		log.Error("unknown-error", err)
+		writeJSONResponse(w, http.StatusInternalServerError, receptor.Error{
+			Type:    receptor.UnknownError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (h *DesiredLRPHandler) GetAll(w http.ResponseWriter, req *http.Request) {
 	desiredLRPs, err := h.bbs.GetAllDesiredLRPs()
 	writeDesiredLRPResponse(w, h.logger.Session("get-all-desired-lrps-handler"), desiredLRPs, err)

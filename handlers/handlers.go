@@ -25,6 +25,7 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) ht
 		receptor.CreateDesiredLRPRoute:           route(desiredLRPHandler.Create),
 		receptor.GetDesiredLRPByProcessGuidRoute: route(desiredLRPHandler.GetByProcessGuid),
 		receptor.UpdateDesiredLRPRoute:           route(desiredLRPHandler.Update),
+		receptor.DeleteDesiredLRPRoute:           route(desiredLRPHandler.Delete),
 		receptor.GetAllDesiredLRPsRoute:          route(desiredLRPHandler.GetAll),
 		receptor.GetAllDesiredLRPsByDomainRoute:  route(desiredLRPHandler.GetAllByDomain),
 	}
