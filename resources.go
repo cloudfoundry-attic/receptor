@@ -103,3 +103,20 @@ type DesiredLRPResponse struct {
 	Log                  LogConfig               `json:"log"`
 	Annotation           string                  `json:"annotation,omitempty"`
 }
+
+const (
+	ActualLRPStateInvalid  = "INVALID"
+	ActualLRPStateStarting = "STARTING"
+	ActualLRPStateRunning  = "RUNNING"
+)
+
+type ActualLRPResponse struct {
+	ProcessGuid  string        `json:"process_guid"`
+	InstanceGuid string        `json:"instance_guid"`
+	ExecutorID   string        `json:"executor_id"`
+	Index        int           `json:"index"`
+	Host         string        `json:"host"`
+	Ports        []PortMapping `json:"ports"`
+	State        string        `json:"state"`
+	Since        int64         `json:"since"`
+}

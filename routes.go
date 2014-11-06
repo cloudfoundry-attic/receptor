@@ -17,6 +17,9 @@ const (
 	DeleteDesiredLRPRoute          = "DeleteDesiredLRP"
 	GetAllDesiredLRPsRoute         = "GetAllDesiredLRPs"
 	GetAllDesiredLRPsByDomainRoute = "GetAllDesiredLRPsByDomain"
+
+	// ActualLRPs
+	GetAllActualLRPsRoute = "GetAllActualLRPs"
 )
 
 var Routes = rata.Routes{
@@ -34,4 +37,7 @@ var Routes = rata.Routes{
 	{Path: "/desired_lrps/:process_guid", Method: "DELETE", Name: DeleteDesiredLRPRoute},
 	{Path: "/desired_lrps", Method: "GET", Name: GetAllDesiredLRPsRoute},
 	{Path: "/domains/:domain/desired_lrps", Method: "GET", Name: GetAllDesiredLRPsByDomainRoute},
+
+	// ActualLRPS
+	{Path: "/actual_lrps", Method: "GET", Name: GetAllActualLRPsRoute},
 }

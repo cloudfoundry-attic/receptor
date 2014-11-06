@@ -4,8 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-)
-import (
+
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"

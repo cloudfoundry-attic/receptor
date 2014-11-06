@@ -12,6 +12,7 @@ import (
 func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) http.Handler {
 	taskHandler := NewTaskHandler(bbs, logger)
 	desiredLRPHandler := NewDesiredLRPHandler(bbs, logger)
+	actualLRPHandler := NewActualLRPHandler(bbs, logger)
 
 	actions := rata.Handlers{
 		// Tasks
@@ -28,6 +29,9 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) ht
 		receptor.DeleteDesiredLRPRoute:          route(desiredLRPHandler.Delete),
 		receptor.GetAllDesiredLRPsRoute:         route(desiredLRPHandler.GetAll),
 		receptor.GetAllDesiredLRPsByDomainRoute: route(desiredLRPHandler.GetAllByDomain),
+
+		// ActualLRPs
+		receptor.GetAllActualLRPsRoute: route(actualLRPHandler.GetAll),
 	}
 
 	handler, err := rata.NewRouter(receptor.Routes, actions)

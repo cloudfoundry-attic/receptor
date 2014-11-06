@@ -17,7 +17,7 @@ import (
 	"github.com/pivotal-golang/lager"
 )
 
-var _ = Describe("LRP Handlers", func() {
+var _ = Describe("Desired LRP Handlers", func() {
 	var (
 		logger           lager.Logger
 		fakeBBS          *fake_bbs.FakeReceptorBBS

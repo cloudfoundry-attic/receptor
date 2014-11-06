@@ -99,6 +99,13 @@ type FakeClient struct {
 		result1 []receptor.DesiredLRPResponse
 		result2 error
 	}
+	GetAllActualLRPsStub        func() ([]receptor.ActualLRPResponse, error)
+	getAllActualLRPsMutex       sync.RWMutex
+	getAllActualLRPsArgsForCall []struct{}
+	getAllActualLRPsReturns struct {
+		result1 []receptor.ActualLRPResponse
+		result2 error
+	}
 }
 
 func (fake *FakeClient) CreateTask(arg1 receptor.TaskCreateRequest) error {
@@ -440,6 +447,31 @@ func (fake *FakeClient) GetAllDesiredLRPsByDomainReturns(result1 []receptor.Desi
 	fake.GetAllDesiredLRPsByDomainStub = nil
 	fake.getAllDesiredLRPsByDomainReturns = struct {
 		result1 []receptor.DesiredLRPResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) GetAllActualLRPs() ([]receptor.ActualLRPResponse, error) {
+	fake.getAllActualLRPsMutex.Lock()
+	fake.getAllActualLRPsArgsForCall = append(fake.getAllActualLRPsArgsForCall, struct{}{})
+	fake.getAllActualLRPsMutex.Unlock()
+	if fake.GetAllActualLRPsStub != nil {
+		return fake.GetAllActualLRPsStub()
+	} else {
+		return fake.getAllActualLRPsReturns.result1, fake.getAllActualLRPsReturns.result2
+	}
+}
+
+func (fake *FakeClient) GetAllActualLRPsCallCount() int {
+	fake.getAllActualLRPsMutex.RLock()
+	defer fake.getAllActualLRPsMutex.RUnlock()
+	return len(fake.getAllActualLRPsArgsForCall)
+}
+
+func (fake *FakeClient) GetAllActualLRPsReturns(result1 []receptor.ActualLRPResponse, result2 error) {
+	fake.GetAllActualLRPsStub = nil
+	fake.getAllActualLRPsReturns = struct {
+		result1 []receptor.ActualLRPResponse
 		result2 error
 	}{result1, result2}
 }

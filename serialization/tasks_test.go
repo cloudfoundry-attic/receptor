@@ -4,7 +4,7 @@ import (
 	"net/url"
 
 	"github.com/cloudfoundry-incubator/receptor"
-	. "github.com/cloudfoundry-incubator/receptor/serialization"
+	"github.com/cloudfoundry-incubator/receptor/serialization"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 
 	. "github.com/onsi/ginkgo"
@@ -62,12 +62,12 @@ var _ = Describe("Task Serialization", func() {
 
 			for modelState, jsonState := range EXPECTED_STATE_MAP {
 				task.State = modelState
-				Ω(TaskToResponse(task).State).Should(Equal(jsonState))
+				Ω(serialization.TaskToResponse(task).State).Should(Equal(jsonState))
 			}
 		})
 
 		It("serializes the task's fields", func() {
-			actualResponse := TaskToResponse(task)
+			actualResponse := serialization.TaskToResponse(task)
 
 			expectedResponse := receptor.TaskResponse{
 				TaskGuid:   "the-task-guid",
@@ -115,13 +115,13 @@ var _ = Describe("Task Serialization", func() {
 			})
 
 			It("serializes the completion callback URL", func() {
-				Ω(TaskToResponse(task).CompletionCallbackURL).Should(Equal("http://example.com/the-path"))
+				Ω(serialization.TaskToResponse(task).CompletionCallbackURL).Should(Equal("http://example.com/the-path"))
 			})
 		})
 
 		Context("when the task doesn't have a CompletionCallbackURL", func() {
 			It("leaves the completion callback URL blank", func() {
-				Ω(TaskToResponse(task).CompletionCallbackURL).Should(Equal(""))
+				Ω(serialization.TaskToResponse(task).CompletionCallbackURL).Should(Equal(""))
 			})
 		})
 	})
@@ -185,7 +185,7 @@ var _ = Describe("Task Serialization", func() {
 		})
 
 		It("translates the request into a task model, preserving attributes", func() {
-			actualTask, err := TaskFromRequest(request)
+			actualTask, err := serialization.TaskFromRequest(request)
 			Ω(err).ShouldNot(HaveOccurred())
 
 			Ω(actualTask).Should(Equal(expectedTask))
@@ -197,7 +197,7 @@ var _ = Describe("Task Serialization", func() {
 			})
 
 			It("parses the URL", func() {
-				actualTask, err := TaskFromRequest(request)
+				actualTask, err := serialization.TaskFromRequest(request)
 				Ω(err).ShouldNot(HaveOccurred())
 
 				Ω(actualTask.CompletionCallbackURL).Should(Equal(&url.URL{
@@ -214,7 +214,7 @@ var _ = Describe("Task Serialization", func() {
 			})
 
 			It("errors", func() {
-				_, err := TaskFromRequest(request)
+				_, err := serialization.TaskFromRequest(request)
 				Ω(err).Should(HaveOccurred())
 			})
 		})

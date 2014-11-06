@@ -22,6 +22,8 @@ type Client interface {
 	DeleteDesiredLRP(processGuid string) error
 	GetAllDesiredLRPs() ([]DesiredLRPResponse, error)
 	GetAllDesiredLRPsByDomain(domain string) ([]DesiredLRPResponse, error)
+
+	GetAllActualLRPs() ([]ActualLRPResponse, error)
 }
 
 func NewClient(addr, user, password string) Client {
@@ -94,6 +96,12 @@ func (c *client) GetAllDesiredLRPsByDomain(domain string) ([]DesiredLRPResponse,
 	var desiredLRPs []DesiredLRPResponse
 	err := c.doRequest(GetAllDesiredLRPsByDomainRoute, rata.Params{"domain": domain}, nil, &desiredLRPs)
 	return desiredLRPs, err
+}
+
+func (c *client) GetAllActualLRPs() ([]ActualLRPResponse, error) {
+	var actualLRPs []ActualLRPResponse
+	err := c.doRequest(GetAllActualLRPsRoute, nil, nil, &actualLRPs)
+	return actualLRPs, err
 }
 
 func (c *client) doRequest(requestName string, params rata.Params, request, response interface{}) error {
