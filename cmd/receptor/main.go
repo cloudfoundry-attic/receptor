@@ -15,6 +15,7 @@ import (
 	"github.com/cloudfoundry-incubator/receptor/handlers"
 	"github.com/cloudfoundry-incubator/receptor/task_watcher"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
+	"github.com/cloudfoundry/dropsonde"
 	"github.com/cloudfoundry/gunk/localip"
 	"github.com/cloudfoundry/gunk/timeprovider"
 	"github.com/cloudfoundry/gunk/workpool"
@@ -86,6 +87,18 @@ var initialHeartbeatInterval = flag.Duration(
 	"Heartbeat interval to use prior to router greeting.",
 )
 
+var dropsondeOrigin = flag.String(
+	"dropsondeOrigin",
+	"receptor",
+	"Origin identifier for dropsonde-emitted metrics.",
+)
+
+var dropsondeDestination = flag.String(
+	"dropsondeDestination",
+	"localhost:3457",
+	"Destination for dropsonde-emitted metrics.",
+)
+
 func main() {
 	flag.Parse()
 
@@ -93,6 +106,8 @@ func main() {
 
 	logger := cf_lager.New("receptor")
 	logger.Info("starting")
+
+	initializeDropsonde(logger)
 
 	if err := validateNatsArguments(); err != nil {
 		logger.Error("invalid-nats-flags", err)
@@ -140,6 +155,13 @@ func validateNatsArguments() error {
 		}
 	}
 	return nil
+}
+
+func initializeDropsonde(logger lager.Logger) {
+	err := dropsonde.Initialize(*dropsondeOrigin, *dropsondeDestination)
+	if err != nil {
+		logger.Error("failed to initialize dropsonde: %v", err)
+	}
 }
 
 func initializeReceptorBBS(logger lager.Logger) Bbs.ReceptorBBS {
