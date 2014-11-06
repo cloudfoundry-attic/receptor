@@ -15,9 +15,9 @@ func writeUnknownErrorResponse(w http.ResponseWriter, err error) {
 	})
 }
 
-func writeBadRequestResponse(w http.ResponseWriter, err error) {
+func writeBadRequestResponse(w http.ResponseWriter, errorType string, err error) {
 	writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
-		Type:    receptor.InvalidRequest,
+		Type:    errorType,
 		Message: err.Error(),
 	})
 }

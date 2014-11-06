@@ -33,29 +33,21 @@ func (h *DesiredLRPHandler) Create(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&desireLRPRequest)
 	if err != nil {
 		log.Error("invalid-json", err)
-		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
-			Type:    receptor.InvalidJSON,
-			Message: err.Error(),
-		})
+		writeBadRequestResponse(w, receptor.InvalidJSON, err)
 		return
 	}
 
 	desiredLRP, err := serialization.DesiredLRPFromRequest(desireLRPRequest)
 	if err != nil {
 		log.Error("lrp-request-invalid", err)
-		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
-			Type:    receptor.InvalidLRP,
-			Message: err.Error(),
-		})
+		writeBadRequestResponse(w, receptor.InvalidLRP, err)
 		return
 	}
 
 	err = h.bbs.DesireLRP(desiredLRP)
 	if err != nil {
-		writeJSONResponse(w, http.StatusInternalServerError, receptor.Error{
-			Type:    receptor.UnknownError,
-			Message: err.Error(),
-		})
+		log.Error("desire-lrp-failed", err)
+		writeUnknownErrorResponse(w, err)
 		return
 	}
 
@@ -71,32 +63,25 @@ func (h *DesiredLRPHandler) Get(w http.ResponseWriter, r *http.Request) {
 	if processGuid == "" {
 		err := errors.New("process_guid missing from request")
 		log.Error("missing-process-guid", err)
-		writeBadRequestResponse(w, err)
+		writeBadRequestResponse(w, receptor.InvalidRequest, err)
 		return
 	}
 
 	desiredLRP, err := h.bbs.GetDesiredLRPByProcessGuid(processGuid)
 	if err == storeadapter.ErrorKeyNotFound {
-		writeJSONResponse(w, http.StatusNotFound, receptor.Error{
-			Type:    receptor.LRPNotFound,
-			Message: "LRP not found",
-		})
+		writeLRPNotFoundResponse(w)
 		return
 	}
 
 	if err != nil {
 		log.Error("unknown-error", err)
-		writeJSONResponse(w, http.StatusInternalServerError, receptor.Error{
-			Type:    receptor.UnknownError,
-			Message: err.Error(),
-		})
+		writeUnknownErrorResponse(w, err)
 		return
 	}
 
 	response := serialization.DesiredLRPToResponse(desiredLRP)
 
 	writeJSONResponse(w, http.StatusOK, response)
-	return
 }
 
 func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
@@ -108,7 +93,7 @@ func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
 	if processGuid == "" {
 		err := errors.New("process_guid missing from request")
 		log.Error("missing-process-guid", err)
-		writeBadRequestResponse(w, err)
+		writeBadRequestResponse(w, receptor.InvalidRequest, err)
 		return
 	}
 
@@ -117,10 +102,7 @@ func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&desireLRPRequest)
 	if err != nil {
 		log.Error("invalid-json", err)
-		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
-			Type:    receptor.InvalidJSON,
-			Message: err.Error(),
-		})
+		writeBadRequestResponse(w, receptor.InvalidJSON, err)
 		return
 	}
 
@@ -128,19 +110,13 @@ func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	err = h.bbs.UpdateDesiredLRP(processGuid, update)
 	if err == storeadapter.ErrorKeyNotFound {
-		writeJSONResponse(w, http.StatusNotFound, receptor.Error{
-			Type:    receptor.LRPNotFound,
-			Message: "LRP not found",
-		})
+		writeLRPNotFoundResponse(w)
 		return
 	}
 
 	if err != nil {
 		log.Error("unknown-error", err)
-		writeJSONResponse(w, http.StatusInternalServerError, receptor.Error{
-			Type:    receptor.UnknownError,
-			Message: err.Error(),
-		})
+		writeUnknownErrorResponse(w, err)
 		return
 	}
 
@@ -156,26 +132,20 @@ func (h *DesiredLRPHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	if processGuid == "" {
 		err := errors.New("process_guid missing from request")
 		log.Error("missing-process-guid", err)
-		writeBadRequestResponse(w, err)
+		writeBadRequestResponse(w, receptor.InvalidRequest, err)
 		return
 	}
 
 	err := h.bbs.RemoveDesiredLRPByProcessGuid(processGuid)
 
 	if err == storeadapter.ErrorKeyNotFound {
-		writeJSONResponse(w, http.StatusNotFound, receptor.Error{
-			Type:    receptor.LRPNotFound,
-			Message: "LRP not found",
-		})
+		writeLRPNotFoundResponse(w)
 		return
 	}
 
 	if err != nil {
 		log.Error("unknown-error", err)
-		writeJSONResponse(w, http.StatusInternalServerError, receptor.Error{
-			Type:    receptor.UnknownError,
-			Message: err.Error(),
-		})
+		writeUnknownErrorResponse(w, err)
 		return
 	}
 
@@ -194,10 +164,7 @@ func (h *DesiredLRPHandler) GetAllByDomain(w http.ResponseWriter, req *http.Requ
 	if lrpDomain == "" {
 		err := errors.New("domain missing from request")
 		log.Error("missing-domain", err)
-		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
-			Type:    receptor.InvalidRequest,
-			Message: err.Error(),
-		})
+		writeBadRequestResponse(w, receptor.InvalidRequest, err)
 		return
 	}
 
@@ -218,4 +185,11 @@ func writeDesiredLRPResponse(w http.ResponseWriter, logger lager.Logger, desired
 	}
 
 	writeJSONResponse(w, http.StatusOK, responses)
+}
+
+func writeLRPNotFoundResponse(w http.ResponseWriter) {
+	writeJSONResponse(w, http.StatusNotFound, receptor.Error{
+		Type:    receptor.LRPNotFound,
+		Message: "LRP not found",
+	})
 }
