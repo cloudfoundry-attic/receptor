@@ -24,6 +24,7 @@ type Client interface {
 	GetAllDesiredLRPsByDomain(domain string) ([]DesiredLRPResponse, error)
 
 	GetAllActualLRPs() ([]ActualLRPResponse, error)
+	GetAllActualLRPsByDomain(domain string) ([]ActualLRPResponse, error)
 }
 
 func NewClient(addr, user, password string) Client {
@@ -101,6 +102,12 @@ func (c *client) GetAllDesiredLRPsByDomain(domain string) ([]DesiredLRPResponse,
 func (c *client) GetAllActualLRPs() ([]ActualLRPResponse, error) {
 	var actualLRPs []ActualLRPResponse
 	err := c.doRequest(GetAllActualLRPsRoute, nil, nil, &actualLRPs)
+	return actualLRPs, err
+}
+
+func (c *client) GetAllActualLRPsByDomain(domain string) ([]ActualLRPResponse, error) {
+	var actualLRPs []ActualLRPResponse
+	err := c.doRequest(GetAllActualLRPsByDomainRoute, rata.Params{"domain": domain}, nil, &actualLRPs)
 	return actualLRPs, err
 }
 

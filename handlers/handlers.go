@@ -31,7 +31,8 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) ht
 		receptor.GetAllDesiredLRPsByDomainRoute: route(desiredLRPHandler.GetAllByDomain),
 
 		// ActualLRPs
-		receptor.GetAllActualLRPsRoute: route(actualLRPHandler.GetAll),
+		receptor.GetAllActualLRPsRoute:         route(actualLRPHandler.GetAll),
+		receptor.GetAllActualLRPsByDomainRoute: route(actualLRPHandler.GetAllByDomain),
 	}
 
 	handler, err := rata.NewRouter(receptor.Routes, actions)
