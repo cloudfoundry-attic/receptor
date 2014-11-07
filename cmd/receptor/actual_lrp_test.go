@@ -35,6 +35,7 @@ var _ = Describe("Actual LRP API", func() {
 					"process-guid-"+index,
 					"instance-guid-"+index,
 					"executor-id",
+					"domain",
 					i,
 					models.ActualLRPStateRunning,
 					99999999999,

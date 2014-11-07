@@ -10,6 +10,7 @@ func ActualLRPToResponse(actualLRP models.ActualLRP) receptor.ActualLRPResponse 
 		ProcessGuid:  actualLRP.ProcessGuid,
 		InstanceGuid: actualLRP.InstanceGuid,
 		ExecutorID:   actualLRP.ExecutorID,
+		Domain:       actualLRP.Domain,
 		Index:        actualLRP.Index,
 		Host:         actualLRP.Host,
 		Ports:        PortMappingFromModel(actualLRP.Ports),

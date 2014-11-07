@@ -114,6 +114,7 @@ type ActualLRPResponse struct {
 	ProcessGuid  string        `json:"process_guid"`
 	InstanceGuid string        `json:"instance_guid"`
 	ExecutorID   string        `json:"executor_id"`
+	Domain       string        `json:"domain"`
 	Index        int           `json:"index"`
 	Host         string        `json:"host"`
 	Ports        []PortMapping `json:"ports"`

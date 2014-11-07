@@ -17,6 +17,7 @@ var _ = Describe("ActualLRP Serialization", func() {
 				ProcessGuid:  "process-guid-0",
 				InstanceGuid: "instance-guid-0",
 				ExecutorID:   "executor-id-0",
+				Domain:       "some-domain",
 				Index:        3,
 				Host:         "host-0",
 				Ports: []models.PortMapping{
@@ -35,6 +36,7 @@ var _ = Describe("ActualLRP Serialization", func() {
 				ProcessGuid:  "process-guid-0",
 				InstanceGuid: "instance-guid-0",
 				ExecutorID:   "executor-id-0",
+				Domain:       "some-domain",
 				Index:        3,
 				Host:         "host-0",
 				Ports: []receptor.PortMapping{
