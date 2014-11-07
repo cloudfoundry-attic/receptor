@@ -106,7 +106,7 @@ var _ = AfterEach(func() {
 	ginkgomon.Kill(natsGroupProcess)
 })
 
-func newNatsGroup() grouper.StaticGroup {
+func newNatsGroup() ifrit.Runner {
 	natsServerRunner = diegonats.NewGnatsdTestRunner(natsPort)
 	natsClientRunner = diegonats.NewClientRunner(natsAddress, "", "", logger, natsClient)
 	return grouper.NewOrdered(os.Kill, grouper.Members{

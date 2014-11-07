@@ -11,10 +11,11 @@ import (
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/pivotal-golang/lager"
+	"github.com/tedsuo/ifrit"
 	"github.com/tedsuo/ifrit/grouper"
 )
 
-func newTaskWorkerPool(poolSize int, taskQueue <-chan models.Task, bbs Bbs.ReceptorBBS, logger lager.Logger) grouper.StaticGroup {
+func newTaskWorkerPool(poolSize int, taskQueue <-chan models.Task, bbs Bbs.ReceptorBBS, logger lager.Logger) ifrit.Runner {
 	members := make(grouper.Members, poolSize)
 	for i := 0; i < poolSize; i++ {
 		name := fmt.Sprintf("task-worker-%d", i)
