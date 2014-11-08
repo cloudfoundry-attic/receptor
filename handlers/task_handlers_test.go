@@ -40,8 +40,8 @@ var _ = Describe("TaskHandler", func() {
 			Domain:     "test-domain",
 			RootFSPath: "docker://docker",
 			Stack:      "some-stack",
-			Actions: []models.ExecutorAction{
-				{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
+			Action: &models.ExecutorAction{
+				Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}},
 			},
 			MemoryMB:   24,
 			DiskMB:     12,
@@ -56,8 +56,8 @@ var _ = Describe("TaskHandler", func() {
 			Domain:     "test-domain",
 			RootFSPath: "docker://docker",
 			Stack:      "some-stack",
-			Actions: []models.ExecutorAction{
-				{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
+			Action: &models.ExecutorAction{
+				Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}},
 			},
 			MemoryMB:   24,
 			DiskMB:     12,

@@ -27,35 +27,35 @@ const (
 )
 
 type TaskCreateRequest struct {
-	Actions               []models.ExecutorAction `json:"actions"`
-	Annotation            string                  `json:"annotation,omitempty"`
-	CompletionCallbackURL string                  `json:"completion_callback_url"`
-	CPUWeight             uint                    `json:"cpu_weight"`
-	DiskMB                int                     `json:"disk_mb"`
-	Domain                string                  `json:"domain"`
-	Log                   LogConfig               `json:"log"`
-	MemoryMB              int                     `json:"memory_mb"`
-	ResultFile            string                  `json:"result_file"`
-	Stack                 string                  `json:"stack"`
-	TaskGuid              string                  `json:"task_guid"`
-	RootFSPath            string                  `json:"root_fs"`
-	EnvironmentVariables  []EnvironmentVariable   `json:"env,omitempty"`
+	Action                *models.ExecutorAction `json:"actions"`
+	Annotation            string                 `json:"annotation,omitempty"`
+	CompletionCallbackURL string                 `json:"completion_callback_url"`
+	CPUWeight             uint                   `json:"cpu_weight"`
+	DiskMB                int                    `json:"disk_mb"`
+	Domain                string                 `json:"domain"`
+	Log                   LogConfig              `json:"log"`
+	MemoryMB              int                    `json:"memory_mb"`
+	ResultFile            string                 `json:"result_file"`
+	Stack                 string                 `json:"stack"`
+	TaskGuid              string                 `json:"task_guid"`
+	RootFSPath            string                 `json:"root_fs"`
+	EnvironmentVariables  []EnvironmentVariable  `json:"env,omitempty"`
 }
 
 type TaskResponse struct {
-	Actions               []models.ExecutorAction `json:"actions"`
-	Annotation            string                  `json:"annotation,omitempty"`
-	CompletionCallbackURL string                  `json:"completion_callback_url"`
-	CPUWeight             uint                    `json:"cpu_weight"`
-	DiskMB                int                     `json:"disk_mb"`
-	Domain                string                  `json:"domain"`
-	Log                   LogConfig               `json:"log"`
-	MemoryMB              int                     `json:"memory_mb"`
-	ResultFile            string                  `json:"result_file"`
-	Stack                 string                  `json:"stack"`
-	TaskGuid              string                  `json:"task_guid"`
-	RootFSPath            string                  `json:"root_fs"`
-	EnvironmentVariables  []EnvironmentVariable   `json:"env,omitempty"`
+	Action                *models.ExecutorAction `json:"actions"`
+	Annotation            string                 `json:"annotation,omitempty"`
+	CompletionCallbackURL string                 `json:"completion_callback_url"`
+	CPUWeight             uint                   `json:"cpu_weight"`
+	DiskMB                int                    `json:"disk_mb"`
+	Domain                string                 `json:"domain"`
+	Log                   LogConfig              `json:"log"`
+	MemoryMB              int                    `json:"memory_mb"`
+	ResultFile            string                 `json:"result_file"`
+	Stack                 string                 `json:"stack"`
+	TaskGuid              string                 `json:"task_guid"`
+	RootFSPath            string                 `json:"root_fs"`
+	EnvironmentVariables  []EnvironmentVariable  `json:"env,omitempty"`
 
 	CreatedAt     int64  `json:"created_at"`
 	Failed        bool   `json:"failed"`

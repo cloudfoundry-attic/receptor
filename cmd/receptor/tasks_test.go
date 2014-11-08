@@ -49,8 +49,8 @@ var _ = Describe("Task API", func() {
 				Domain:   "test-domain",
 				Stack:    "some-stack",
 				CompletionCallbackURL: testServer.URL() + "/the/callback/path",
-				Actions: []models.ExecutorAction{
-					{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
+				Action: &models.ExecutorAction{
+					Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}},
 				},
 			}
 
@@ -99,8 +99,8 @@ var _ = Describe("Task API", func() {
 						Ω(taskResponse.Result).Should(Equal("the-result"))
 						Ω(taskResponse.Failed).Should(Equal(true))
 						Ω(taskResponse.FailureReason).Should(Equal("the-failure-reason"))
-						Ω(taskResponse.Actions).Should(Equal([]models.ExecutorAction{
-							{Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}}},
+						Ω(taskResponse.Action).Should(Equal(&models.ExecutorAction{
+							Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}},
 						}))
 					},
 				))
@@ -130,8 +130,8 @@ var _ = Describe("Task API", func() {
 					TaskGuid: "task-guid-1",
 					Domain:   "test-domain",
 					Stack:    "some-stack",
-					Actions: []models.ExecutorAction{
-						{Action: models.RunAction{Path: "/bin/true"}},
+					Action: &models.ExecutorAction{
+						Action: models.RunAction{Path: "/bin/true"},
 					},
 				})
 				Ω(err).ShouldNot(HaveOccurred())
@@ -140,8 +140,8 @@ var _ = Describe("Task API", func() {
 					TaskGuid: "task-guid-2",
 					Domain:   "test-domain",
 					Stack:    "some-stack",
-					Actions: []models.ExecutorAction{
-						{Action: models.RunAction{Path: "/bin/true"}},
+					Action: &models.ExecutorAction{
+						Action: models.RunAction{Path: "/bin/true"},
 					},
 				})
 				Ω(err).ShouldNot(HaveOccurred())
@@ -167,8 +167,8 @@ var _ = Describe("Task API", func() {
 				TaskGuid: "task-guid-1",
 				Domain:   "test-domain",
 				Stack:    "stack-1",
-				Actions: []models.ExecutorAction{
-					{Action: models.RunAction{Path: "/bin/true"}},
+				Action: &models.ExecutorAction{
+					Action: models.RunAction{Path: "/bin/true"},
 				},
 			})
 			Ω(err).ShouldNot(HaveOccurred())
@@ -177,8 +177,8 @@ var _ = Describe("Task API", func() {
 				TaskGuid: "task-guid-2",
 				Domain:   "other-domain",
 				Stack:    "stack-2",
-				Actions: []models.ExecutorAction{
-					{Action: models.RunAction{Path: "/bin/true"}},
+				Action: &models.ExecutorAction{
+					Action: models.RunAction{Path: "/bin/true"},
 				},
 			})
 			Ω(err).ShouldNot(HaveOccurred())
@@ -187,8 +187,8 @@ var _ = Describe("Task API", func() {
 				TaskGuid: "task-guid-3",
 				Domain:   "test-domain",
 				Stack:    "stack-3",
-				Actions: []models.ExecutorAction{
-					{Action: models.RunAction{Path: "/bin/true"}},
+				Action: &models.ExecutorAction{
+					Action: models.RunAction{Path: "/bin/true"},
 				},
 			})
 			Ω(err).ShouldNot(HaveOccurred())
@@ -212,8 +212,8 @@ var _ = Describe("Task API", func() {
 				TaskGuid: "task-guid-1",
 				Domain:   "test-domain",
 				Stack:    "stack-1",
-				Actions: []models.ExecutorAction{
-					{Action: models.RunAction{Path: "/bin/true"}},
+				Action: &models.ExecutorAction{
+					Action: models.RunAction{Path: "/bin/true"},
 				},
 			}
 			err := bbs.DesireTask(task)
@@ -258,8 +258,8 @@ var _ = Describe("Task API", func() {
 				TaskGuid: "task-guid-1",
 				Domain:   "test-domain",
 				Stack:    "stack-1",
-				Actions: []models.ExecutorAction{
-					{Action: models.RunAction{Path: "/bin/true"}},
+				Action: &models.ExecutorAction{
+					Action: models.RunAction{Path: "/bin/true"},
 				},
 			}
 
