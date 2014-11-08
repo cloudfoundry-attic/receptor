@@ -21,12 +21,10 @@ var _ = Describe("Task Serialization", func() {
 				Domain:     "the-domain",
 				RootFSPath: "the-rootfs-path",
 				ExecutorID: "the-executor-id",
-				Actions: []models.ExecutorAction{
-					{
-						Action: models.UploadAction{
-							From: "from",
-							To:   "to",
-						},
+				Action: models.ExecutorAction{
+					Action: models.UploadAction{
+						From: "from",
+						To:   "to",
 					},
 				},
 				Stack:      "the-stack",
@@ -73,12 +71,10 @@ var _ = Describe("Task Serialization", func() {
 				Domain:     "the-domain",
 				RootFSPath: "the-rootfs-path",
 				ExecutorID: "the-executor-id",
-				Actions: []models.ExecutorAction{
-					{
-						Action: models.UploadAction{
-							From: "from",
-							To:   "to",
-						},
+				Action: &models.ExecutorAction{
+					Action: models.UploadAction{
+						From: "from",
+						To:   "to",
 					},
 				},
 				Stack:      "the-stack",
@@ -133,11 +129,9 @@ var _ = Describe("Task Serialization", func() {
 				TaskGuid:   "the-task-guid",
 				Domain:     "the-domain",
 				RootFSPath: "the-rootfs-path",
-				Actions: []models.ExecutorAction{
-					{
-						Action: &models.RunAction{
-							Path: "the-path",
-						},
+				Action: &models.ExecutorAction{
+					Action: models.RunAction{
+						Path: "the-path",
 					},
 				},
 				Stack:      "the-stack",
@@ -157,11 +151,9 @@ var _ = Describe("Task Serialization", func() {
 				TaskGuid:   "the-task-guid",
 				Domain:     "the-domain",
 				RootFSPath: "the-rootfs-path",
-				Actions: []models.ExecutorAction{
-					{
-						Action: &models.RunAction{
-							Path: "the-path",
-						},
+				Action: models.ExecutorAction{
+					Action: models.RunAction{
+						Path: "the-path",
 					},
 				},
 				Stack:      "the-stack",

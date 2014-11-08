@@ -22,44 +22,43 @@ const (
 )
 
 type TaskCreateRequest struct {
-	Actions               []models.ExecutorAction `json:"actions"`
-	Annotation            string                  `json:"annotation,omitempty"`
-	CompletionCallbackURL string                  `json:"completion_callback_url"`
-	CPUWeight             uint                    `json:"cpu_weight"`
-	DiskMB                int                     `json:"disk_mb"`
-	Domain                string                  `json:"domain"`
-	LogGuid               string                  `json:"log_guid"`
-	LogSource             string                  `json:"log_source"`
-	MemoryMB              int                     `json:"memory_mb"`
-	ResultFile            string                  `json:"result_file"`
-	Stack                 string                  `json:"stack"`
-	TaskGuid              string                  `json:"task_guid"`
-	RootFSPath            string                  `json:"root_fs"`
-	EnvironmentVariables  []EnvironmentVariable   `json:"env,omitempty"`
+	Action                *models.ExecutorAction `json:"actions"`
+	Annotation            string                 `json:"annotation,omitempty"`
+	CompletionCallbackURL string                 `json:"completion_callback_url"`
+	CPUWeight             uint                   `json:"cpu_weight"`
+	DiskMB                int                    `json:"disk_mb"`
+	Domain                string                 `json:"domain"`
+	LogGuid               string                 `json:"log_guid"`
+	LogSource             string                 `json:"log_source"`
+	MemoryMB              int                    `json:"memory_mb"`
+	ResultFile            string                 `json:"result_file"`
+	Stack                 string                 `json:"stack"`
+	TaskGuid              string                 `json:"task_guid"`
+	RootFSPath            string                 `json:"root_fs"`
+	EnvironmentVariables  []EnvironmentVariable  `json:"env,omitempty"`
 }
 
 type TaskResponse struct {
-	Actions               []models.ExecutorAction `json:"actions"`
-	Annotation            string                  `json:"annotation,omitempty"`
-	CompletionCallbackURL string                  `json:"completion_callback_url"`
-	CPUWeight             uint                    `json:"cpu_weight"`
-	DiskMB                int                     `json:"disk_mb"`
-	Domain                string                  `json:"domain"`
-	EnvironmentVariables  []EnvironmentVariable   `json:"env,omitempty"`
-	ExecutorID            string                  `json:"executor_id"`
-	LogGuid               string                  `json:"log_guid"`
-	LogSource             string                  `json:"log_source"`
-	MemoryMB              int                     `json:"memory_mb"`
-	ResultFile            string                  `json:"result_file"`
-	RootFSPath            string                  `json:"root_fs"`
-	Stack                 string                  `json:"stack"`
-	TaskGuid              string                  `json:"task_guid"`
-
-	CreatedAt     int64  `json:"created_at"`
-	Failed        bool   `json:"failed"`
-	FailureReason string `json:"failure_reason"`
-	Result        string `json:"result"`
-	State         string `json:"state"`
+	Action                *models.ExecutorAction `json:"actions"`
+	Annotation            string                 `json:"annotation,omitempty"`
+	CompletionCallbackURL string                 `json:"completion_callback_url"`
+	CPUWeight             uint                   `json:"cpu_weight"`
+	DiskMB                int                    `json:"disk_mb"`
+	Domain                string                 `json:"domain"`
+	LogGuid               string                 `json:"log_guid"`
+	LogSource             string                 `json:"log_source"`
+	MemoryMB              int                    `json:"memory_mb"`
+	ResultFile            string                 `json:"result_file"`
+	Stack                 string                 `json:"stack"`
+	TaskGuid              string                 `json:"task_guid"`
+	RootFSPath            string                 `json:"root_fs"`
+	EnvironmentVariables  []EnvironmentVariable  `json:"env,omitempty"`
+	ExecutorID            string                 `json:"executor_id"`
+	CreatedAt             int64                  `json:"created_at"`
+	Failed                bool                   `json:"failed"`
+	FailureReason         string                 `json:"failure_reason"`
+	Result                string                 `json:"result"`
+	State                 string                 `json:"state"`
 }
 
 type DesiredLRPCreateRequest struct {

@@ -23,7 +23,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				Annotation:  "foo",
 				Instances:   1,
 				Action: &models.ExecutorAction{
-					Action: &models.RunAction{
+					Action: models.RunAction{
 						Path: "the-path",
 					},
 				},
@@ -56,7 +56,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				EnvironmentVariables: []models.EnvironmentVariable{
 					{Name: "ENV_VAR_NAME", Value: "value"},
 				},
-				Action: &models.ExecutorAction{
+				Action: models.ExecutorAction{
 					Action: models.RunAction{Path: "/bin/true"},
 				},
 				DiskMB:    126,

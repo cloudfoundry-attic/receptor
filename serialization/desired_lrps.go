@@ -6,6 +6,11 @@ import (
 )
 
 func DesiredLRPFromRequest(req receptor.DesiredLRPCreateRequest) (models.DesiredLRP, error) {
+	var action models.ExecutorAction
+	if req.Action != nil {
+		action = *req.Action
+	}
+
 	lrp := models.DesiredLRP{
 		ProcessGuid:          req.ProcessGuid,
 		Domain:               req.Domain,
@@ -14,7 +19,7 @@ func DesiredLRPFromRequest(req receptor.DesiredLRPCreateRequest) (models.Desired
 		Stack:                req.Stack,
 		EnvironmentVariables: EnvironmentVariablesToModel(req.EnvironmentVariables),
 		Setup:                req.Setup,
-		Action:               req.Action,
+		Action:               action,
 		Monitor:              req.Monitor,
 		DiskMB:               req.DiskMB,
 		MemoryMB:             req.MemoryMB,
@@ -42,7 +47,7 @@ func DesiredLRPToResponse(lrp models.DesiredLRP) receptor.DesiredLRPResponse {
 		Stack:                lrp.Stack,
 		EnvironmentVariables: EnvironmentVariablesFromModel(lrp.EnvironmentVariables),
 		Setup:                lrp.Setup,
-		Action:               lrp.Action,
+		Action:               &lrp.Action,
 		Monitor:              lrp.Monitor,
 		DiskMB:               lrp.DiskMB,
 		MemoryMB:             lrp.MemoryMB,
