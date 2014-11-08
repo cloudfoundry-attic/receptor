@@ -65,20 +65,22 @@ type TaskResponse struct {
 }
 
 type DesiredLRPCreateRequest struct {
-	ProcessGuid          string                  `json:"process_guid"`
-	Domain               string                  `json:"domain"`
-	RootFSPath           string                  `json:"root_fs"`
-	Instances            int                     `json:"instances"`
-	Stack                string                  `json:"stack"`
-	EnvironmentVariables []EnvironmentVariable   `json:"env,omitempty"`
-	Actions              []models.ExecutorAction `json:"actions"`
-	DiskMB               int                     `json:"disk_mb"`
-	MemoryMB             int                     `json:"memory_mb"`
-	CPUWeight            uint                    `json:"cpu_weight"`
-	Ports                []PortMapping           `json:"ports"`
-	Routes               []string                `json:"routes"`
-	Log                  LogConfig               `json:"log"`
-	Annotation           string                  `json:"annotation,omitempty"`
+	ProcessGuid          string                 `json:"process_guid"`
+	Domain               string                 `json:"domain"`
+	RootFSPath           string                 `json:"root_fs"`
+	Instances            int                    `json:"instances"`
+	Stack                string                 `json:"stack"`
+	EnvironmentVariables []EnvironmentVariable  `json:"env,omitempty"`
+	Setup                *models.ExecutorAction `json:"setup"`
+	Action               *models.ExecutorAction `json:"action"`
+	Monitor              *models.ExecutorAction `json:"monitor"`
+	DiskMB               int                    `json:"disk_mb"`
+	MemoryMB             int                    `json:"memory_mb"`
+	CPUWeight            uint                   `json:"cpu_weight"`
+	Ports                []PortMapping          `json:"ports"`
+	Routes               []string               `json:"routes"`
+	Log                  LogConfig              `json:"log"`
+	Annotation           string                 `json:"annotation,omitempty"`
 }
 
 type DesiredLRPUpdateRequest struct {
@@ -88,20 +90,22 @@ type DesiredLRPUpdateRequest struct {
 }
 
 type DesiredLRPResponse struct {
-	ProcessGuid          string                  `json:"process_guid"`
-	Domain               string                  `json:"domain"`
-	RootFSPath           string                  `json:"root_fs"`
-	Instances            int                     `json:"instances"`
-	Stack                string                  `json:"stack"`
-	EnvironmentVariables []EnvironmentVariable   `json:"env,omitempty"`
-	Actions              []models.ExecutorAction `json:"actions"`
-	DiskMB               int                     `json:"disk_mb"`
-	MemoryMB             int                     `json:"memory_mb"`
-	CPUWeight            uint                    `json:"cpu_weight"`
-	Ports                []PortMapping           `json:"ports"`
-	Routes               []string                `json:"routes"`
-	Log                  LogConfig               `json:"log"`
-	Annotation           string                  `json:"annotation,omitempty"`
+	ProcessGuid          string                 `json:"process_guid"`
+	Domain               string                 `json:"domain"`
+	RootFSPath           string                 `json:"root_fs"`
+	Instances            int                    `json:"instances"`
+	Stack                string                 `json:"stack"`
+	EnvironmentVariables []EnvironmentVariable  `json:"env,omitempty"`
+	Setup                *models.ExecutorAction `json:"setup"`
+	Action               *models.ExecutorAction `json:"action"`
+	Monitor              *models.ExecutorAction `json:"monitor"`
+	DiskMB               int                    `json:"disk_mb"`
+	MemoryMB             int                    `json:"memory_mb"`
+	CPUWeight            uint                   `json:"cpu_weight"`
+	Ports                []PortMapping          `json:"ports"`
+	Routes               []string               `json:"routes"`
+	Log                  LogConfig              `json:"log"`
+	Annotation           string                 `json:"annotation,omitempty"`
 }
 
 const (

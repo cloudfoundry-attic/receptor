@@ -22,11 +22,9 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				RootFSPath:  "the-rootfs-path",
 				Annotation:  "foo",
 				Instances:   1,
-				Actions: []models.ExecutorAction{
-					{
-						Action: &models.RunAction{
-							Path: "the-path",
-						},
+				Action: &models.ExecutorAction{
+					Action: &models.RunAction{
+						Path: "the-path",
 					},
 				},
 			}
@@ -58,8 +56,8 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				EnvironmentVariables: []models.EnvironmentVariable{
 					{Name: "ENV_VAR_NAME", Value: "value"},
 				},
-				Actions: []models.ExecutorAction{
-					{Action: models.RunAction{Path: "/bin/true"}},
+				Action: &models.ExecutorAction{
+					Action: models.RunAction{Path: "/bin/true"},
 				},
 				DiskMB:    126,
 				MemoryMB:  1234,
@@ -83,8 +81,8 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				EnvironmentVariables: []receptor.EnvironmentVariable{
 					{Name: "ENV_VAR_NAME", Value: "value"},
 				},
-				Actions: []models.ExecutorAction{
-					{Action: models.RunAction{Path: "/bin/true"}},
+				Action: &models.ExecutorAction{
+					Action: models.RunAction{Path: "/bin/true"},
 				},
 				DiskMB:    126,
 				MemoryMB:  1234,
