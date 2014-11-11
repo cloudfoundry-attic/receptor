@@ -115,6 +115,15 @@ type FakeClient struct {
 		result1 []receptor.ActualLRPResponse
 		result2 error
 	}
+	GetAllActualLRPsByProcessGuidStub        func(processGuid string) ([]receptor.ActualLRPResponse, error)
+	getAllActualLRPsByProcessGuidMutex       sync.RWMutex
+	getAllActualLRPsByProcessGuidArgsForCall []struct {
+		processGuid string
+	}
+	getAllActualLRPsByProcessGuidReturns struct {
+		result1 []receptor.ActualLRPResponse
+		result2 error
+	}
 }
 
 func (fake *FakeClient) CreateTask(arg1 receptor.TaskCreateRequest) error {
@@ -513,6 +522,39 @@ func (fake *FakeClient) GetAllActualLRPsByDomainArgsForCall(i int) string {
 func (fake *FakeClient) GetAllActualLRPsByDomainReturns(result1 []receptor.ActualLRPResponse, result2 error) {
 	fake.GetAllActualLRPsByDomainStub = nil
 	fake.getAllActualLRPsByDomainReturns = struct {
+		result1 []receptor.ActualLRPResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) GetAllActualLRPsByProcessGuid(processGuid string) ([]receptor.ActualLRPResponse, error) {
+	fake.getAllActualLRPsByProcessGuidMutex.Lock()
+	fake.getAllActualLRPsByProcessGuidArgsForCall = append(fake.getAllActualLRPsByProcessGuidArgsForCall, struct {
+		processGuid string
+	}{processGuid})
+	fake.getAllActualLRPsByProcessGuidMutex.Unlock()
+	if fake.GetAllActualLRPsByProcessGuidStub != nil {
+		return fake.GetAllActualLRPsByProcessGuidStub(processGuid)
+	} else {
+		return fake.getAllActualLRPsByProcessGuidReturns.result1, fake.getAllActualLRPsByProcessGuidReturns.result2
+	}
+}
+
+func (fake *FakeClient) GetAllActualLRPsByProcessGuidCallCount() int {
+	fake.getAllActualLRPsByProcessGuidMutex.RLock()
+	defer fake.getAllActualLRPsByProcessGuidMutex.RUnlock()
+	return len(fake.getAllActualLRPsByProcessGuidArgsForCall)
+}
+
+func (fake *FakeClient) GetAllActualLRPsByProcessGuidArgsForCall(i int) string {
+	fake.getAllActualLRPsByProcessGuidMutex.RLock()
+	defer fake.getAllActualLRPsByProcessGuidMutex.RUnlock()
+	return fake.getAllActualLRPsByProcessGuidArgsForCall[i].processGuid
+}
+
+func (fake *FakeClient) GetAllActualLRPsByProcessGuidReturns(result1 []receptor.ActualLRPResponse, result2 error) {
+	fake.GetAllActualLRPsByProcessGuidStub = nil
+	fake.getAllActualLRPsByProcessGuidReturns = struct {
 		result1 []receptor.ActualLRPResponse
 		result2 error
 	}{result1, result2}

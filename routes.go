@@ -19,8 +19,9 @@ const (
 	GetAllDesiredLRPsByDomainRoute = "GetAllDesiredLRPsByDomain"
 
 	// ActualLRPs
-	GetAllActualLRPsRoute         = "GetAllActualLRPs"
-	GetAllActualLRPsByDomainRoute = "GetAllActualLRPsByDomain"
+	GetAllActualLRPsRoute              = "GetAllActualLRPs"
+	GetAllActualLRPsByDomainRoute      = "GetAllActualLRPsByDomain"
+	GetAllActualLRPsByProcessGuidRoute = "GetAllActualLRPsByProcessGuid"
 )
 
 var Routes = rata.Routes{
@@ -42,4 +43,5 @@ var Routes = rata.Routes{
 	// ActualLRPS
 	{Path: "/actual_lrps", Method: "GET", Name: GetAllActualLRPsRoute},
 	{Path: "/domains/:domain/actual_lrps", Method: "GET", Name: GetAllActualLRPsByDomainRoute},
+	{Path: "/desired_lrps/:process_guid/actual_lrps", Method: "GET", Name: GetAllActualLRPsByProcessGuidRoute},
 }

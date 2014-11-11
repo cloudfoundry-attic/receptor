@@ -222,4 +222,97 @@ var _ = Describe("Actual LRP Handlers", func() {
 			})
 		})
 	})
+
+	Describe("GetAllByProcessGuid", func() {
+		var req *http.Request
+
+		BeforeEach(func() {
+			req = newTestRequest("")
+			req.Form = url.Values{":process_guid": []string{"process-guid-1"}}
+		})
+
+		JustBeforeEach(func() {
+			handler.GetAllByProcessGuid(responseRecorder, req)
+		})
+
+		Context("when reading LRPs from BBS succeeds", func() {
+			BeforeEach(func() {
+				fakeBBS.GetActualLRPsByProcessGuidReturns(actualLRPs[1:2], nil)
+			})
+
+			It("call the BBS to retrieve the actual LRPs", func() {
+				Ω(fakeBBS.GetActualLRPsByProcessGuidCallCount()).Should(Equal(1))
+				Ω(fakeBBS.GetActualLRPsByProcessGuidArgsForCall(0)).Should(Equal("process-guid-1"))
+			})
+
+			It("responds with 200 Status OK", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
+			})
+
+			It("returns a list of actual lrp responses", func() {
+				response := []receptor.ActualLRPResponse{}
+				err := json.Unmarshal(responseRecorder.Body.Bytes(), &response)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(response).Should(HaveLen(1))
+				Ω(response).Should(ContainElement(serialization.ActualLRPToResponse(actualLRPs[1])))
+			})
+		})
+
+		Context("when reading LRPs from BBS fails", func() {
+			BeforeEach(func() {
+				fakeBBS.GetActualLRPsByProcessGuidReturns([]models.ActualLRP{}, errors.New("Something went wrong"))
+			})
+
+			It("responds with a 500 Internal Error", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
+			})
+
+			It("responds with a relevant error message", func() {
+				expectedBody, _ := json.Marshal(receptor.Error{
+					Type:    receptor.UnknownError,
+					Message: "Something went wrong",
+				})
+
+				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
+			})
+		})
+
+		Context("when the BBS doesn't return any actual LRPs", func() {
+			BeforeEach(func() {
+				fakeBBS.GetActualLRPsByProcessGuidReturns([]models.ActualLRP{}, nil)
+			})
+
+			It("responds with 200 Status OK", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
+			})
+
+			It("returns an empty list", func() {
+				response := []receptor.ActualLRPResponse{}
+				err := json.Unmarshal(responseRecorder.Body.Bytes(), &response)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(response).Should(HaveLen(0))
+			})
+		})
+
+		Context("when the request does not contain a process_guid parameter", func() {
+			BeforeEach(func() {
+				req.Form = url.Values{}
+			})
+
+			It("responds with 400 Bad Request", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusBadRequest))
+			})
+
+			It("responds with a relevant error message", func() {
+				expectedBody, _ := json.Marshal(receptor.Error{
+					Type:    receptor.InvalidRequest,
+					Message: "process_guid missing from request",
+				})
+
+				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
+			})
+		})
+	})
 })
