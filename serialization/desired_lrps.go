@@ -19,7 +19,8 @@ func DesiredLRPFromRequest(req receptor.DesiredLRPCreateRequest) (models.Desired
 		CPUWeight:            req.CPUWeight,
 		Ports:                PortMappingToModel(req.Ports),
 		Routes:               req.Routes,
-		Log:                  LogConfigToModel(req.Log),
+		LogGuid:              req.LogGuid,
+		LogSource:            req.LogSource,
 		Annotation:           req.Annotation,
 	}
 
@@ -44,7 +45,8 @@ func DesiredLRPToResponse(lrp models.DesiredLRP) receptor.DesiredLRPResponse {
 		CPUWeight:            lrp.CPUWeight,
 		Ports:                PortMappingFromModel(lrp.Ports),
 		Routes:               lrp.Routes,
-		Log:                  LogConfigFromModel(lrp.Log),
+		LogGuid:              lrp.LogGuid,
+		LogSource:            lrp.LogSource,
 		Annotation:           lrp.Annotation,
 	}
 }

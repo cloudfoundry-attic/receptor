@@ -2,11 +2,6 @@ package receptor
 
 import "github.com/cloudfoundry-incubator/runtime-schema/models"
 
-type LogConfig struct {
-	Guid       string `json:"guid"`
-	SourceName string `json:"source_name"`
-}
-
 type EnvironmentVariable struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`
@@ -33,7 +28,8 @@ type TaskCreateRequest struct {
 	CPUWeight             uint                    `json:"cpu_weight"`
 	DiskMB                int                     `json:"disk_mb"`
 	Domain                string                  `json:"domain"`
-	Log                   LogConfig               `json:"log"`
+	LogGuid               string                  `json:"log_guid"`
+	LogSource             string                  `json:"log_source"`
 	MemoryMB              int                     `json:"memory_mb"`
 	ResultFile            string                  `json:"result_file"`
 	Stack                 string                  `json:"stack"`
@@ -51,7 +47,8 @@ type TaskResponse struct {
 	Domain                string                  `json:"domain"`
 	EnvironmentVariables  []EnvironmentVariable   `json:"env,omitempty"`
 	ExecutorID            string                  `json:"executor_id"`
-	Log                   LogConfig               `json:"log"`
+	LogGuid               string                  `json:"log_guid"`
+	LogSource             string                  `json:"log_source"`
 	MemoryMB              int                     `json:"memory_mb"`
 	ResultFile            string                  `json:"result_file"`
 	RootFSPath            string                  `json:"root_fs"`
@@ -78,7 +75,8 @@ type DesiredLRPCreateRequest struct {
 	CPUWeight            uint                    `json:"cpu_weight"`
 	Ports                []PortMapping           `json:"ports"`
 	Routes               []string                `json:"routes"`
-	Log                  LogConfig               `json:"log"`
+	LogGuid              string                  `json:"log_guid"`
+	LogSource            string                  `json:"log_source"`
 	Annotation           string                  `json:"annotation,omitempty"`
 }
 
@@ -101,7 +99,8 @@ type DesiredLRPResponse struct {
 	CPUWeight            uint                    `json:"cpu_weight"`
 	Ports                []PortMapping           `json:"ports"`
 	Routes               []string                `json:"routes"`
-	Log                  LogConfig               `json:"log"`
+	LogGuid              string                  `json:"log_guid"`
+	LogSource            string                  `json:"log_source"`
 	Annotation           string                  `json:"annotation,omitempty"`
 }
 

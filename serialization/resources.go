@@ -5,20 +5,6 @@ import (
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 )
 
-func LogConfigToModel(config receptor.LogConfig) models.LogConfig {
-	return models.LogConfig{
-		Guid:       config.Guid,
-		SourceName: config.SourceName,
-	}
-}
-
-func LogConfigFromModel(config models.LogConfig) receptor.LogConfig {
-	return receptor.LogConfig{
-		Guid:       config.Guid,
-		SourceName: config.SourceName,
-	}
-}
-
 func EnvironmentVariablesToModel(envVars []receptor.EnvironmentVariable) []models.EnvironmentVariable {
 	if envVars == nil {
 		return nil

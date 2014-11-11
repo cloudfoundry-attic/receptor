@@ -68,7 +68,8 @@ var _ = Describe("DesiredLRP Serialization", func() {
 					{ContainerPort: 456, HostPort: 876},
 				},
 				Routes:     []string{"route-0", "route-1"},
-				Log:        models.LogConfig{"log-guid-0", "log-source-name-0"},
+				LogGuid:    "log-guid-0",
+				LogSource:  "log-source-name-0",
 				Annotation: "annotation-0",
 			}
 		})
@@ -93,7 +94,8 @@ var _ = Describe("DesiredLRP Serialization", func() {
 					{ContainerPort: 456, HostPort: 876},
 				},
 				Routes:     []string{"route-0", "route-1"},
-				Log:        receptor.LogConfig{"log-guid-0", "log-source-name-0"},
+				LogGuid:    "log-guid-0",
+				LogSource:  "log-source-name-0",
 				Annotation: "annotation-0",
 			}
 
