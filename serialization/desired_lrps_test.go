@@ -29,7 +29,6 @@ var _ = Describe("DesiredLRP Serialization", func() {
 						},
 					},
 				},
-				Privileged: true,
 			}
 		})
 		JustBeforeEach(func() {
@@ -62,10 +61,9 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				Actions: []models.ExecutorAction{
 					{Action: models.RunAction{Path: "/bin/true"}},
 				},
-				Privileged: true,
-				DiskMB:     126,
-				MemoryMB:   1234,
-				CPUWeight:  192,
+				DiskMB:    126,
+				MemoryMB:  1234,
+				CPUWeight: 192,
 				Ports: []models.PortMapping{
 					{ContainerPort: 456, HostPort: 876},
 				},
@@ -88,10 +86,9 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				Actions: []models.ExecutorAction{
 					{Action: models.RunAction{Path: "/bin/true"}},
 				},
-				Privileged: true,
-				DiskMB:     126,
-				MemoryMB:   1234,
-				CPUWeight:  192,
+				DiskMB:    126,
+				MemoryMB:  1234,
+				CPUWeight: 192,
 				Ports: []receptor.PortMapping{
 					{ContainerPort: 456, HostPort: 876},
 				},

@@ -28,7 +28,6 @@ const (
 
 type TaskCreateRequest struct {
 	Actions               []models.ExecutorAction `json:"actions"`
-	Privileged            bool                    `json:"privileged"`
 	Annotation            string                  `json:"annotation,omitempty"`
 	CompletionCallbackURL string                  `json:"completion_callback_url"`
 	CPUWeight             uint                    `json:"cpu_weight"`
@@ -45,7 +44,6 @@ type TaskCreateRequest struct {
 
 type TaskResponse struct {
 	Actions               []models.ExecutorAction `json:"actions"`
-	Privileged            bool                    `json:"privileged"`
 	Annotation            string                  `json:"annotation,omitempty"`
 	CompletionCallbackURL string                  `json:"completion_callback_url"`
 	CPUWeight             uint                    `json:"cpu_weight"`
@@ -74,7 +72,6 @@ type DesiredLRPCreateRequest struct {
 	Stack                string                  `json:"stack"`
 	EnvironmentVariables []EnvironmentVariable   `json:"env,omitempty"`
 	Actions              []models.ExecutorAction `json:"actions"`
-	Privileged           bool                    `json:"privileged"`
 	DiskMB               int                     `json:"disk_mb"`
 	MemoryMB             int                     `json:"memory_mb"`
 	CPUWeight            uint                    `json:"cpu_weight"`
@@ -98,7 +95,6 @@ type DesiredLRPResponse struct {
 	Stack                string                  `json:"stack"`
 	EnvironmentVariables []EnvironmentVariable   `json:"env,omitempty"`
 	Actions              []models.ExecutorAction `json:"actions"`
-	Privileged           bool                    `json:"privileged"`
 	DiskMB               int                     `json:"disk_mb"`
 	MemoryMB             int                     `json:"memory_mb"`
 	CPUWeight            uint                    `json:"cpu_weight"`
