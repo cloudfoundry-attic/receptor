@@ -49,13 +49,14 @@ type TaskResponse struct {
 	CPUWeight             uint                    `json:"cpu_weight"`
 	DiskMB                int                     `json:"disk_mb"`
 	Domain                string                  `json:"domain"`
+	EnvironmentVariables  []EnvironmentVariable   `json:"env,omitempty"`
+	ExecutorID            string                  `json:"executor_id"`
 	Log                   LogConfig               `json:"log"`
 	MemoryMB              int                     `json:"memory_mb"`
 	ResultFile            string                  `json:"result_file"`
+	RootFSPath            string                  `json:"root_fs"`
 	Stack                 string                  `json:"stack"`
 	TaskGuid              string                  `json:"task_guid"`
-	RootFSPath            string                  `json:"root_fs"`
-	EnvironmentVariables  []EnvironmentVariable   `json:"env,omitempty"`
 
 	CreatedAt     int64  `json:"created_at"`
 	Failed        bool   `json:"failed"`

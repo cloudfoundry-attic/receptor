@@ -18,19 +18,19 @@ func TaskFromRequest(req receptor.TaskCreateRequest) (models.Task, error) {
 	}
 
 	task := models.Task{
-		TaskGuid:              req.TaskGuid,
-		Domain:                req.Domain,
-		RootFSPath:            req.RootFSPath,
 		Actions:               req.Actions,
-		Stack:                 req.Stack,
-		MemoryMB:              req.MemoryMB,
-		DiskMB:                req.DiskMB,
-		CPUWeight:             req.CPUWeight,
-		Log:                   LogConfigToModel(req.Log),
-		ResultFile:            req.ResultFile,
 		Annotation:            req.Annotation,
 		CompletionCallbackURL: u,
+		CPUWeight:             req.CPUWeight,
+		DiskMB:                req.DiskMB,
+		Domain:                req.Domain,
 		EnvironmentVariables:  EnvironmentVariablesToModel(req.EnvironmentVariables),
+		Log:                   LogConfigToModel(req.Log),
+		MemoryMB:              req.MemoryMB,
+		ResultFile:            req.ResultFile,
+		RootFSPath:            req.RootFSPath,
+		Stack:                 req.Stack,
+		TaskGuid:              req.TaskGuid,
 	}
 
 	err := task.Validate()
@@ -47,22 +47,23 @@ func TaskToResponse(task models.Task) receptor.TaskResponse {
 	}
 
 	return receptor.TaskResponse{
-		TaskGuid:              task.TaskGuid,
-		Domain:                task.Domain,
-		RootFSPath:            task.RootFSPath,
 		Actions:               task.Actions,
-		Stack:                 task.Stack,
-		MemoryMB:              task.MemoryMB,
-		DiskMB:                task.DiskMB,
-		CPUWeight:             task.CPUWeight,
-		Log:                   LogConfigFromModel(task.Log),
 		Annotation:            task.Annotation,
 		CompletionCallbackURL: url,
+		CPUWeight:             task.CPUWeight,
+		DiskMB:                task.DiskMB,
+		Domain:                task.Domain,
 		EnvironmentVariables:  EnvironmentVariablesFromModel(task.EnvironmentVariables),
+		ExecutorID:            task.ExecutorID,
+		Log:                   LogConfigFromModel(task.Log),
+		MemoryMB:              task.MemoryMB,
+		RootFSPath:            task.RootFSPath,
+		Stack:                 task.Stack,
+		TaskGuid:              task.TaskGuid,
 
 		CreatedAt:     task.CreatedAt,
-		FailureReason: task.FailureReason,
 		Failed:        task.Failed,
+		FailureReason: task.FailureReason,
 		Result:        task.Result,
 		State:         taskStateToResponseState(task.State),
 	}
