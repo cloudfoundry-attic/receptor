@@ -3,10 +3,12 @@ package handlers
 import (
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
+	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/pivotal-golang/lager"
 )
 
@@ -81,7 +83,29 @@ func (h *ActualLRPHandler) GetAllByProcessGuid(w http.ResponseWriter, req *http.
 		return
 	}
 
-	actualLRPs, err := h.bbs.GetActualLRPsByProcessGuid(processGuid)
+	indexString := req.FormValue("index")
+
+	var actualLRPs []models.ActualLRP
+	var err error
+
+	if indexString == "" {
+		actualLRPs, err = h.bbs.GetActualLRPsByProcessGuid(processGuid)
+	} else {
+		logger = logger.Session("and-index", lager.Data{
+			"Index": indexString,
+		})
+
+		index, indexErr := strconv.Atoi(indexString)
+		if indexErr != nil {
+			err = errors.New("index not a number")
+			logger.Error("invalid-index", err)
+			writeBadRequestResponse(w, receptor.InvalidRequest, err)
+			return
+		}
+
+		actualLRPs, err = h.bbs.GetActualLRPsByProcessGuidAndIndex(processGuid, index)
+	}
+
 	if err != nil {
 		logger.Error("failed-to-fetch-actual-lrps-by-process-guid", err)
 		writeUnknownErrorResponse(w, err)

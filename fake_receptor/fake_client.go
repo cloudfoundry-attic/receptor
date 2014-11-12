@@ -124,6 +124,16 @@ type FakeClient struct {
 		result1 []receptor.ActualLRPResponse
 		result2 error
 	}
+	GetAllActualLRPsByProcessGuidAndIndexStub        func(processGuid string, index int) ([]receptor.ActualLRPResponse, error)
+	getAllActualLRPsByProcessGuidAndIndexMutex       sync.RWMutex
+	getAllActualLRPsByProcessGuidAndIndexArgsForCall []struct {
+		processGuid string
+		index       int
+	}
+	getAllActualLRPsByProcessGuidAndIndexReturns struct {
+		result1 []receptor.ActualLRPResponse
+		result2 error
+	}
 }
 
 func (fake *FakeClient) CreateTask(arg1 receptor.TaskCreateRequest) error {
@@ -555,6 +565,40 @@ func (fake *FakeClient) GetAllActualLRPsByProcessGuidArgsForCall(i int) string {
 func (fake *FakeClient) GetAllActualLRPsByProcessGuidReturns(result1 []receptor.ActualLRPResponse, result2 error) {
 	fake.GetAllActualLRPsByProcessGuidStub = nil
 	fake.getAllActualLRPsByProcessGuidReturns = struct {
+		result1 []receptor.ActualLRPResponse
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeClient) GetAllActualLRPsByProcessGuidAndIndex(processGuid string, index int) ([]receptor.ActualLRPResponse, error) {
+	fake.getAllActualLRPsByProcessGuidAndIndexMutex.Lock()
+	fake.getAllActualLRPsByProcessGuidAndIndexArgsForCall = append(fake.getAllActualLRPsByProcessGuidAndIndexArgsForCall, struct {
+		processGuid string
+		index       int
+	}{processGuid, index})
+	fake.getAllActualLRPsByProcessGuidAndIndexMutex.Unlock()
+	if fake.GetAllActualLRPsByProcessGuidAndIndexStub != nil {
+		return fake.GetAllActualLRPsByProcessGuidAndIndexStub(processGuid, index)
+	} else {
+		return fake.getAllActualLRPsByProcessGuidAndIndexReturns.result1, fake.getAllActualLRPsByProcessGuidAndIndexReturns.result2
+	}
+}
+
+func (fake *FakeClient) GetAllActualLRPsByProcessGuidAndIndexCallCount() int {
+	fake.getAllActualLRPsByProcessGuidAndIndexMutex.RLock()
+	defer fake.getAllActualLRPsByProcessGuidAndIndexMutex.RUnlock()
+	return len(fake.getAllActualLRPsByProcessGuidAndIndexArgsForCall)
+}
+
+func (fake *FakeClient) GetAllActualLRPsByProcessGuidAndIndexArgsForCall(i int) (string, int) {
+	fake.getAllActualLRPsByProcessGuidAndIndexMutex.RLock()
+	defer fake.getAllActualLRPsByProcessGuidAndIndexMutex.RUnlock()
+	return fake.getAllActualLRPsByProcessGuidAndIndexArgsForCall[i].processGuid, fake.getAllActualLRPsByProcessGuidAndIndexArgsForCall[i].index
+}
+
+func (fake *FakeClient) GetAllActualLRPsByProcessGuidAndIndexReturns(result1 []receptor.ActualLRPResponse, result2 error) {
+	fake.GetAllActualLRPsByProcessGuidAndIndexStub = nil
+	fake.getAllActualLRPsByProcessGuidAndIndexReturns = struct {
 		result1 []receptor.ActualLRPResponse
 		result2 error
 	}{result1, result2}

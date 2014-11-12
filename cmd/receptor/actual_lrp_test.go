@@ -126,4 +126,45 @@ var _ = Describe("Actual LRP API", func() {
 			Ω(actualLRPResponses).Should(ConsistOf(expectedResponses))
 		})
 	})
+
+	Describe("GET /desired_lrps/:process_guid/actual_lrps?index=:index", func() {
+		var actualLRPResponses []receptor.ActualLRPResponse
+		var getErr error
+
+		BeforeEach(func() {
+			lrp, err := models.NewActualLRP(
+				"process-guid-0",
+				"instance-guid-0",
+				"executor-id",
+				fmt.Sprintf("domain-%d", 0),
+				1,
+				models.ActualLRPStateRunning,
+				99999999999,
+			)
+			Ω(err).ShouldNot(HaveOccurred())
+			err = bbs.ReportActualLRPAsRunning(lrp, "executor-id")
+			Ω(err).ShouldNot(HaveOccurred())
+			actualLRPResponses, getErr = client.GetAllActualLRPsByProcessGuidAndIndex("process-guid-0", 0)
+		})
+
+		It("responds without an error", func() {
+			Ω(getErr).ShouldNot(HaveOccurred())
+		})
+
+		It("fetches all of the actual lrps for the process guid", func() {
+			Ω(actualLRPResponses).Should(HaveLen(1))
+		})
+
+		It("has the correct data from the bbs", func() {
+			actualLRPs, err := bbs.GetActualLRPsByProcessGuidAndIndex("process-guid-0", 0)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			expectedResponses := make([]receptor.ActualLRPResponse, 0, 1)
+			for _, actualLRP := range actualLRPs {
+				expectedResponses = append(expectedResponses, serialization.ActualLRPToResponse(actualLRP)) // Fix to only include guids with index 0
+			}
+
+			Ω(actualLRPResponses).Should(ConsistOf(expectedResponses))
+		})
+	})
 })

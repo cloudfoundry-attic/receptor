@@ -27,6 +27,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 		actualLRPs = []models.ActualLRP{
 			{
 				ProcessGuid:  "process-guid-0",
+				Index:        0,
 				InstanceGuid: "instance-guid-0",
 				ExecutorID:   "executor-id-0",
 				Domain:       "domain-0",
@@ -39,6 +40,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 			},
 			{
 				ProcessGuid:  "process-guid-1",
+				Index:        0,
 				InstanceGuid: "instance-guid-1",
 				ExecutorID:   "executor-id-1",
 				Domain:       "domain-1",
@@ -240,7 +242,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 				fakeBBS.GetActualLRPsByProcessGuidReturns(actualLRPs[1:2], nil)
 			})
 
-			It("call the BBS to retrieve the actual LRPs", func() {
+			It("calls the BBS to retrieve the actual LRPs", func() {
 				Ω(fakeBBS.GetActualLRPsByProcessGuidCallCount()).Should(Equal(1))
 				Ω(fakeBBS.GetActualLRPsByProcessGuidArgsForCall(0)).Should(Equal("process-guid-1"))
 			})
@@ -278,7 +280,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 			})
 		})
 
-		Context("when the BBS doesn't return any actual LRPs", func() {
+		Context("when the BBS does not return any actual LRPs", func() {
 			BeforeEach(func() {
 				fakeBBS.GetActualLRPsByProcessGuidReturns([]models.ActualLRP{}, nil)
 			})
@@ -309,6 +311,98 @@ var _ = Describe("Actual LRP Handlers", func() {
 				expectedBody, _ := json.Marshal(receptor.Error{
 					Type:    receptor.InvalidRequest,
 					Message: "process_guid missing from request",
+				})
+
+				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
+			})
+		})
+
+		Context("when request includes a valid index query parameter", func() {
+			BeforeEach(func() {
+				req.Form.Add("index", "0")
+			})
+
+			Context("when reading LRPs from BBS succeeds", func() {
+				BeforeEach(func() {
+					fakeBBS.GetActualLRPsByProcessGuidAndIndexReturns(actualLRPs[1:2], nil)
+				})
+
+				It("calls the BBS to retrieve the actual LRPs", func() {
+					Ω(fakeBBS.GetActualLRPsByProcessGuidAndIndexCallCount()).Should(Equal(1))
+					processGuid, index := fakeBBS.GetActualLRPsByProcessGuidAndIndexArgsForCall(0)
+					Ω(processGuid).Should(Equal("process-guid-1"))
+					Ω(index).Should(Equal(0))
+				})
+
+				It("responds with 200 Status OK", func() {
+					Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
+				})
+
+				It("returns a list of actual lrp responses", func() {
+					response := []receptor.ActualLRPResponse{}
+					err := json.Unmarshal(responseRecorder.Body.Bytes(), &response)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					Ω(response).Should(HaveLen(1))
+					Ω(response).Should(ContainElement(serialization.ActualLRPToResponse(actualLRPs[1])))
+				})
+			})
+
+			Context("when reading LRPs from BBS fails", func() {
+				BeforeEach(func() {
+					fakeBBS.GetActualLRPsByProcessGuidAndIndexReturns([]models.ActualLRP{}, errors.New("Something went wrong"))
+				})
+
+				It("responds with a 500 Internal Error", func() {
+					Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
+				})
+
+				It("responds with a relevant error message", func() {
+					expectedBody, _ := json.Marshal(receptor.Error{
+						Type:    receptor.UnknownError,
+						Message: "Something went wrong",
+					})
+
+					Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
+				})
+			})
+
+			Context("when the BBS does not return any actual LRPs", func() {
+				BeforeEach(func() {
+					fakeBBS.GetActualLRPsByProcessGuidAndIndexReturns([]models.ActualLRP{}, nil)
+				})
+
+				It("responds with 200 Status OK", func() {
+					Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
+				})
+
+				It("returns an empty list", func() {
+					response := []receptor.ActualLRPResponse{}
+					err := json.Unmarshal(responseRecorder.Body.Bytes(), &response)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					Ω(response).Should(HaveLen(0))
+				})
+			})
+		})
+
+		Context("when request includes a bad index query parameter", func() {
+			BeforeEach(func() {
+				req.Form.Add("index", "not-a-number")
+			})
+
+			It("does not call the BBS", func() {
+				Ω(fakeBBS.GetActualLRPsByProcessGuidAndIndexCallCount()).Should(Equal(0))
+			})
+
+			It("responds with 400 Bad Request", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusBadRequest))
+			})
+
+			It("responds with a relevant error message", func() {
+				expectedBody, _ := json.Marshal(receptor.Error{
+					Type:    receptor.InvalidRequest,
+					Message: "index not a number",
 				})
 
 				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
