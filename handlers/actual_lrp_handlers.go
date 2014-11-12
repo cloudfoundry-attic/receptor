@@ -119,3 +119,60 @@ func (h *ActualLRPHandler) GetAllByProcessGuid(w http.ResponseWriter, req *http.
 
 	writeJSONResponse(w, http.StatusOK, responses)
 }
+
+func (h *ActualLRPHandler) StopByProcessGuidAndIndex(w http.ResponseWriter, req *http.Request) {
+	processGuid := req.FormValue(":process_guid")
+	indexString := req.FormValue("index")
+	logger := h.logger.Session("stop-by-process-guid-and-index-actual-lrps-handler", lager.Data{
+		"ProcessGuid": processGuid,
+		"Index":       indexString,
+	})
+
+	if processGuid == "" {
+		err := errors.New("process_guid missing from request")
+		logger.Error("missing-process-guid", err)
+		writeBadRequestResponse(w, receptor.InvalidRequest, err)
+		return
+	}
+
+	if indexString == "" {
+		err := errors.New("index missing from request")
+		logger.Error("missing-index", err)
+		writeBadRequestResponse(w, receptor.InvalidRequest, err)
+		return
+	}
+
+	index, err := strconv.Atoi(indexString)
+	if err != nil {
+		err = errors.New("index not a number")
+		logger.Error("invalid-index", err)
+		writeBadRequestResponse(w, receptor.InvalidRequest, err)
+		return
+	}
+
+	actualLRPs, err := h.bbs.GetActualLRPsByProcessGuidAndIndex(processGuid, index)
+	if err != nil {
+		logger.Error("failed-to-fetch-actual-lrps-by-process-guid-and-index", err)
+		writeUnknownErrorResponse(w, err)
+		return
+	}
+
+	stopInstances := make([]models.StopLRPInstance, 0, len(actualLRPs))
+
+	for _, actualLRP := range actualLRPs {
+		stopInstances = append(stopInstances, models.StopLRPInstance{
+			ProcessGuid:  actualLRP.ProcessGuid,
+			Index:        actualLRP.Index,
+			InstanceGuid: actualLRP.InstanceGuid,
+		})
+	}
+
+	err = h.bbs.RequestStopLRPInstances(stopInstances)
+	if err != nil {
+		logger.Error("failed-to-request-stop-lrp-instances", err)
+		writeUnknownErrorResponse(w, err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}

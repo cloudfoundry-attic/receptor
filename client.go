@@ -29,6 +29,7 @@ type Client interface {
 	GetAllActualLRPsByDomain(domain string) ([]ActualLRPResponse, error)
 	GetAllActualLRPsByProcessGuid(processGuid string) ([]ActualLRPResponse, error)
 	GetAllActualLRPsByProcessGuidAndIndex(processGuid string, index int) ([]ActualLRPResponse, error)
+	StopActualLRPsByProcessGuidAndIndex(processGuid string, index int) error
 }
 
 func NewClient(addr, user, password string) Client {
@@ -125,6 +126,11 @@ func (c *client) GetAllActualLRPsByProcessGuidAndIndex(processGuid string, index
 	var actualLRPs []ActualLRPResponse
 	err := c.doRequest(GetAllActualLRPsByProcessGuidRoute, rata.Params{"process_guid": processGuid}, url.Values{"index": []string{strconv.Itoa(index)}}, nil, &actualLRPs)
 	return actualLRPs, err
+}
+
+func (c *client) StopActualLRPsByProcessGuidAndIndex(processGuid string, index int) error {
+	err := c.doRequest(StopActualLRPsByProcessGuidAndIndexRoute, rata.Params{"process_guid": processGuid}, url.Values{"index": []string{strconv.Itoa(index)}}, nil, nil)
+	return err
 }
 
 func (c *client) doRequest(requestName string, params rata.Params, queryParams url.Values, request, response interface{}) error {

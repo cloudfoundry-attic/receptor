@@ -136,7 +136,7 @@ var _ = Describe("Actual LRP API", func() {
 				"process-guid-0",
 				"instance-guid-0",
 				"executor-id",
-				fmt.Sprintf("domain-%d", 0),
+				"domain-0",
 				1,
 				models.ActualLRPStateRunning,
 				99999999999,
@@ -165,6 +165,40 @@ var _ = Describe("Actual LRP API", func() {
 			}
 
 			Ω(actualLRPResponses).Should(ConsistOf(expectedResponses))
+		})
+	})
+
+	Describe("DELETE /desired_lrps/:process_guid/actual_lrps?index=:index", func() {
+		var stopErr error
+
+		BeforeEach(func() {
+			lrp, err := models.NewActualLRP(
+				"process-guid-0",
+				"instance-guid-0",
+				"executor-id",
+				"domain-0",
+				1,
+				models.ActualLRPStateRunning,
+				99999999999,
+			)
+			Ω(err).ShouldNot(HaveOccurred())
+			err = bbs.ReportActualLRPAsRunning(lrp, "executor-id")
+			Ω(err).ShouldNot(HaveOccurred())
+
+			stopErr = client.StopActualLRPsByProcessGuidAndIndex("process-guid-0", 0)
+		})
+
+		It("responds without an error", func() {
+			Ω(stopErr).ShouldNot(HaveOccurred())
+		})
+
+		It("places the correct stop instance requests in the bbs", func() {
+			stopLRPInstances, err := bbs.GetAllStopLRPInstances()
+			Ω(err).ShouldNot(HaveOccurred())
+
+			Ω(stopLRPInstances).Should(HaveLen(1))
+			Ω(stopLRPInstances[0].ProcessGuid).Should(Equal("process-guid-0"))
+			Ω(stopLRPInstances[0].Index).Should(Equal(0))
 		})
 	})
 })
