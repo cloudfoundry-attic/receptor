@@ -174,8 +174,6 @@ var _ = Describe("Actual LRP API", func() {
 				"executor-id",
 				"domain-0",
 				1,
-				models.ActualLRPStateRunning,
-				99999999999,
 			)
 			Ω(err).ShouldNot(HaveOccurred())
 			err = bbs.ReportActualLRPAsRunning(lrp, "executor-id")

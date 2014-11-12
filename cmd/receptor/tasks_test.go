@@ -49,7 +49,7 @@ var _ = Describe("Task API", func() {
 				Domain:   "test-domain",
 				Stack:    "some-stack",
 				CompletionCallbackURL: testServer.URL() + "/the/callback/path",
-				Action: &models.ExecutorAction{
+				Action: models.ExecutorAction{
 					Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}},
 				},
 			}
@@ -99,7 +99,7 @@ var _ = Describe("Task API", func() {
 						Ω(taskResponse.Result).Should(Equal("the-result"))
 						Ω(taskResponse.Failed).Should(Equal(true))
 						Ω(taskResponse.FailureReason).Should(Equal("the-failure-reason"))
-						Ω(taskResponse.Action).Should(Equal(&models.ExecutorAction{
+						Ω(taskResponse.Action).Should(Equal(models.ExecutorAction{
 							Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}},
 						}))
 					},

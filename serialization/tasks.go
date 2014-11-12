@@ -16,13 +16,9 @@ func TaskFromRequest(req receptor.TaskCreateRequest) (models.Task, error) {
 			return models.Task{}, err
 		}
 	}
-	var action models.ExecutorAction
-	if req.Action != nil {
-		action = *req.Action
-	}
 
 	task := models.Task{
-		Action:                action,
+		Action:                req.Action,
 		Annotation:            req.Annotation,
 		CompletionCallbackURL: u,
 		CPUWeight:             req.CPUWeight,
@@ -52,7 +48,7 @@ func TaskToResponse(task models.Task) receptor.TaskResponse {
 	}
 
 	return receptor.TaskResponse{
-		Action:                &task.Action,
+		Action:                task.Action,
 		Annotation:            task.Annotation,
 		CompletionCallbackURL: url,
 		CPUWeight:             task.CPUWeight,
