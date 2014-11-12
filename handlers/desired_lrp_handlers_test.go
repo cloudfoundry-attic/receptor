@@ -40,7 +40,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 			Stack:       "the-stack",
 			RootFSPath:  "the-rootfs-path",
 			Instances:   1,
-			Action: &models.ExecutorAction{
+			Action: models.ExecutorAction{
 				Action: models.RunAction{
 					Path: "the-path",
 				},
@@ -53,7 +53,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 			Stack:       "the-stack",
 			RootFSPath:  "the-rootfs-path",
 			Instances:   1,
-			Action: &models.ExecutorAction{
+			Action: models.ExecutorAction{
 				Action: models.RunAction{
 					Path: "the-path",
 				},
@@ -109,7 +109,11 @@ var _ = Describe("Desired LRP Handlers", func() {
 		})
 
 		Context("when the desired LRP is invalid", func() {
-			var invalidDesiredLRP = receptor.DesiredLRPCreateRequest{}
+			var invalidDesiredLRP = receptor.DesiredLRPCreateRequest{
+				Action: models.ExecutorAction{
+					Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}},
+				},
+			}
 
 			BeforeEach(func(done Done) {
 				defer close(done)
@@ -176,7 +180,13 @@ var _ = Describe("Desired LRP Handlers", func() {
 		Context("when reading tasks from BBS succeeds", func() {
 			BeforeEach(func() {
 				fakeBBS.GetDesiredLRPByProcessGuidReturns(models.DesiredLRP{
-					ProcessGuid: "process-guid-0", Domain: "domain-1",
+					ProcessGuid: "process-guid-0",
+					Domain:      "domain-1",
+					Action: models.ExecutorAction{
+						Action: models.RunAction{
+							Path: "the-path",
+						},
+					},
 				}, nil)
 			})
 
@@ -522,8 +532,24 @@ var _ = Describe("Desired LRP Handlers", func() {
 		Context("when reading LRPs from BBS succeeds", func() {
 			BeforeEach(func() {
 				fakeBBS.GetAllDesiredLRPsReturns([]models.DesiredLRP{
-					{ProcessGuid: "process-guid-0", Domain: "domain-1"},
-					{ProcessGuid: "process-guid-1", Domain: "domain-1"},
+					{
+						ProcessGuid: "process-guid-0",
+						Domain:      "domain-1",
+						Action: models.ExecutorAction{
+							Action: models.RunAction{
+								Path: "the-path",
+							},
+						},
+					},
+					{
+						ProcessGuid: "process-guid-1",
+						Domain:      "domain-1",
+						Action: models.ExecutorAction{
+							Action: models.RunAction{
+								Path: "the-path",
+							},
+						},
+					},
 				}, nil)
 			})
 
@@ -600,8 +626,24 @@ var _ = Describe("Desired LRP Handlers", func() {
 		Context("when reading LRPs by domain from BBS succeeds", func() {
 			BeforeEach(func() {
 				fakeBBS.GetAllDesiredLRPsByDomainReturns([]models.DesiredLRP{
-					{ProcessGuid: "process-guid-0", Domain: "domain-1"},
-					{ProcessGuid: "process-guid-1", Domain: "domain-1"},
+					{
+						ProcessGuid: "process-guid-0",
+						Domain:      "domain-1",
+						Action: models.ExecutorAction{
+							Action: models.RunAction{
+								Path: "the-path",
+							},
+						},
+					},
+					{
+						ProcessGuid: "process-guid-1",
+						Domain:      "domain-1",
+						Action: models.ExecutorAction{
+							Action: models.RunAction{
+								Path: "the-path",
+							},
+						},
+					},
 				}, nil)
 			})
 

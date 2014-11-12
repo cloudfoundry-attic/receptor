@@ -133,6 +133,11 @@ var _ = Describe("TaskWatcher", func() {
 			taskChan <- models.Task{
 				TaskGuid:              "the-task-guid",
 				CompletionCallbackURL: callbackURL,
+				Action: models.ExecutorAction{
+					models.RunAction{
+						Path: "lol",
+					},
+				},
 			}
 		}
 

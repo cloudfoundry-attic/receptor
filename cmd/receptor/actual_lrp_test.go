@@ -37,8 +37,6 @@ var _ = Describe("Actual LRP API", func() {
 					"executor-id",
 					"domain",
 					i,
-					models.ActualLRPStateRunning,
-					99999999999,
 				)
 				Ω(err).ShouldNot(HaveOccurred())
 

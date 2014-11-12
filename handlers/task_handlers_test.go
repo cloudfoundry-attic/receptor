@@ -40,7 +40,7 @@ var _ = Describe("TaskHandler", func() {
 			Domain:     "test-domain",
 			RootFSPath: "docker://docker",
 			Stack:      "some-stack",
-			Action: &models.ExecutorAction{
+			Action: models.ExecutorAction{
 				Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}},
 			},
 			MemoryMB:   24,
@@ -56,7 +56,7 @@ var _ = Describe("TaskHandler", func() {
 			Domain:     "test-domain",
 			RootFSPath: "docker://docker",
 			Stack:      "some-stack",
-			Action: &models.ExecutorAction{
+			Action: models.ExecutorAction{
 				Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}},
 			},
 			MemoryMB:   24,
@@ -148,6 +148,9 @@ var _ = Describe("TaskHandler", func() {
 		Context("when the requested task is invalid", func() {
 			var invalidTask = receptor.TaskCreateRequest{
 				TaskGuid: "invalid-task",
+				Action: models.ExecutorAction{
+					Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}},
+				},
 			}
 
 			BeforeEach(func(done Done) {
@@ -215,7 +218,15 @@ var _ = Describe("TaskHandler", func() {
 		Context("when reading tasks from BBS succeeds", func() {
 			BeforeEach(func() {
 				fakeBBS.GetAllTasksReturns([]models.Task{
-					{TaskGuid: "task-guid-1", Domain: "domain-1"},
+					{
+						TaskGuid: "task-guid-1",
+						Domain:   "domain-1",
+						Action: models.ExecutorAction{
+							Action: models.RunAction{
+								Path: "the-path",
+							},
+						},
+					},
 				}, nil)
 			})
 
@@ -249,7 +260,15 @@ var _ = Describe("TaskHandler", func() {
 		Context("when reading tasks from BBS succeeds", func() {
 			BeforeEach(func() {
 				fakeBBS.GetAllTasksByDomainReturns([]models.Task{
-					{TaskGuid: "task-guid-1", Domain: "domain-1"},
+					{
+						TaskGuid: "task-guid-1",
+						Domain:   "domain-1",
+						Action: models.ExecutorAction{
+							Action: models.RunAction{
+								Path: "the-path",
+							},
+						},
+					},
 				}, nil)
 			})
 
@@ -314,6 +333,11 @@ var _ = Describe("TaskHandler", func() {
 				fakeBBS.GetTaskByGuidReturns(models.Task{
 					TaskGuid: "task-guid-1",
 					Domain:   "domain-1",
+					Action: models.ExecutorAction{
+						Action: models.RunAction{
+							Path: "the-path",
+						},
+					},
 				}, nil)
 			})
 
