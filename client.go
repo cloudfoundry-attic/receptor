@@ -30,6 +30,8 @@ type Client interface {
 	GetAllActualLRPsByProcessGuid(processGuid string) ([]ActualLRPResponse, error)
 	GetAllActualLRPsByProcessGuidAndIndex(processGuid string, index int) ([]ActualLRPResponse, error)
 	StopActualLRPsByProcessGuidAndIndex(processGuid string, index int) error
+
+	Cells() ([]CellResponse, error)
 }
 
 func NewClient(addr, user, password string) Client {
@@ -131,6 +133,12 @@ func (c *client) GetAllActualLRPsByProcessGuidAndIndex(processGuid string, index
 func (c *client) StopActualLRPsByProcessGuidAndIndex(processGuid string, index int) error {
 	err := c.doRequest(StopActualLRPsByProcessGuidAndIndexRoute, rata.Params{"process_guid": processGuid}, url.Values{"index": []string{strconv.Itoa(index)}}, nil, nil)
 	return err
+}
+
+func (c *client) Cells() ([]CellResponse, error) {
+	var cells []CellResponse
+	err := c.doRequest(CellsRoute, nil, nil, nil, &cells)
+	return cells, err
 }
 
 func (c *client) doRequest(requestName string, params rata.Params, queryParams url.Values, request, response interface{}) error {

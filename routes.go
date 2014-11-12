@@ -23,6 +23,9 @@ const (
 	GetAllActualLRPsByDomainRoute            = "GetAllActualLRPsByDomain"
 	GetAllActualLRPsByProcessGuidRoute       = "GetAllActualLRPsByProcessGuid"
 	StopActualLRPsByProcessGuidAndIndexRoute = "StopActualLRPsByProcessGuidAndIndex"
+
+	// Cells
+	CellsRoute = "Cells"
 )
 
 var Routes = rata.Routes{
@@ -33,7 +36,7 @@ var Routes = rata.Routes{
 	{Path: "/tasks/:task_guid", Method: "GET", Name: GetTaskRoute},
 	{Path: "/tasks/:task_guid", Method: "DELETE", Name: DeleteTaskRoute},
 
-	// DesiredLRPS
+	// DesiredLRPs
 	{Path: "/desired_lrps", Method: "POST", Name: CreateDesiredLRPRoute},
 	{Path: "/desired_lrps/:process_guid", Method: "GET", Name: GetDesiredLRPRoute},
 	{Path: "/desired_lrps/:process_guid", Method: "PUT", Name: UpdateDesiredLRPRoute},
@@ -41,9 +44,12 @@ var Routes = rata.Routes{
 	{Path: "/desired_lrps", Method: "GET", Name: GetAllDesiredLRPsRoute},
 	{Path: "/domains/:domain/desired_lrps", Method: "GET", Name: GetAllDesiredLRPsByDomainRoute},
 
-	// ActualLRPS
+	// ActualLRPs
 	{Path: "/actual_lrps", Method: "GET", Name: GetAllActualLRPsRoute},
 	{Path: "/domains/:domain/actual_lrps", Method: "GET", Name: GetAllActualLRPsByDomainRoute},
 	{Path: "/desired_lrps/:process_guid/actual_lrps", Method: "GET", Name: GetAllActualLRPsByProcessGuidRoute},
 	{Path: "/desired_lrps/:process_guid/actual_lrps", Method: "DELETE", Name: StopActualLRPsByProcessGuidAndIndexRoute},
+
+	// Cells
+	{Path: "/cells", Method: "GET", Name: CellsRoute},
 }

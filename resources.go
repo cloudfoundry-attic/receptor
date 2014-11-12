@@ -121,3 +121,8 @@ type ActualLRPResponse struct {
 	State        string        `json:"state"`
 	Since        int64         `json:"since"`
 }
+
+type CellResponse struct {
+	CellID string `json:"cell_id"`
+	Stack  string `json:"stack"`
+}

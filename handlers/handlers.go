@@ -13,6 +13,7 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) ht
 	taskHandler := NewTaskHandler(bbs, logger)
 	desiredLRPHandler := NewDesiredLRPHandler(bbs, logger)
 	actualLRPHandler := NewActualLRPHandler(bbs, logger)
+	cellHandler := NewCellHandler(bbs, logger)
 
 	actions := rata.Handlers{
 		// Tasks
@@ -35,6 +36,9 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) ht
 		receptor.GetAllActualLRPsByDomainRoute:            route(actualLRPHandler.GetAllByDomain),
 		receptor.GetAllActualLRPsByProcessGuidRoute:       route(actualLRPHandler.GetAllByProcessGuid),
 		receptor.StopActualLRPsByProcessGuidAndIndexRoute: route(actualLRPHandler.StopByProcessGuidAndIndex),
+
+		// Cells
+		receptor.CellsRoute: route(cellHandler.GetAll),
 	}
 
 	handler, err := rata.NewRouter(receptor.Routes, actions)

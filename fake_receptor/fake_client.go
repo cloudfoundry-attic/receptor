@@ -143,6 +143,13 @@ type FakeClient struct {
 	stopActualLRPsByProcessGuidAndIndexReturns struct {
 		result1 error
 	}
+	CellsStub        func() ([]receptor.CellResponse, error)
+	cellsMutex       sync.RWMutex
+	cellsArgsForCall []struct{}
+	cellsReturns struct {
+		result1 []receptor.CellResponse
+		result2 error
+	}
 }
 
 func (fake *FakeClient) CreateTask(arg1 receptor.TaskCreateRequest) error {
@@ -644,6 +651,31 @@ func (fake *FakeClient) StopActualLRPsByProcessGuidAndIndexReturns(result1 error
 	fake.stopActualLRPsByProcessGuidAndIndexReturns = struct {
 		result1 error
 	}{result1}
+}
+
+func (fake *FakeClient) Cells() ([]receptor.CellResponse, error) {
+	fake.cellsMutex.Lock()
+	fake.cellsArgsForCall = append(fake.cellsArgsForCall, struct{}{})
+	fake.cellsMutex.Unlock()
+	if fake.CellsStub != nil {
+		return fake.CellsStub()
+	} else {
+		return fake.cellsReturns.result1, fake.cellsReturns.result2
+	}
+}
+
+func (fake *FakeClient) CellsCallCount() int {
+	fake.cellsMutex.RLock()
+	defer fake.cellsMutex.RUnlock()
+	return len(fake.cellsArgsForCall)
+}
+
+func (fake *FakeClient) CellsReturns(result1 []receptor.CellResponse, result2 error) {
+	fake.CellsStub = nil
+	fake.cellsReturns = struct {
+		result1 []receptor.CellResponse
+		result2 error
+	}{result1, result2}
 }
 
 var _ receptor.Client = new(FakeClient)
