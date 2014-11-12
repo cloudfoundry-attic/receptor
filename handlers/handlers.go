@@ -35,7 +35,7 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) ht
 		receptor.GetAllActualLRPsRoute:                    route(actualLRPHandler.GetAll),
 		receptor.GetAllActualLRPsByDomainRoute:            route(actualLRPHandler.GetAllByDomain),
 		receptor.GetAllActualLRPsByProcessGuidRoute:       route(actualLRPHandler.GetAllByProcessGuid),
-		receptor.StopActualLRPsByProcessGuidAndIndexRoute: route(actualLRPHandler.StopByProcessGuidAndIndex),
+		receptor.KillActualLRPsByProcessGuidAndIndexRoute: route(actualLRPHandler.KillByProcessGuidAndIndex),
 
 		// Cells
 		receptor.CellsRoute: route(cellHandler.GetAll),

@@ -134,13 +134,13 @@ type FakeClient struct {
 		result1 []receptor.ActualLRPResponse
 		result2 error
 	}
-	StopActualLRPsByProcessGuidAndIndexStub        func(processGuid string, index int) error
-	stopActualLRPsByProcessGuidAndIndexMutex       sync.RWMutex
-	stopActualLRPsByProcessGuidAndIndexArgsForCall []struct {
+	KillActualLRPsByProcessGuidAndIndexStub        func(processGuid string, index int) error
+	killActualLRPsByProcessGuidAndIndexMutex       sync.RWMutex
+	killActualLRPsByProcessGuidAndIndexArgsForCall []struct {
 		processGuid string
 		index       int
 	}
-	stopActualLRPsByProcessGuidAndIndexReturns struct {
+	killActualLRPsByProcessGuidAndIndexReturns struct {
 		result1 error
 	}
 	CellsStub        func() ([]receptor.CellResponse, error)
@@ -620,35 +620,35 @@ func (fake *FakeClient) GetAllActualLRPsByProcessGuidAndIndexReturns(result1 []r
 	}{result1, result2}
 }
 
-func (fake *FakeClient) StopActualLRPsByProcessGuidAndIndex(processGuid string, index int) error {
-	fake.stopActualLRPsByProcessGuidAndIndexMutex.Lock()
-	fake.stopActualLRPsByProcessGuidAndIndexArgsForCall = append(fake.stopActualLRPsByProcessGuidAndIndexArgsForCall, struct {
+func (fake *FakeClient) KillActualLRPsByProcessGuidAndIndex(processGuid string, index int) error {
+	fake.killActualLRPsByProcessGuidAndIndexMutex.Lock()
+	fake.killActualLRPsByProcessGuidAndIndexArgsForCall = append(fake.killActualLRPsByProcessGuidAndIndexArgsForCall, struct {
 		processGuid string
 		index       int
 	}{processGuid, index})
-	fake.stopActualLRPsByProcessGuidAndIndexMutex.Unlock()
-	if fake.StopActualLRPsByProcessGuidAndIndexStub != nil {
-		return fake.StopActualLRPsByProcessGuidAndIndexStub(processGuid, index)
+	fake.killActualLRPsByProcessGuidAndIndexMutex.Unlock()
+	if fake.KillActualLRPsByProcessGuidAndIndexStub != nil {
+		return fake.KillActualLRPsByProcessGuidAndIndexStub(processGuid, index)
 	} else {
-		return fake.stopActualLRPsByProcessGuidAndIndexReturns.result1
+		return fake.killActualLRPsByProcessGuidAndIndexReturns.result1
 	}
 }
 
-func (fake *FakeClient) StopActualLRPsByProcessGuidAndIndexCallCount() int {
-	fake.stopActualLRPsByProcessGuidAndIndexMutex.RLock()
-	defer fake.stopActualLRPsByProcessGuidAndIndexMutex.RUnlock()
-	return len(fake.stopActualLRPsByProcessGuidAndIndexArgsForCall)
+func (fake *FakeClient) KillActualLRPsByProcessGuidAndIndexCallCount() int {
+	fake.killActualLRPsByProcessGuidAndIndexMutex.RLock()
+	defer fake.killActualLRPsByProcessGuidAndIndexMutex.RUnlock()
+	return len(fake.killActualLRPsByProcessGuidAndIndexArgsForCall)
 }
 
-func (fake *FakeClient) StopActualLRPsByProcessGuidAndIndexArgsForCall(i int) (string, int) {
-	fake.stopActualLRPsByProcessGuidAndIndexMutex.RLock()
-	defer fake.stopActualLRPsByProcessGuidAndIndexMutex.RUnlock()
-	return fake.stopActualLRPsByProcessGuidAndIndexArgsForCall[i].processGuid, fake.stopActualLRPsByProcessGuidAndIndexArgsForCall[i].index
+func (fake *FakeClient) KillActualLRPsByProcessGuidAndIndexArgsForCall(i int) (string, int) {
+	fake.killActualLRPsByProcessGuidAndIndexMutex.RLock()
+	defer fake.killActualLRPsByProcessGuidAndIndexMutex.RUnlock()
+	return fake.killActualLRPsByProcessGuidAndIndexArgsForCall[i].processGuid, fake.killActualLRPsByProcessGuidAndIndexArgsForCall[i].index
 }
 
-func (fake *FakeClient) StopActualLRPsByProcessGuidAndIndexReturns(result1 error) {
-	fake.StopActualLRPsByProcessGuidAndIndexStub = nil
-	fake.stopActualLRPsByProcessGuidAndIndexReturns = struct {
+func (fake *FakeClient) KillActualLRPsByProcessGuidAndIndexReturns(result1 error) {
+	fake.KillActualLRPsByProcessGuidAndIndexStub = nil
+	fake.killActualLRPsByProcessGuidAndIndexReturns = struct {
 		result1 error
 	}{result1}
 }

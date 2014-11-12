@@ -22,7 +22,7 @@ const (
 	GetAllActualLRPsRoute                    = "GetAllActualLRPs"
 	GetAllActualLRPsByDomainRoute            = "GetAllActualLRPsByDomain"
 	GetAllActualLRPsByProcessGuidRoute       = "GetAllActualLRPsByProcessGuid"
-	StopActualLRPsByProcessGuidAndIndexRoute = "StopActualLRPsByProcessGuidAndIndex"
+	KillActualLRPsByProcessGuidAndIndexRoute = "KillActualLRPsByProcessGuidAndIndex"
 
 	// Cells
 	CellsRoute = "Cells"
@@ -48,7 +48,7 @@ var Routes = rata.Routes{
 	{Path: "/actual_lrps", Method: "GET", Name: GetAllActualLRPsRoute},
 	{Path: "/domains/:domain/actual_lrps", Method: "GET", Name: GetAllActualLRPsByDomainRoute},
 	{Path: "/desired_lrps/:process_guid/actual_lrps", Method: "GET", Name: GetAllActualLRPsByProcessGuidRoute},
-	{Path: "/desired_lrps/:process_guid/actual_lrps", Method: "DELETE", Name: StopActualLRPsByProcessGuidAndIndexRoute},
+	{Path: "/desired_lrps/:process_guid/actual_lrps", Method: "DELETE", Name: KillActualLRPsByProcessGuidAndIndexRoute},
 
 	// Cells
 	{Path: "/cells", Method: "GET", Name: CellsRoute},

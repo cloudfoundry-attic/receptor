@@ -120,10 +120,10 @@ func (h *ActualLRPHandler) GetAllByProcessGuid(w http.ResponseWriter, req *http.
 	writeJSONResponse(w, http.StatusOK, responses)
 }
 
-func (h *ActualLRPHandler) StopByProcessGuidAndIndex(w http.ResponseWriter, req *http.Request) {
+func (h *ActualLRPHandler) KillByProcessGuidAndIndex(w http.ResponseWriter, req *http.Request) {
 	processGuid := req.FormValue(":process_guid")
 	indexString := req.FormValue("index")
-	logger := h.logger.Session("stop-by-process-guid-and-index-actual-lrps-handler", lager.Data{
+	logger := h.logger.Session("kill-by-process-guid-and-index-actual-lrps-handler", lager.Data{
 		"ProcessGuid": processGuid,
 		"Index":       indexString,
 	})
@@ -154,6 +154,11 @@ func (h *ActualLRPHandler) StopByProcessGuidAndIndex(w http.ResponseWriter, req 
 	if err != nil {
 		logger.Error("failed-to-fetch-actual-lrps-by-process-guid-and-index", err)
 		writeUnknownErrorResponse(w, err)
+		return
+	}
+
+	if len(actualLRPs) == 0 {
+		writeLRPNotFoundResponse(w)
 		return
 	}
 

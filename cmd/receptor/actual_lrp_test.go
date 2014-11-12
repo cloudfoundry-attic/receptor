@@ -169,7 +169,7 @@ var _ = Describe("Actual LRP API", func() {
 	})
 
 	Describe("DELETE /desired_lrps/:process_guid/actual_lrps?index=:index", func() {
-		var stopErr error
+		var killErr error
 
 		BeforeEach(func() {
 			lrp, err := models.NewActualLRP(
@@ -185,11 +185,11 @@ var _ = Describe("Actual LRP API", func() {
 			err = bbs.ReportActualLRPAsRunning(lrp, "executor-id")
 			Ω(err).ShouldNot(HaveOccurred())
 
-			stopErr = client.StopActualLRPsByProcessGuidAndIndex("process-guid-0", 0)
+			killErr = client.KillActualLRPsByProcessGuidAndIndex("process-guid-0", 0)
 		})
 
 		It("responds without an error", func() {
-			Ω(stopErr).ShouldNot(HaveOccurred())
+			Ω(killErr).ShouldNot(HaveOccurred())
 		})
 
 		It("places the correct stop instance requests in the bbs", func() {

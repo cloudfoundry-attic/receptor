@@ -410,7 +410,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 		})
 	})
 
-	Describe("StopByProcessGuidAndIndex", func() {
+	Describe("KillByProcessGuidAndIndex", func() {
 		var req *http.Request
 
 		BeforeEach(func() {
@@ -419,7 +419,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 		})
 
 		JustBeforeEach(func() {
-			handler.StopByProcessGuidAndIndex(responseRecorder, req)
+			handler.KillByProcessGuidAndIndex(responseRecorder, req)
 		})
 
 		Context("when request includes a valid index query parameter", func() {
@@ -453,6 +453,20 @@ var _ = Describe("Actual LRP Handlers", func() {
 				})
 			})
 
+			Context("when the BBS returns no lrps", func() {
+				BeforeEach(func() {
+					fakeBBS.GetActualLRPsByProcessGuidAndIndexReturns([]models.ActualLRP{}, nil)
+				})
+
+				It("call the BBS to retrieve the desired LRP", func() {
+					Ω(fakeBBS.GetActualLRPsByProcessGuidAndIndexCallCount()).Should(Equal(1))
+				})
+
+				It("responds with 404 Status NOT FOUND", func() {
+					Ω(responseRecorder.Code).Should(Equal(http.StatusNotFound))
+				})
+			})
+
 			Context("when reading LRPs from BBS fails", func() {
 				BeforeEach(func() {
 					fakeBBS.GetActualLRPsByProcessGuidAndIndexReturns([]models.ActualLRP{}, errors.New("Something went wrong"))
@@ -475,6 +489,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 					Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
 				})
 			})
+
 			Context("when stopping instances on the BBS fails", func() {
 				BeforeEach(func() {
 					fakeBBS.GetActualLRPsByProcessGuidAndIndexReturns(actualLRPs[1:2], nil)

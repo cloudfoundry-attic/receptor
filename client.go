@@ -29,7 +29,7 @@ type Client interface {
 	GetAllActualLRPsByDomain(domain string) ([]ActualLRPResponse, error)
 	GetAllActualLRPsByProcessGuid(processGuid string) ([]ActualLRPResponse, error)
 	GetAllActualLRPsByProcessGuidAndIndex(processGuid string, index int) ([]ActualLRPResponse, error)
-	StopActualLRPsByProcessGuidAndIndex(processGuid string, index int) error
+	KillActualLRPsByProcessGuidAndIndex(processGuid string, index int) error
 
 	Cells() ([]CellResponse, error)
 }
@@ -130,8 +130,8 @@ func (c *client) GetAllActualLRPsByProcessGuidAndIndex(processGuid string, index
 	return actualLRPs, err
 }
 
-func (c *client) StopActualLRPsByProcessGuidAndIndex(processGuid string, index int) error {
-	err := c.doRequest(StopActualLRPsByProcessGuidAndIndexRoute, rata.Params{"process_guid": processGuid}, url.Values{"index": []string{strconv.Itoa(index)}}, nil, nil)
+func (c *client) KillActualLRPsByProcessGuidAndIndex(processGuid string, index int) error {
+	err := c.doRequest(KillActualLRPsByProcessGuidAndIndexRoute, rata.Params{"process_guid": processGuid}, url.Values{"index": []string{strconv.Itoa(index)}}, nil, nil)
 	return err
 }
 
