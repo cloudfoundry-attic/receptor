@@ -70,8 +70,7 @@ var _ = Describe("TaskHandler", func() {
 		}
 
 		Context("when everything succeeds", func() {
-			JustBeforeEach(func(done Done) {
-				defer close(done)
+			JustBeforeEach(func() {
 				handler.Create(responseRecorder, newTestRequest(validCreateRequest))
 			})
 
@@ -121,8 +120,7 @@ var _ = Describe("TaskHandler", func() {
 		})
 
 		Context("when the BBS responds with an error", func() {
-			BeforeEach(func(done Done) {
-				defer close(done)
+			BeforeEach(func() {
 				fakeBBS.DesireTaskReturns(errors.New("ka-boom"))
 				handler.Create(responseRecorder, newTestRequest(validCreateRequest))
 			})
@@ -152,9 +150,8 @@ var _ = Describe("TaskHandler", func() {
 				TaskGuid: "invalid-task",
 			}
 
-			BeforeEach(func(done Done) {
-				defer close(done)
-				handler.Create(responseRecorder, newTestRequest(invalidTask))
+			BeforeEach(func() {
+					handler.Create(responseRecorder, newTestRequest(invalidTask))
 			})
 
 			It("does not call DesireTask on the BBS", func() {
@@ -178,8 +175,7 @@ var _ = Describe("TaskHandler", func() {
 		Context("when the request does not contain a TaskCreateRequest", func() {
 			var garbageRequest = []byte(`hello`)
 
-			BeforeEach(func(done Done) {
-				defer close(done)
+			BeforeEach(func() {
 				handler.Create(responseRecorder, newTestRequest(garbageRequest))
 			})
 
