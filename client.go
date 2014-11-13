@@ -32,6 +32,8 @@ type Client interface {
 	KillActualLRPsByProcessGuidAndIndex(processGuid string, index int) error
 
 	Cells() ([]CellResponse, error)
+
+	CreateFreshDomain(FreshDomainCreateRequest) error
 }
 
 func NewClient(addr, user, password string) Client {
@@ -139,6 +141,10 @@ func (c *client) Cells() ([]CellResponse, error) {
 	var cells []CellResponse
 	err := c.doRequest(CellsRoute, nil, nil, nil, &cells)
 	return cells, err
+}
+
+func (c *client) CreateFreshDomain(req FreshDomainCreateRequest) error {
+	return c.doRequest(CreateFreshDomainRoute, nil, nil, req, nil)
 }
 
 func (c *client) doRequest(requestName string, params rata.Params, queryParams url.Values, request, response interface{}) error {

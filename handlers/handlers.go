@@ -14,6 +14,7 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) ht
 	desiredLRPHandler := NewDesiredLRPHandler(bbs, logger)
 	actualLRPHandler := NewActualLRPHandler(bbs, logger)
 	cellHandler := NewCellHandler(bbs, logger)
+	freshDomainHandler := NewFreshDomainHandler(bbs, logger)
 
 	actions := rata.Handlers{
 		// Tasks
@@ -39,6 +40,9 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) ht
 
 		// Cells
 		receptor.CellsRoute: route(cellHandler.GetAll),
+
+		// Fresh domains
+		receptor.CreateFreshDomainRoute: route(freshDomainHandler.Create),
 	}
 
 	handler, err := rata.NewRouter(receptor.Routes, actions)

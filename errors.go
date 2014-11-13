@@ -18,6 +18,8 @@ const (
 	LRPNotFound = "LRPNotFound"
 	InvalidLRP  = "InvalidLRP"
 
+	InvalidFreshness = "InvalidFreshness"
+
 	InvalidJSON    = "InvalidJSON"
 	InvalidRequest = "InvalidRequest"
 

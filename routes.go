@@ -26,6 +26,9 @@ const (
 
 	// Cells
 	CellsRoute = "Cells"
+
+	// Fresh domains
+	CreateFreshDomainRoute = "CreateFreshDomain"
 )
 
 var Routes = rata.Routes{
@@ -52,4 +55,7 @@ var Routes = rata.Routes{
 
 	// Cells
 	{Path: "/cells", Method: "GET", Name: CellsRoute},
+
+	// Fresh domains
+	{Path: "/fresh_domains", Method: "POST", Name: CreateFreshDomainRoute},
 }

@@ -150,6 +150,14 @@ type FakeClient struct {
 		result1 []receptor.CellResponse
 		result2 error
 	}
+	CreateFreshDomainStub        func(receptor.FreshDomainCreateRequest) error
+	createFreshDomainMutex       sync.RWMutex
+	createFreshDomainArgsForCall []struct {
+		arg1 receptor.FreshDomainCreateRequest
+	}
+	createFreshDomainReturns struct {
+		result1 error
+	}
 }
 
 func (fake *FakeClient) CreateTask(arg1 receptor.TaskCreateRequest) error {
@@ -676,6 +684,38 @@ func (fake *FakeClient) CellsReturns(result1 []receptor.CellResponse, result2 er
 		result1 []receptor.CellResponse
 		result2 error
 	}{result1, result2}
+}
+
+func (fake *FakeClient) CreateFreshDomain(arg1 receptor.FreshDomainCreateRequest) error {
+	fake.createFreshDomainMutex.Lock()
+	fake.createFreshDomainArgsForCall = append(fake.createFreshDomainArgsForCall, struct {
+		arg1 receptor.FreshDomainCreateRequest
+	}{arg1})
+	fake.createFreshDomainMutex.Unlock()
+	if fake.CreateFreshDomainStub != nil {
+		return fake.CreateFreshDomainStub(arg1)
+	} else {
+		return fake.createFreshDomainReturns.result1
+	}
+}
+
+func (fake *FakeClient) CreateFreshDomainCallCount() int {
+	fake.createFreshDomainMutex.RLock()
+	defer fake.createFreshDomainMutex.RUnlock()
+	return len(fake.createFreshDomainArgsForCall)
+}
+
+func (fake *FakeClient) CreateFreshDomainArgsForCall(i int) receptor.FreshDomainCreateRequest {
+	fake.createFreshDomainMutex.RLock()
+	defer fake.createFreshDomainMutex.RUnlock()
+	return fake.createFreshDomainArgsForCall[i].arg1
+}
+
+func (fake *FakeClient) CreateFreshDomainReturns(result1 error) {
+	fake.CreateFreshDomainStub = nil
+	fake.createFreshDomainReturns = struct {
+		result1 error
+	}{result1}
 }
 
 var _ receptor.Client = new(FakeClient)
