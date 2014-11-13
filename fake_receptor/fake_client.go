@@ -19,7 +19,7 @@ type FakeClient struct {
 	GetAllTasksStub        func() ([]receptor.TaskResponse, error)
 	getAllTasksMutex       sync.RWMutex
 	getAllTasksArgsForCall []struct{}
-	getAllTasksReturns struct {
+	getAllTasksReturns     struct {
 		result1 []receptor.TaskResponse
 		result2 error
 	}
@@ -86,7 +86,7 @@ type FakeClient struct {
 	GetAllDesiredLRPsStub        func() ([]receptor.DesiredLRPResponse, error)
 	getAllDesiredLRPsMutex       sync.RWMutex
 	getAllDesiredLRPsArgsForCall []struct{}
-	getAllDesiredLRPsReturns struct {
+	getAllDesiredLRPsReturns     struct {
 		result1 []receptor.DesiredLRPResponse
 		result2 error
 	}
@@ -102,7 +102,7 @@ type FakeClient struct {
 	GetAllActualLRPsStub        func() ([]receptor.ActualLRPResponse, error)
 	getAllActualLRPsMutex       sync.RWMutex
 	getAllActualLRPsArgsForCall []struct{}
-	getAllActualLRPsReturns struct {
+	getAllActualLRPsReturns     struct {
 		result1 []receptor.ActualLRPResponse
 		result2 error
 	}
@@ -146,7 +146,7 @@ type FakeClient struct {
 	CellsStub        func() ([]receptor.CellResponse, error)
 	cellsMutex       sync.RWMutex
 	cellsArgsForCall []struct{}
-	cellsReturns struct {
+	cellsReturns     struct {
 		result1 []receptor.CellResponse
 		result2 error
 	}

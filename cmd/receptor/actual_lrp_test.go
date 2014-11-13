@@ -24,12 +24,12 @@ var _ = Describe("Actual LRP API", func() {
 			lrp, err := models.NewActualLRP(
 				"process-guid-"+index,
 				"instance-guid-"+index,
-				"executor-id",
+				"cell-id",
 				fmt.Sprintf("domain-%d", i/2),
 				i,
 			)
 			Ω(err).ShouldNot(HaveOccurred())
-			err = bbs.ReportActualLRPAsRunning(lrp, "executor-id")
+			err = bbs.ReportActualLRPAsRunning(lrp, "cell-id")
 			Ω(err).ShouldNot(HaveOccurred())
 		}
 	})
@@ -133,12 +133,12 @@ var _ = Describe("Actual LRP API", func() {
 			lrp, err := models.NewActualLRP(
 				"process-guid-0",
 				"instance-guid-0",
-				"executor-id",
+				"cell-id",
 				"domain-0",
 				1,
 			)
 			Ω(err).ShouldNot(HaveOccurred())
-			err = bbs.ReportActualLRPAsRunning(lrp, "executor-id")
+			err = bbs.ReportActualLRPAsRunning(lrp, "cell-id")
 			Ω(err).ShouldNot(HaveOccurred())
 			actualLRPResponses, getErr = client.GetAllActualLRPsByProcessGuidAndIndex("process-guid-0", 0)
 		})
@@ -171,12 +171,12 @@ var _ = Describe("Actual LRP API", func() {
 			lrp, err := models.NewActualLRP(
 				"process-guid-0",
 				"instance-guid-0",
-				"executor-id",
+				"cell-id",
 				"domain-0",
 				1,
 			)
 			Ω(err).ShouldNot(HaveOccurred())
-			err = bbs.ReportActualLRPAsRunning(lrp, "executor-id")
+			err = bbs.ReportActualLRPAsRunning(lrp, "cell-id")
 			Ω(err).ShouldNot(HaveOccurred())
 
 			killErr = client.KillActualLRPsByProcessGuidAndIndex("process-guid-0", 0)

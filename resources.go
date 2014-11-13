@@ -53,7 +53,7 @@ type TaskResponse struct {
 	TaskGuid              string                `json:"task_guid"`
 	RootFSPath            string                `json:"root_fs"`
 	EnvironmentVariables  []EnvironmentVariable `json:"env,omitempty"`
-	ExecutorID            string                `json:"executor_id"`
+	CellID                string                `json:"cell_id"`
 	CreatedAt             int64                 `json:"created_at"`
 	Failed                bool                  `json:"failed"`
 	FailureReason         string                `json:"failure_reason"`
@@ -116,7 +116,7 @@ const (
 type ActualLRPResponse struct {
 	ProcessGuid  string        `json:"process_guid"`
 	InstanceGuid string        `json:"instance_guid"`
-	ExecutorID   string        `json:"executor_id"`
+	CellID       string        `json:"cell_id"`
 	Domain       string        `json:"domain"`
 	Index        int           `json:"index"`
 	Host         string        `json:"host"`

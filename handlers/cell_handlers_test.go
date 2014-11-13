@@ -33,17 +33,17 @@ var _ = Describe("Cell Handlers", func() {
 	})
 
 	Describe("GetAll", func() {
-		var executorPresences []models.ExecutorPresence
+		var cellPresences []models.CellPresence
 
 		BeforeEach(func() {
-			executorPresences = []models.ExecutorPresence{
+			cellPresences = []models.CellPresence{
 				{
-					ExecutorID: "executor-id-0",
-					Stack:      "stack-0",
+					CellID: "cell-id-0",
+					Stack:  "stack-0",
 				},
 				{
-					ExecutorID: "executor-id-1",
-					Stack:      "stack-1",
+					CellID: "cell-id-1",
+					Stack:  "stack-1",
 				},
 			}
 		})
@@ -52,13 +52,13 @@ var _ = Describe("Cell Handlers", func() {
 			handler.GetAll(responseRecorder, newTestRequest(""))
 		})
 
-		Context("when reading Executors from BBS succeeds", func() {
+		Context("when reading Cells from BBS succeeds", func() {
 			BeforeEach(func() {
-				fakeBBS.GetAllExecutorsReturns(executorPresences, nil)
+				fakeBBS.GetAllCellsReturns(cellPresences, nil)
 			})
 
 			It("call the BBS to retrieve the actual LRPs", func() {
-				Ω(fakeBBS.GetAllExecutorsCallCount()).Should(Equal(1))
+				Ω(fakeBBS.GetAllCellsCallCount()).Should(Equal(1))
 			})
 
 			It("responds with 200 Status OK", func() {
@@ -71,15 +71,15 @@ var _ = Describe("Cell Handlers", func() {
 				Ω(err).ShouldNot(HaveOccurred())
 
 				Ω(response).Should(HaveLen(2))
-				for _, executorPresence := range executorPresences {
-					Ω(response).Should(ContainElement(serialization.ExecutorPresenceToCellResponse(executorPresence)))
+				for _, cellPresence := range cellPresences {
+					Ω(response).Should(ContainElement(serialization.CellPresenceToCellResponse(cellPresence)))
 				}
 			})
 		})
 
-		Context("when the BBS returns no executors", func() {
+		Context("when the BBS returns no cells", func() {
 			BeforeEach(func() {
-				fakeBBS.GetAllExecutorsReturns([]models.ExecutorPresence{}, nil)
+				fakeBBS.GetAllCellsReturns([]models.CellPresence{}, nil)
 			})
 
 			It("responds with 200 Status OK", func() {
@@ -93,7 +93,7 @@ var _ = Describe("Cell Handlers", func() {
 
 		Context("when reading from the BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.GetAllExecutorsReturns([]models.ExecutorPresence{}, errors.New("Something went wrong"))
+				fakeBBS.GetAllCellsReturns([]models.CellPresence{}, errors.New("Something went wrong"))
 			})
 
 			It("responds with an error", func() {

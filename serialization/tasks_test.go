@@ -20,7 +20,7 @@ var _ = Describe("Task Serialization", func() {
 				TaskGuid:   "the-task-guid",
 				Domain:     "the-domain",
 				RootFSPath: "the-rootfs-path",
-				ExecutorID: "the-executor-id",
+				CellID:     "the-cell-id",
 				Action: models.ExecutorAction{
 					Action: models.UploadAction{
 						From: "from",
@@ -70,7 +70,7 @@ var _ = Describe("Task Serialization", func() {
 				TaskGuid:   "the-task-guid",
 				Domain:     "the-domain",
 				RootFSPath: "the-rootfs-path",
-				ExecutorID: "the-executor-id",
+				CellID:     "the-cell-id",
 				Action: models.ExecutorAction{
 					Action: models.UploadAction{
 						From: "from",

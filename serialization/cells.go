@@ -5,9 +5,9 @@ import (
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 )
 
-func ExecutorPresenceToCellResponse(executorPresence models.ExecutorPresence) receptor.CellResponse {
+func CellPresenceToCellResponse(cellPresence models.CellPresence) receptor.CellResponse {
 	return receptor.CellResponse{
-		CellID: executorPresence.ExecutorID,
-		Stack:  executorPresence.Stack,
+		CellID: cellPresence.CellID,
+		Stack:  cellPresence.Stack,
 	}
 }

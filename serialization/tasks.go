@@ -55,7 +55,7 @@ func TaskToResponse(task models.Task) receptor.TaskResponse {
 		DiskMB:                task.DiskMB,
 		Domain:                task.Domain,
 		EnvironmentVariables:  EnvironmentVariablesFromModel(task.EnvironmentVariables),
-		ExecutorID:            task.ExecutorID,
+		CellID:                task.CellID,
 		LogGuid:               task.LogGuid,
 		LogSource:             task.LogSource,
 		MemoryMB:              task.MemoryMB,

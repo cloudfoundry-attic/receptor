@@ -15,16 +15,16 @@ import (
 
 var _ = Describe("Cell API", func() {
 	var heartbeatProcess ifrit.Process
-	var executorPresence models.ExecutorPresence
+	var cellPresence models.CellPresence
 	var heartbeatInterval time.Duration
 
 	BeforeEach(func() {
 		heartbeatInterval = 100 * time.Millisecond
-		executorPresence = models.ExecutorPresence{
-			ExecutorID: "cell-0",
-			Stack:      "stack-0",
+		cellPresence = models.CellPresence{
+			CellID: "cell-0",
+			Stack:  "stack-0",
 		}
-		heartbeatRunner := bbs.NewExecutorHeartbeat(executorPresence, heartbeatInterval)
+		heartbeatRunner := bbs.NewCellHeartbeat(cellPresence, heartbeatInterval)
 		heartbeatProcess = ginkgomon.Invoke(heartbeatRunner)
 		receptorProcess = ginkgomon.Invoke(receptorRunner)
 	})
@@ -39,10 +39,10 @@ var _ = Describe("Cell API", func() {
 		var getErr error
 
 		BeforeEach(func() {
-			Eventually(func() []models.ExecutorPresence {
-				executorPresences, err := bbs.GetAllExecutors()
+			Eventually(func() []models.CellPresence {
+				cellPresences, err := bbs.GetAllCells()
 				Ω(err).ShouldNot(HaveOccurred())
-				return executorPresences
+				return cellPresences
 			}).Should(HaveLen(1))
 
 			cellResponses, getErr = client.Cells()
@@ -53,12 +53,12 @@ var _ = Describe("Cell API", func() {
 		})
 
 		It("has the correct data from the bbs", func() {
-			executorPresences, err := bbs.GetAllExecutors()
+			cellPresences, err := bbs.GetAllCells()
 			Ω(err).ShouldNot(HaveOccurred())
 
 			expectedResponses := make([]receptor.CellResponse, 0, 1)
-			for _, executorPresence := range executorPresences {
-				expectedResponses = append(expectedResponses, serialization.ExecutorPresenceToCellResponse(executorPresence))
+			for _, cellPresence := range cellPresences {
+				expectedResponses = append(expectedResponses, serialization.CellPresenceToCellResponse(cellPresence))
 			}
 
 			Ω(cellResponses).Should(ConsistOf(expectedResponses))

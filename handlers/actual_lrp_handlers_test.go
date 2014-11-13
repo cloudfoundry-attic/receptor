@@ -29,7 +29,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 				ProcessGuid:  "process-guid-0",
 				Index:        0,
 				InstanceGuid: "instance-guid-0",
-				ExecutorID:   "executor-id-0",
+				CellID:       "cell-id-0",
 				Domain:       "domain-0",
 				Ports: []models.PortMapping{
 					{
@@ -42,7 +42,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 				ProcessGuid:  "process-guid-1",
 				Index:        0,
 				InstanceGuid: "instance-guid-1",
-				ExecutorID:   "executor-id-1",
+				CellID:       "cell-id-1",
 				Domain:       "domain-1",
 				Ports: []models.PortMapping{
 					{

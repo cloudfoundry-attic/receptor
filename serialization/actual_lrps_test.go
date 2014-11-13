@@ -16,7 +16,7 @@ var _ = Describe("ActualLRP Serialization", func() {
 			actualLRP = models.ActualLRP{
 				ProcessGuid:  "process-guid-0",
 				InstanceGuid: "instance-guid-0",
-				ExecutorID:   "executor-id-0",
+				CellID:       "cell-id-0",
 				Domain:       "some-domain",
 				Index:        3,
 				Host:         "host-0",
@@ -35,7 +35,7 @@ var _ = Describe("ActualLRP Serialization", func() {
 			expectedResponse := receptor.ActualLRPResponse{
 				ProcessGuid:  "process-guid-0",
 				InstanceGuid: "instance-guid-0",
-				ExecutorID:   "executor-id-0",
+				CellID:       "cell-id-0",
 				Domain:       "some-domain",
 				Index:        3,
 				Host:         "host-0",

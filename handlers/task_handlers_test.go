@@ -154,7 +154,7 @@ var _ = Describe("TaskHandler", func() {
 			}
 
 			BeforeEach(func() {
-					handler.Create(responseRecorder, newTestRequest(invalidTask))
+				handler.Create(responseRecorder, newTestRequest(invalidTask))
 			})
 
 			It("does not call DesireTask on the BBS", func() {

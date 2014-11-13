@@ -9,24 +9,24 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("ExecutorPresence Serialization", func() {
-	Describe("ExecutorPresenceToCellResponse", func() {
-		var executorPresence models.ExecutorPresence
+var _ = Describe("CellPresence Serialization", func() {
+	Describe("CellPresenceToCellResponse", func() {
+		var cellPresence models.CellPresence
 
 		BeforeEach(func() {
-			executorPresence = models.ExecutorPresence{
-				ExecutorID: "executor-id-0",
-				Stack:      "stack-0",
+			cellPresence = models.CellPresence{
+				CellID: "cell-id-0",
+				Stack:  "stack-0",
 			}
 		})
 
 		It("serializes all the fields", func() {
 			expectedResponse := receptor.CellResponse{
-				CellID: "executor-id-0",
+				CellID: "cell-id-0",
 				Stack:  "stack-0",
 			}
 
-			actualResponse := serialization.ExecutorPresenceToCellResponse(executorPresence)
+			actualResponse := serialization.CellPresenceToCellResponse(cellPresence)
 			Ω(actualResponse).Should(Equal(expectedResponse))
 		})
 	})
