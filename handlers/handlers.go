@@ -43,6 +43,7 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) ht
 
 		// Fresh domains
 		receptor.CreateFreshDomainRoute: route(freshDomainHandler.Create),
+		receptor.FreshDomainsRoute:      route(freshDomainHandler.GetAll),
 	}
 
 	handler, err := rata.NewRouter(receptor.Routes, actions)

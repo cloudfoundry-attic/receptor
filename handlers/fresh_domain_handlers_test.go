@@ -8,6 +8,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
+	"github.com/cloudfoundry-incubator/receptor/serialization"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	. "github.com/onsi/ginkgo"
@@ -139,6 +140,87 @@ var _ = Describe("Fresh Domain Handlers", func() {
 				})
 
 				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
+			})
+		})
+	})
+
+	Describe("GetAll", func() {
+		var freshnesses []models.Freshness
+
+		BeforeEach(func() {
+			freshnesses = []models.Freshness{
+				{
+					Domain:       "domain-a",
+					TTLInSeconds: 10,
+				},
+				{
+					Domain:       "domain-b",
+					TTLInSeconds: 30,
+				},
+			}
+		})
+
+		JustBeforeEach(func() {
+			handler.GetAll(responseRecorder, newTestRequest(""))
+		})
+
+		Context("when reading freshnesses from BBS succeeds", func() {
+			BeforeEach(func() {
+				fakeBBS.FreshnessesReturns(freshnesses, nil)
+			})
+
+			It("call the BBS to retrieve the actual LRPs", func() {
+				Ω(fakeBBS.FreshnessesCallCount()).Should(Equal(1))
+			})
+
+			It("responds with 200 Status OK", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
+			})
+
+			It("returns a list of fresh domain responses", func() {
+				response := []receptor.FreshDomainResponse{}
+				err := json.Unmarshal(responseRecorder.Body.Bytes(), &response)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(response).Should(HaveLen(2))
+				for _, freshness := range freshnesses {
+					Ω(response).Should(ContainElement(serialization.FreshnessToResponse(freshness)))
+				}
+			})
+		})
+
+		Context("when the BBS returns no freshnesses", func() {
+			BeforeEach(func() {
+				fakeBBS.FreshnessesReturns([]models.Freshness{}, nil)
+			})
+
+			It("responds with 200 Status OK", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
+			})
+
+			It("returns an empty list", func() {
+				Ω(responseRecorder.Body.String()).Should(Equal("[]"))
+			})
+		})
+
+		Context("when reading from the BBS fails", func() {
+			BeforeEach(func() {
+				fakeBBS.FreshnessesReturns([]models.Freshness{}, errors.New("Something went wrong"))
+			})
+
+			It("responds with an error", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
+			})
+
+			It("provides relevant error information", func() {
+				var receptorError receptor.Error
+				err := json.Unmarshal(responseRecorder.Body.Bytes(), &receptorError)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(receptorError).Should(Equal(receptor.Error{
+					Type:    receptor.UnknownError,
+					Message: "Something went wrong",
+				}))
 			})
 		})
 	})

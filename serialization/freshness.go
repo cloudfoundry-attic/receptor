@@ -11,3 +11,10 @@ func FreshnessFromRequest(req receptor.FreshDomainCreateRequest) models.Freshnes
 		TTLInSeconds: req.TTLInSeconds,
 	}
 }
+
+func FreshnessToResponse(freshness models.Freshness) receptor.FreshDomainResponse {
+	return receptor.FreshDomainResponse{
+		Domain:       freshness.Domain,
+		TTLInSeconds: freshness.TTLInSeconds,
+	}
+}

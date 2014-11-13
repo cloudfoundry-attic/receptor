@@ -27,4 +27,22 @@ var _ = Describe("Freshness Serialization", func() {
 			Ω(freshness.TTLInSeconds).Should(Equal(100))
 		})
 	})
+
+	Describe("FreshnessToResponse", func() {
+		var freshness models.Freshness
+		var response receptor.FreshDomainResponse
+
+		BeforeEach(func() {
+			freshness = models.Freshness{
+				Domain:       "the-domain",
+				TTLInSeconds: 100,
+			}
+			response = serialization.FreshnessToResponse(freshness)
+		})
+
+		It("serializes the Freshness model into a response, preserving attributes", func() {
+			Ω(response.Domain).Should(Equal("the-domain"))
+			Ω(response.TTLInSeconds).Should(Equal(100))
+		})
+	})
 })

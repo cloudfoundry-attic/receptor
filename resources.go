@@ -134,3 +134,8 @@ type FreshDomainCreateRequest struct {
 	Domain       string `json:"domain"`
 	TTLInSeconds int    `json:"ttl_in_seconds"`
 }
+
+type FreshDomainResponse struct {
+	Domain       string `json:"domain"`
+	TTLInSeconds int    `json:"ttl_in_seconds"`
+}

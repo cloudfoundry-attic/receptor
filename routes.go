@@ -29,6 +29,7 @@ const (
 
 	// Fresh domains
 	CreateFreshDomainRoute = "CreateFreshDomain"
+	FreshDomainsRoute      = "FreshDomains"
 )
 
 var Routes = rata.Routes{
@@ -58,4 +59,5 @@ var Routes = rata.Routes{
 
 	// Fresh domains
 	{Path: "/fresh_domains", Method: "POST", Name: CreateFreshDomainRoute},
+	{Path: "/fresh_domains", Method: "GET", Name: FreshDomainsRoute},
 }

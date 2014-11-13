@@ -51,3 +51,21 @@ func (h *FreshDomainHandler) Create(w http.ResponseWriter, req *http.Request) {
 
 	w.WriteHeader(http.StatusNoContent)
 }
+
+func (h *FreshDomainHandler) GetAll(w http.ResponseWriter, req *http.Request) {
+	logger := h.logger.Session("get-all-fresh-domains-handler")
+
+	freshnesses, err := h.bbs.Freshnesses()
+	if err != nil {
+		logger.Error("failed-to-fetch-freshnesses", err)
+		writeUnknownErrorResponse(w, err)
+		return
+	}
+
+	responses := make([]receptor.FreshDomainResponse, 0, len(freshnesses))
+	for _, freshness := range freshnesses {
+		responses = append(responses, serialization.FreshnessToResponse(freshness))
+	}
+
+	writeJSONResponse(w, http.StatusOK, responses)
+}

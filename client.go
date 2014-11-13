@@ -34,6 +34,7 @@ type Client interface {
 	Cells() ([]CellResponse, error)
 
 	CreateFreshDomain(FreshDomainCreateRequest) error
+	FreshDomains() ([]FreshDomainResponse, error)
 }
 
 func NewClient(addr, user, password string) Client {
@@ -145,6 +146,12 @@ func (c *client) Cells() ([]CellResponse, error) {
 
 func (c *client) CreateFreshDomain(req FreshDomainCreateRequest) error {
 	return c.doRequest(CreateFreshDomainRoute, nil, nil, req, nil)
+}
+
+func (c *client) FreshDomains() ([]FreshDomainResponse, error) {
+	var freshDomains []FreshDomainResponse
+	err := c.doRequest(FreshDomainsRoute, nil, nil, nil, &freshDomains)
+	return freshDomains, err
 }
 
 func (c *client) doRequest(requestName string, params rata.Params, queryParams url.Values, request, response interface{}) error {
