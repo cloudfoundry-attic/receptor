@@ -34,30 +34,30 @@ const (
 
 var Routes = rata.Routes{
 	// Tasks
-	{Path: "/tasks", Method: "POST", Name: CreateTaskRoute},
-	{Path: "/tasks", Method: "GET", Name: GetAllTasksRoute},
-	{Path: "/domains/:domain/tasks", Method: "GET", Name: GetAllTasksByDomainRoute},
-	{Path: "/tasks/:task_guid", Method: "GET", Name: GetTaskRoute},
-	{Path: "/tasks/:task_guid", Method: "DELETE", Name: DeleteTaskRoute},
+	{Path: "/v1/tasks", Method: "POST", Name: CreateTaskRoute},
+	{Path: "/v1/tasks", Method: "GET", Name: GetAllTasksRoute},
+	{Path: "/v1/domains/:domain/tasks", Method: "GET", Name: GetAllTasksByDomainRoute},
+	{Path: "/v1/tasks/:task_guid", Method: "GET", Name: GetTaskRoute},
+	{Path: "/v1/tasks/:task_guid", Method: "DELETE", Name: DeleteTaskRoute},
 
 	// DesiredLRPs
-	{Path: "/desired_lrps", Method: "POST", Name: CreateDesiredLRPRoute},
-	{Path: "/desired_lrps/:process_guid", Method: "GET", Name: GetDesiredLRPRoute},
-	{Path: "/desired_lrps/:process_guid", Method: "PUT", Name: UpdateDesiredLRPRoute},
-	{Path: "/desired_lrps/:process_guid", Method: "DELETE", Name: DeleteDesiredLRPRoute},
-	{Path: "/desired_lrps", Method: "GET", Name: GetAllDesiredLRPsRoute},
-	{Path: "/domains/:domain/desired_lrps", Method: "GET", Name: GetAllDesiredLRPsByDomainRoute},
+	{Path: "/v1/desired_lrps", Method: "POST", Name: CreateDesiredLRPRoute},
+	{Path: "/v1/desired_lrps/:process_guid", Method: "GET", Name: GetDesiredLRPRoute},
+	{Path: "/v1/desired_lrps/:process_guid", Method: "PUT", Name: UpdateDesiredLRPRoute},
+	{Path: "/v1/desired_lrps/:process_guid", Method: "DELETE", Name: DeleteDesiredLRPRoute},
+	{Path: "/v1/desired_lrps", Method: "GET", Name: GetAllDesiredLRPsRoute},
+	{Path: "/v1/domains/:domain/desired_lrps", Method: "GET", Name: GetAllDesiredLRPsByDomainRoute},
 
 	// ActualLRPs
-	{Path: "/actual_lrps", Method: "GET", Name: GetAllActualLRPsRoute},
-	{Path: "/domains/:domain/actual_lrps", Method: "GET", Name: GetAllActualLRPsByDomainRoute},
-	{Path: "/desired_lrps/:process_guid/actual_lrps", Method: "GET", Name: GetAllActualLRPsByProcessGuidRoute},
-	{Path: "/desired_lrps/:process_guid/actual_lrps", Method: "DELETE", Name: KillActualLRPsByProcessGuidAndIndexRoute},
+	{Path: "/v1/actual_lrps", Method: "GET", Name: GetAllActualLRPsRoute},
+	{Path: "/v1/domains/:domain/actual_lrps", Method: "GET", Name: GetAllActualLRPsByDomainRoute},
+	{Path: "/v1/desired_lrps/:process_guid/actual_lrps", Method: "GET", Name: GetAllActualLRPsByProcessGuidRoute},
+	{Path: "/v1/desired_lrps/:process_guid/actual_lrps", Method: "DELETE", Name: KillActualLRPsByProcessGuidAndIndexRoute},
 
 	// Cells
-	{Path: "/cells", Method: "GET", Name: CellsRoute},
+	{Path: "/v1/cells", Method: "GET", Name: CellsRoute},
 
 	// Fresh domains
-	{Path: "/fresh_domains", Method: "POST", Name: CreateFreshDomainRoute},
-	{Path: "/fresh_domains", Method: "GET", Name: FreshDomainsRoute},
+	{Path: "/v1/fresh_domains", Method: "POST", Name: CreateFreshDomainRoute},
+	{Path: "/v1/fresh_domains", Method: "GET", Name: FreshDomainsRoute},
 }
