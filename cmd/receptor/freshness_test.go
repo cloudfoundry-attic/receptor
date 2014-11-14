@@ -18,7 +18,7 @@ var _ = Describe("Freshness API", func() {
 		ginkgomon.Kill(receptorProcess)
 	})
 
-	Describe("POST /fresh_domains", func() {
+	Describe("POST /v1/fresh_domains", func() {
 		var postErr error
 
 		BeforeEach(func() {
@@ -39,11 +39,11 @@ var _ = Describe("Freshness API", func() {
 
 			Ω(freshnesses).Should(HaveLen(1))
 			Ω(freshnesses[0].Domain).Should(Equal("domain-0"))
-			Ω(freshnesses[0].TTLInSeconds).Should(BeNumerically("<=",100))
+			Ω(freshnesses[0].TTLInSeconds).Should(BeNumerically("<=", 100))
 		})
 	})
 
-	Describe("GET /fresh_domains", func() {
+	Describe("GET /v1/fresh_domains", func() {
 		var responses []receptor.FreshDomainResponse
 		var getErr error
 

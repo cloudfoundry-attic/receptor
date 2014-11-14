@@ -23,7 +23,7 @@ var _ = Describe("Desired LRP API", func() {
 		ginkgomon.Kill(receptorProcess)
 	})
 
-	Describe("POST /desired_lrps/", func() {
+	Describe("POST /v1/desired_lrps/", func() {
 		var lrpToCreate receptor.DesiredLRPCreateRequest
 		var createErr error
 
@@ -49,7 +49,7 @@ var _ = Describe("Desired LRP API", func() {
 		})
 	})
 
-	Describe("GET /desired_lrps/:process_guid", func() {
+	Describe("GET /v1/desired_lrps/:process_guid", func() {
 		var lrpRequest receptor.DesiredLRPCreateRequest
 		var lrpResponse receptor.DesiredLRPResponse
 		var getErr error
@@ -75,7 +75,7 @@ var _ = Describe("Desired LRP API", func() {
 		})
 	})
 
-	Describe("PUT /desired_lrps/:process_guid", func() {
+	Describe("PUT /v1/desired_lrps/:process_guid", func() {
 		var updateErr error
 
 		instances := 6
@@ -110,7 +110,7 @@ var _ = Describe("Desired LRP API", func() {
 		})
 	})
 
-	Describe("DELETE /desired_lrps/:process_guid", func() {
+	Describe("DELETE /v1/desired_lrps/:process_guid", func() {
 		var lrpRequest receptor.DesiredLRPCreateRequest
 		var deleteErr error
 
@@ -133,7 +133,7 @@ var _ = Describe("Desired LRP API", func() {
 		})
 	})
 
-	Describe("GET /desired_lrps", func() {
+	Describe("GET /v1/desired_lrps", func() {
 		var lrpResponses []receptor.DesiredLRPResponse
 		const expectedLRPCount = 6
 		var getErr error
@@ -155,7 +155,7 @@ var _ = Describe("Desired LRP API", func() {
 		})
 	})
 
-	Describe("GET /domains/:domain/desired_lrps", func() {
+	Describe("GET /v1/domains/:domain/desired_lrps", func() {
 		const expectedDomain = "domain-1"
 		const expectedLRPCount = 5
 		var lrpResponses []receptor.DesiredLRPResponse

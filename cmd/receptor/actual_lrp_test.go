@@ -38,7 +38,7 @@ var _ = Describe("Actual LRP API", func() {
 		ginkgomon.Kill(receptorProcess)
 	})
 
-	Describe("GET /actual_lrps", func() {
+	Describe("GET /v1/actual_lrps", func() {
 		var actualLRPResponses []receptor.ActualLRPResponse
 		var getErr error
 
@@ -67,7 +67,7 @@ var _ = Describe("Actual LRP API", func() {
 		})
 	})
 
-	Describe("GET /domains/:domain/actual_lrps", func() {
+	Describe("GET /v1/domains/:domain/actual_lrps", func() {
 		var actualLRPResponses []receptor.ActualLRPResponse
 		var getErr error
 
@@ -96,7 +96,7 @@ var _ = Describe("Actual LRP API", func() {
 		})
 	})
 
-	Describe("GET /desired_lrps/:process_guid/actual_lrps", func() {
+	Describe("GET /v1/desired_lrps/:process_guid/actual_lrps", func() {
 		var actualLRPResponses []receptor.ActualLRPResponse
 		var getErr error
 
@@ -125,7 +125,7 @@ var _ = Describe("Actual LRP API", func() {
 		})
 	})
 
-	Describe("GET /desired_lrps/:process_guid/actual_lrps?index=:index", func() {
+	Describe("GET /v1/desired_lrps/:process_guid/actual_lrps?index=:index", func() {
 		var actualLRPResponses []receptor.ActualLRPResponse
 		var getErr error
 
@@ -164,7 +164,7 @@ var _ = Describe("Actual LRP API", func() {
 		})
 	})
 
-	Describe("DELETE /desired_lrps/:process_guid/actual_lrps?index=:index", func() {
+	Describe("DELETE /v1/desired_lrps/:process_guid/actual_lrps?index=:index", func() {
 		var killErr error
 
 		BeforeEach(func() {

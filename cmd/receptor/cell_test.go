@@ -34,7 +34,7 @@ var _ = Describe("Cell API", func() {
 		ginkgomon.Kill(heartbeatProcess)
 	})
 
-	Describe("GET /cells", func() {
+	Describe("GET /v1/cells", func() {
 		var cellResponses []receptor.CellResponse
 		var getErr error
 

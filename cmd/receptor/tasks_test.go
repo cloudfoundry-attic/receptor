@@ -34,7 +34,7 @@ var _ = Describe("Task API", func() {
 		})
 	})
 
-	Describe("POST /tasks", func() {
+	Describe("POST /v1/tasks", func() {
 		var (
 			taskToCreate receptor.TaskCreateRequest
 			err          error
@@ -115,7 +115,7 @@ var _ = Describe("Task API", func() {
 		})
 	})
 
-	Describe("GET /tasks", func() {
+	Describe("GET /v1/tasks", func() {
 		Context("when there are no tasks", func() {
 			It("returns an empty array", func() {
 				tasks, err := client.GetAllTasks()
@@ -161,7 +161,7 @@ var _ = Describe("Task API", func() {
 		})
 	})
 
-	Describe("GET /domains/:domain/tasks", func() {
+	Describe("GET /v1/domains/:domain/tasks", func() {
 		BeforeEach(func() {
 			err := bbs.DesireTask(models.Task{
 				TaskGuid: "task-guid-1",
@@ -206,7 +206,7 @@ var _ = Describe("Task API", func() {
 		})
 	})
 
-	Describe("GET /tasks/:task_guid", func() {
+	Describe("GET /v1/tasks/:task_guid", func() {
 		BeforeEach(func() {
 			task := models.Task{
 				TaskGuid: "task-guid-1",
@@ -252,7 +252,7 @@ var _ = Describe("Task API", func() {
 		})
 	})
 
-	Describe("DELETE /tasks/:task_guid", func() {
+	Describe("DELETE /v1/tasks/:task_guid", func() {
 		BeforeEach(func() {
 			task := models.Task{
 				TaskGuid: "task-guid-1",
