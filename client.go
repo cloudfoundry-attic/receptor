@@ -17,6 +17,7 @@ type Client interface {
 	GetAllTasksByDomain(domain string) ([]TaskResponse, error)
 	GetTask(taskId string) (TaskResponse, error)
 	DeleteTask(taskId string) error
+	CancelTask(taskId string) error
 
 	CreateDesiredLRP(DesiredLRPCreateRequest) error
 	GetDesiredLRP(processGuid string) (DesiredLRPResponse, error)
@@ -77,6 +78,10 @@ func (c *client) GetTask(taskId string) (TaskResponse, error) {
 
 func (c *client) DeleteTask(taskId string) error {
 	return c.doRequest(DeleteTaskRoute, rata.Params{"task_guid": taskId}, nil, nil, nil)
+}
+
+func (c *client) CancelTask(taskId string) error {
+	return c.doRequest(CancelTaskRoute, rata.Params{"task_guid": taskId}, nil, nil, nil)
 }
 
 func (c *client) CreateDesiredLRP(req DesiredLRPCreateRequest) error {

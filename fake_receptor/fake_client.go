@@ -49,6 +49,14 @@ type FakeClient struct {
 	deleteTaskReturns struct {
 		result1 error
 	}
+	CancelTaskStub        func(taskId string) error
+	cancelTaskMutex       sync.RWMutex
+	cancelTaskArgsForCall []struct {
+		taskId string
+	}
+	cancelTaskReturns struct {
+		result1 error
+	}
 	CreateDesiredLRPStub        func(receptor.DesiredLRPCreateRequest) error
 	createDesiredLRPMutex       sync.RWMutex
 	createDesiredLRPArgsForCall []struct {
@@ -318,6 +326,38 @@ func (fake *FakeClient) DeleteTaskArgsForCall(i int) string {
 func (fake *FakeClient) DeleteTaskReturns(result1 error) {
 	fake.DeleteTaskStub = nil
 	fake.deleteTaskReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeClient) CancelTask(taskId string) error {
+	fake.cancelTaskMutex.Lock()
+	fake.cancelTaskArgsForCall = append(fake.cancelTaskArgsForCall, struct {
+		taskId string
+	}{taskId})
+	fake.cancelTaskMutex.Unlock()
+	if fake.CancelTaskStub != nil {
+		return fake.CancelTaskStub(taskId)
+	} else {
+		return fake.cancelTaskReturns.result1
+	}
+}
+
+func (fake *FakeClient) CancelTaskCallCount() int {
+	fake.cancelTaskMutex.RLock()
+	defer fake.cancelTaskMutex.RUnlock()
+	return len(fake.cancelTaskArgsForCall)
+}
+
+func (fake *FakeClient) CancelTaskArgsForCall(i int) string {
+	fake.cancelTaskMutex.RLock()
+	defer fake.cancelTaskMutex.RUnlock()
+	return fake.cancelTaskArgsForCall[i].taskId
+}
+
+func (fake *FakeClient) CancelTaskReturns(result1 error) {
+	fake.CancelTaskStub = nil
+	fake.cancelTaskReturns = struct {
 		result1 error
 	}{result1}
 }

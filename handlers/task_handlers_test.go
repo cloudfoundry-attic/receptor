@@ -8,6 +8,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/receptor"
 	. "github.com/cloudfoundry-incubator/receptor/handlers"
+	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/cloudfoundry/storeadapter"
@@ -384,6 +385,59 @@ var _ = Describe("TaskHandler", func() {
 			It("responds with an error", func() {
 				handler.Delete(responseRecorder, request)
 				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
+			})
+		})
+	})
+
+	Describe("Cancel", func() {
+		BeforeEach(func() {
+			var err error
+			request, err = http.NewRequest("", "http://example.com?:task_guid=the-task-guid", nil)
+			Ω(err).ShouldNot(HaveOccurred())
+		})
+
+		JustBeforeEach(func() {
+			handler.Cancel(responseRecorder, request)
+		})
+
+		Context("when the task cannot be found in the BBS", func() {
+			BeforeEach(func() {
+				fakeBBS.CancelTaskReturns(Bbs.ErrTaskNotFound)
+			})
+
+			It("responds with a 404 NOT FOUND", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusNotFound))
+			})
+
+			It("responds with a TaskNotFound error in the body", func() {
+				var taskError receptor.Error
+				err := json.Unmarshal(responseRecorder.Body.Bytes(), &taskError)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(taskError).Should(Equal(receptor.Error{
+					Type:    receptor.TaskNotFound,
+					Message: "task guid not found",
+				}))
+			})
+		})
+
+		Context("when cancelling fails", func() {
+			BeforeEach(func() {
+				fakeBBS.CancelTaskReturns(errors.New("Something went wrong"))
+			})
+
+			It("responds with an error", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
+			})
+		})
+
+		Context("when cancelling the task is successful", func() {
+			BeforeEach(func() {
+				fakeBBS.CancelTaskReturns(nil)
+			})
+
+			It("responds with a 200", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
 			})
 		})
 	})

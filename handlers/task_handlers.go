@@ -126,6 +126,23 @@ func (h *TaskHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	}
 }
 
+func (h *TaskHandler) Cancel(w http.ResponseWriter, req *http.Request) {
+	err := h.bbs.CancelTask(req.FormValue(":task_guid"))
+
+	if err == Bbs.ErrTaskNotFound {
+		h.logger.Error("failed-to-cancel-task", err)
+		writeJSONResponse(w, http.StatusNotFound, receptor.Error{
+			Type:    receptor.TaskNotFound,
+			Message: "task guid not found",
+		})
+		return
+	} else if err != nil {
+		h.logger.Error("failed-to-fetch-task", err)
+		writeUnknownErrorResponse(w, err)
+		return
+	}
+}
+
 func writeTaskResponse(w http.ResponseWriter, logger lager.Logger, tasks []models.Task, err error) {
 	if err != nil {
 		logger.Error("failed-to-fetch-tasks", err)

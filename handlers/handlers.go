@@ -23,6 +23,7 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string, co
 		receptor.GetAllTasksByDomainRoute: route(taskHandler.GetAllByDomain),
 		receptor.GetTaskRoute:             route(taskHandler.GetByGuid),
 		receptor.DeleteTaskRoute:          route(taskHandler.Delete),
+		receptor.CancelTaskRoute:          route(taskHandler.Cancel),
 
 		// DesiredLRPs
 		receptor.CreateDesiredLRPRoute:          route(desiredLRPHandler.Create),

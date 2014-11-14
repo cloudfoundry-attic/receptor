@@ -308,4 +308,41 @@ var _ = Describe("Task API", func() {
 			})
 		})
 	})
+
+	Describe("POST /v1/tasks/:task_guid/cancel", func() {
+		var cancelErr error
+
+		BeforeEach(func() {
+			task := models.Task{
+				TaskGuid: "task-guid-1",
+				Domain:   "test-domain",
+				Stack:    "stack-1",
+				Action: models.ExecutorAction{
+					Action: models.RunAction{Path: "/bin/true"},
+				},
+			}
+
+			err := bbs.DesireTask(task)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			err = bbs.ClaimTask("task-guid-1", "the-cell-id")
+			Ω(err).ShouldNot(HaveOccurred())
+
+			err = bbs.StartTask("task-guid-1", "the-cell-id")
+			Ω(err).ShouldNot(HaveOccurred())
+
+			cancelErr = client.CancelTask("task-guid-1")
+		})
+
+		It("cancels the task", func() {
+			task, err := bbs.GetTaskByGuid("task-guid-1")
+			Ω(err).ShouldNot(HaveOccurred())
+			Ω(task.State).Should(Equal(models.TaskStateCompleted))
+		})
+
+		It("does not error", func() {
+			Ω(cancelErr).ShouldNot(HaveOccurred())
+		})
+	})
+
 })

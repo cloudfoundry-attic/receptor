@@ -9,6 +9,7 @@ const (
 	GetAllTasksByDomainRoute = "GetAllTasksByDomain"
 	GetTaskRoute             = "GetTask"
 	DeleteTaskRoute          = "DeleteTask"
+	CancelTaskRoute          = "CancelTask"
 
 	// DesiredLRPs
 	CreateDesiredLRPRoute          = "CreateDesiredLRP"
@@ -39,6 +40,7 @@ var Routes = rata.Routes{
 	{Path: "/v1/domains/:domain/tasks", Method: "GET", Name: GetAllTasksByDomainRoute},
 	{Path: "/v1/tasks/:task_guid", Method: "GET", Name: GetTaskRoute},
 	{Path: "/v1/tasks/:task_guid", Method: "DELETE", Name: DeleteTaskRoute},
+	{Path: "/v1/tasks/:task_guid/cancel", Method: "POST", Name: CancelTaskRoute},
 
 	// DesiredLRPs
 	{Path: "/v1/desired_lrps", Method: "POST", Name: CreateDesiredLRPRoute},
