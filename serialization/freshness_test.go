@@ -11,11 +11,11 @@ import (
 
 var _ = Describe("Freshness Serialization", func() {
 	Describe("FreshnessFromRequest", func() {
-		var request receptor.FreshDomainCreateRequest
+		var request receptor.FreshDomainBumpRequest
 		var freshness models.Freshness
 
 		BeforeEach(func() {
-			request = receptor.FreshDomainCreateRequest{
+			request = receptor.FreshDomainBumpRequest{
 				Domain:       "the-domain",
 				TTLInSeconds: 100,
 			}

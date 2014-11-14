@@ -32,13 +32,13 @@ var _ = Describe("Fresh Domain Handlers", func() {
 		handler = handlers.NewFreshDomainHandler(fakeBBS, logger)
 	})
 
-	Describe("Create", func() {
+	Describe("Bump", func() {
 		Context("with a structured request", func() {
-			var freshDomainCreateRequest receptor.FreshDomainCreateRequest
+			var freshDomainBumpRequest receptor.FreshDomainBumpRequest
 			var expectedFreshness models.Freshness
 
 			BeforeEach(func() {
-				freshDomainCreateRequest = receptor.FreshDomainCreateRequest{
+				freshDomainBumpRequest = receptor.FreshDomainBumpRequest{
 					Domain:       "domain-1",
 					TTLInSeconds: 1000,
 				}
@@ -50,7 +50,7 @@ var _ = Describe("Fresh Domain Handlers", func() {
 			})
 
 			JustBeforeEach(func() {
-				handler.Create(responseRecorder, newTestRequest(freshDomainCreateRequest))
+				handler.Bump(responseRecorder, newTestRequest(freshDomainBumpRequest))
 			})
 
 			Context("when the call to the BBS succeeds", func() {
@@ -90,7 +90,7 @@ var _ = Describe("Fresh Domain Handlers", func() {
 
 			Context("when the request corresponds to an invalid freshness", func() {
 				BeforeEach(func() {
-					freshDomainCreateRequest = receptor.FreshDomainCreateRequest{
+					freshDomainBumpRequest = receptor.FreshDomainBumpRequest{
 						Domain:       "",
 						TTLInSeconds: -1000,
 					}
@@ -125,7 +125,7 @@ var _ = Describe("Fresh Domain Handlers", func() {
 
 			BeforeEach(func() {
 				garbageRequest = []byte(`garbage`)
-				handler.Create(responseRecorder, newTestRequest(garbageRequest))
+				handler.Bump(responseRecorder, newTestRequest(garbageRequest))
 			})
 
 			It("responds with 400 BAD REQUEST", func() {
@@ -133,7 +133,7 @@ var _ = Describe("Fresh Domain Handlers", func() {
 			})
 
 			It("responds with a relevant error message", func() {
-				err := json.Unmarshal(garbageRequest, &receptor.FreshDomainCreateRequest{})
+				err := json.Unmarshal(garbageRequest, &receptor.FreshDomainBumpRequest{})
 				expectedBody, _ := json.Marshal(receptor.Error{
 					Type:    receptor.InvalidJSON,
 					Message: err.Error(),

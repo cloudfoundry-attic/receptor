@@ -22,11 +22,11 @@ var _ = Describe("Freshness API", func() {
 		var postErr error
 
 		BeforeEach(func() {
-			freshnessRequest := receptor.FreshDomainCreateRequest{
+			freshnessRequest := receptor.FreshDomainBumpRequest{
 				Domain:       "domain-0",
 				TTLInSeconds: 100,
 			}
-			postErr = client.CreateFreshDomain(freshnessRequest)
+			postErr = client.BumpFreshDomain(freshnessRequest)
 		})
 
 		It("responds without error", func() {

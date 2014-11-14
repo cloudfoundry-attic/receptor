@@ -130,7 +130,7 @@ type CellResponse struct {
 	Stack  string `json:"stack"`
 }
 
-type FreshDomainCreateRequest struct {
+type FreshDomainBumpRequest struct {
 	Domain       string `json:"domain"`
 	TTLInSeconds int    `json:"ttl_in_seconds"`
 }

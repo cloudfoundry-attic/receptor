@@ -5,7 +5,7 @@ import (
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 )
 
-func FreshnessFromRequest(req receptor.FreshDomainCreateRequest) models.Freshness {
+func FreshnessFromRequest(req receptor.FreshDomainBumpRequest) models.Freshness {
 	return models.Freshness{
 		Domain:       req.Domain,
 		TTLInSeconds: req.TTLInSeconds,

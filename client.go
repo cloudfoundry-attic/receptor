@@ -33,7 +33,7 @@ type Client interface {
 
 	Cells() ([]CellResponse, error)
 
-	CreateFreshDomain(FreshDomainCreateRequest) error
+	BumpFreshDomain(FreshDomainBumpRequest) error
 	FreshDomains() ([]FreshDomainResponse, error)
 }
 
@@ -144,8 +144,8 @@ func (c *client) Cells() ([]CellResponse, error) {
 	return cells, err
 }
 
-func (c *client) CreateFreshDomain(req FreshDomainCreateRequest) error {
-	return c.doRequest(CreateFreshDomainRoute, nil, nil, req, nil)
+func (c *client) BumpFreshDomain(req FreshDomainBumpRequest) error {
+	return c.doRequest(BumpFreshDomainRoute, nil, nil, req, nil)
 }
 
 func (c *client) FreshDomains() ([]FreshDomainResponse, error) {

@@ -28,8 +28,8 @@ const (
 	CellsRoute = "Cells"
 
 	// Fresh domains
-	CreateFreshDomainRoute = "CreateFreshDomain"
-	FreshDomainsRoute      = "FreshDomains"
+	BumpFreshDomainRoute = "BumpFreshDomain"
+	FreshDomainsRoute    = "FreshDomains"
 )
 
 var Routes = rata.Routes{
@@ -58,6 +58,6 @@ var Routes = rata.Routes{
 	{Path: "/v1/cells", Method: "GET", Name: CellsRoute},
 
 	// Fresh domains
-	{Path: "/v1/fresh_domains", Method: "POST", Name: CreateFreshDomainRoute},
+	{Path: "/v1/fresh_domains", Method: "POST", Name: BumpFreshDomainRoute},
 	{Path: "/v1/fresh_domains", Method: "GET", Name: FreshDomainsRoute},
 }

@@ -22,9 +22,9 @@ func NewFreshDomainHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) *FreshDomai
 	}
 }
 
-func (h *FreshDomainHandler) Create(w http.ResponseWriter, req *http.Request) {
-	logger := h.logger.Session("create-fresh-domain-handler")
-	freshDomainRequest := receptor.FreshDomainCreateRequest{}
+func (h *FreshDomainHandler) Bump(w http.ResponseWriter, req *http.Request) {
+	logger := h.logger.Session("bump-fresh-domain-handler")
+	freshDomainRequest := receptor.FreshDomainBumpRequest{}
 
 	err := json.NewDecoder(req.Body).Decode(&freshDomainRequest)
 	if err != nil {
