@@ -9,7 +9,7 @@ import (
 	"github.com/tedsuo/rata"
 )
 
-func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) http.Handler {
+func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string, corsEnabled bool) http.Handler {
 	taskHandler := NewTaskHandler(bbs, logger)
 	desiredLRPHandler := NewDesiredLRPHandler(bbs, logger)
 	actualLRPHandler := NewActualLRPHandler(bbs, logger)
@@ -49,6 +49,10 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string) ht
 	handler, err := rata.NewRouter(receptor.Routes, actions)
 	if err != nil {
 		panic("unable to create router: " + err.Error())
+	}
+
+	if corsEnabled {
+		handler = CORSWrapper(handler)
 	}
 
 	if username != "" {

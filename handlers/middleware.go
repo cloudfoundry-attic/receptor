@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry/dropsonde"
@@ -40,4 +41,36 @@ func unauthorized(w http.ResponseWriter, r *http.Request) {
 		Type:    receptor.Unauthorized,
 		Message: http.StatusText(status),
 	})
+}
+
+// see https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS
+func CORSWrapper(handler http.Handler) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if isValidCORSRequest(r) {
+			w.Header().Set("Access-Control-Allow-Origin", r.Header.Get("Origin"))
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
+		}
+
+		if isCORSPreflightRequest(r) {
+			w.Header().Set("Access-Control-Allow-Methods", r.Header.Get("Access-Control-Request-Method"))
+			w.Header().Set("Access-Control-Allow-Headers", r.Header.Get("Access-Control-Request-Headers"))
+			w.WriteHeader(http.StatusOK)
+		} else {
+			handler.ServeHTTP(w, r)
+		}
+	}
+}
+
+var invalidOriginHeaders = map[string]struct{}{
+	"":  struct{}{},
+	"*": struct{}{},
+}
+
+func isValidCORSRequest(r *http.Request) bool {
+	_, isBlacklistedOrigin := invalidOriginHeaders[r.Header.Get("Origin")]
+	return !isBlacklistedOrigin
+}
+
+func isCORSPreflightRequest(r *http.Request) bool {
+	return strings.ToUpper(r.Method) == "OPTIONS"
 }

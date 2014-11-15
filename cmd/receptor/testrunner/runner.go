@@ -3,6 +3,7 @@ package testrunner
 import (
 	"os/exec"
 	"strconv"
+	"time"
 
 	"github.com/tedsuo/ifrit/ginkgomon"
 )
@@ -17,7 +18,8 @@ type Args struct {
 	NatsAddresses            string
 	NatsUsername             string
 	NatsPassword             string
-	InitialHeartbeatInterval string
+	InitialHeartbeatInterval time.Duration
+	CORSEnabled              bool
 }
 
 func (args Args) ArgSlice() []string {
@@ -31,7 +33,8 @@ func (args Args) ArgSlice() []string {
 		"-natsAddresses", args.NatsAddresses,
 		"-natsUsername", args.NatsUsername,
 		"-natsPassword", args.NatsPassword,
-		"initialHeartbeatInterval", args.InitialHeartbeatInterval,
+		"-initialHeartbeatInterval", args.InitialHeartbeatInterval.String(),
+		"-corsEnabled=" + strconv.FormatBool(args.CORSEnabled),
 	}
 }
 

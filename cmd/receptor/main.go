@@ -51,6 +51,12 @@ var etcdCluster = flag.String(
 	"Comma-separated list of etcd addresses (http://ip:port).",
 )
 
+var corsEnabled = flag.Bool(
+	"corsEnabled",
+	false,
+	"Enable CORS",
+)
+
 var username = flag.String(
 	"username",
 	"",
@@ -116,7 +122,7 @@ func main() {
 
 	bbs := initializeReceptorBBS(logger)
 
-	handler := handlers.New(bbs, logger, *username, *password)
+	handler := handlers.New(bbs, logger, *username, *password, *corsEnabled)
 
 	members := grouper.Members{
 		{"server", http_server.New(*serverAddress, handler)},
