@@ -29,18 +29,6 @@ func EnvironmentVariablesFromModel(envVars []models.EnvironmentVariable) []recep
 	return out
 }
 
-func PortMappingToModel(ports []receptor.PortMapping) []models.PortMapping {
-	if ports == nil {
-		return nil
-	}
-	out := make([]models.PortMapping, len(ports))
-	for i, val := range ports {
-		out[i].ContainerPort = val.ContainerPort
-		out[i].HostPort = val.HostPort
-	}
-	return out
-}
-
 func PortMappingFromModel(ports []models.PortMapping) []receptor.PortMapping {
 	if ports == nil {
 		return nil

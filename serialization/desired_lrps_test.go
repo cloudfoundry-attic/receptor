@@ -22,6 +22,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				RootFSPath:  "the-rootfs-path",
 				Annotation:  "foo",
 				Instances:   1,
+				Ports:       []uint32{2345, 6789},
 				Action: models.ExecutorAction{
 					Action: models.RunAction{
 						Path: "the-path",
@@ -41,6 +42,9 @@ var _ = Describe("DesiredLRP Serialization", func() {
 			Ω(desiredLRP.Stack).Should(Equal("the-stack"))
 			Ω(desiredLRP.RootFSPath).Should(Equal("the-rootfs-path"))
 			Ω(desiredLRP.Annotation).Should(Equal("foo"))
+			Ω(desiredLRP.Ports).Should(HaveLen(2))
+			Ω(desiredLRP.Ports[0]).Should(Equal(uint32(2345)))
+			Ω(desiredLRP.Ports[1]).Should(Equal(uint32(6789)))
 		})
 	})
 
@@ -62,8 +66,8 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				DiskMB:    126,
 				MemoryMB:  1234,
 				CPUWeight: 192,
-				Ports: []models.PortMapping{
-					{ContainerPort: 456, HostPort: 876},
+				Ports: []uint32{
+					456,
 				},
 				Routes:     []string{"route-0", "route-1"},
 				LogGuid:    "log-guid-0",
@@ -88,8 +92,8 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				DiskMB:    126,
 				MemoryMB:  1234,
 				CPUWeight: 192,
-				Ports: []receptor.PortMapping{
-					{ContainerPort: 456, HostPort: 876},
+				Ports: []uint32{
+					456,
 				},
 				Routes:     []string{"route-0", "route-1"},
 				LogGuid:    "log-guid-0",

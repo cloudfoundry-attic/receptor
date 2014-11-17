@@ -197,6 +197,7 @@ func newValidDesiredLRPCreateRequest() receptor.DesiredLRPCreateRequest {
 		Domain:      "test-domain",
 		Stack:       "some-stack",
 		Instances:   1,
+		Ports:       []uint32{1234, 5678},
 		Action: models.ExecutorAction{
 			models.RunAction{
 				Path: "/bin/bash",
