@@ -52,12 +52,12 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string, co
 		panic("unable to create router: " + err.Error())
 	}
 
-	if corsEnabled {
-		handler = CORSWrapper(handler)
-	}
-
 	if username != "" {
 		handler = BasicAuthWrap(handler, username, password)
+	}
+
+	if corsEnabled {
+		handler = CORSWrapper(handler)
 	}
 
 	handler = LogWrap(handler, logger)

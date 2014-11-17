@@ -13,7 +13,6 @@ import (
 
 var _ = Describe("CORS support", func() {
 	JustBeforeEach(func() {
-		receptorArgs.Username = ""
 		receptorRunner = testrunner.New(receptorBinPath, receptorArgs)
 		receptorProcess = ginkgomon.Invoke(receptorRunner)
 	})
@@ -36,6 +35,7 @@ var _ = Describe("CORS support", func() {
 			})
 
 			It("responds to with a ACAO header containg the ORIGIN header value", func() {
+				Ω(res.StatusCode).Should(Equal(http.StatusOK))
 				value := res.Header.Get("Access-Control-Allow-Origin")
 				Ω(value).Should(Equal(req.Header.Get("Origin")))
 			})
@@ -83,7 +83,7 @@ func doGetRequest() (*http.Request, *http.Response) {
 	Ω(err).ShouldNot(HaveOccurred())
 
 	req.Header.Set("Origin", "example.com")
-
+	req.SetBasicAuth(username, password)
 	httpClient := http.Client{}
 	res, err := httpClient.Do(req)
 	Ω(err).ShouldNot(HaveOccurred())
