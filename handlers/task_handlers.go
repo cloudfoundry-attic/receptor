@@ -104,7 +104,7 @@ func (h *TaskHandler) Delete(w http.ResponseWriter, req *http.Request) {
 			h.logger.Error("task-not-found", err)
 			writeJSONResponse(w, http.StatusConflict, receptor.Error{
 				Type:    receptor.TaskNotFound,
-				Message: "stuff",
+				Message: "task guid not found",
 			})
 		case Bbs.ErrTaskNotResolvable:
 			h.logger.Error("task-not-completed", err)
