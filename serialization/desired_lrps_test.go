@@ -23,10 +23,8 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				Annotation:  "foo",
 				Instances:   1,
 				Ports:       []uint32{2345, 6789},
-				Action: models.ExecutorAction{
-					Action: models.RunAction{
-						Path: "the-path",
-					},
+				Action: &models.RunAction{
+					Path: "the-path",
 				},
 			}
 		})
@@ -58,9 +56,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				EnvironmentVariables: []models.EnvironmentVariable{
 					{Name: "ENV_VAR_NAME", Value: "value"},
 				},
-				Action: models.ExecutorAction{
-					Action: models.RunAction{Path: "/bin/true"},
-				},
+				Action:    &models.RunAction{Path: "/bin/true"},
 				DiskMB:    126,
 				MemoryMB:  1234,
 				CPUWeight: 192,
@@ -84,9 +80,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				EnvironmentVariables: []receptor.EnvironmentVariable{
 					{Name: "ENV_VAR_NAME", Value: "value"},
 				},
-				Action: models.ExecutorAction{
-					Action: models.RunAction{Path: "/bin/true"},
-				},
+				Action:    &models.RunAction{Path: "/bin/true"},
 				DiskMB:    126,
 				MemoryMB:  1234,
 				CPUWeight: 192,

@@ -21,11 +21,9 @@ var _ = Describe("Task Serialization", func() {
 				Domain:     "the-domain",
 				RootFSPath: "the-rootfs-path",
 				CellID:     "the-cell-id",
-				Action: models.ExecutorAction{
-					Action: models.UploadAction{
-						From: "from",
-						To:   "to",
-					},
+				Action: &models.UploadAction{
+					From: "from",
+					To:   "to",
 				},
 				Stack:      "the-stack",
 				MemoryMB:   100,
@@ -71,11 +69,9 @@ var _ = Describe("Task Serialization", func() {
 				Domain:     "the-domain",
 				RootFSPath: "the-rootfs-path",
 				CellID:     "the-cell-id",
-				Action: models.ExecutorAction{
-					Action: models.UploadAction{
-						From: "from",
-						To:   "to",
-					},
+				Action: &models.UploadAction{
+					From: "from",
+					To:   "to",
 				},
 				Stack:      "the-stack",
 				MemoryMB:   100,
@@ -129,10 +125,8 @@ var _ = Describe("Task Serialization", func() {
 				TaskGuid:   "the-task-guid",
 				Domain:     "the-domain",
 				RootFSPath: "the-rootfs-path",
-				Action: models.ExecutorAction{
-					Action: models.RunAction{
-						Path: "the-path",
-					},
+				Action: &models.RunAction{
+					Path: "the-path",
 				},
 				Stack:      "the-stack",
 				MemoryMB:   100,
@@ -151,10 +145,8 @@ var _ = Describe("Task Serialization", func() {
 				TaskGuid:   "the-task-guid",
 				Domain:     "the-domain",
 				RootFSPath: "the-rootfs-path",
-				Action: models.ExecutorAction{
-					Action: models.RunAction{
-						Path: "the-path",
-					},
+				Action: &models.RunAction{
+					Path: "the-path",
 				},
 				Stack:      "the-stack",
 				MemoryMB:   100,

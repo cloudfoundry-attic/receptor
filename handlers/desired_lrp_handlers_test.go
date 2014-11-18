@@ -40,10 +40,8 @@ var _ = Describe("Desired LRP Handlers", func() {
 			Stack:       "the-stack",
 			RootFSPath:  "the-rootfs-path",
 			Instances:   1,
-			Action: models.ExecutorAction{
-				Action: models.RunAction{
-					Path: "the-path",
-				},
+			Action: &models.RunAction{
+				Path: "the-path",
 			},
 		}
 
@@ -53,10 +51,8 @@ var _ = Describe("Desired LRP Handlers", func() {
 			Stack:       "the-stack",
 			RootFSPath:  "the-rootfs-path",
 			Instances:   1,
-			Action: models.ExecutorAction{
-				Action: models.RunAction{
-					Path: "the-path",
-				},
+			Action: &models.RunAction{
+				Path: "the-path",
 			},
 		}
 
@@ -175,10 +171,8 @@ var _ = Describe("Desired LRP Handlers", func() {
 				fakeBBS.DesiredLRPByProcessGuidReturns(models.DesiredLRP{
 					ProcessGuid: "process-guid-0",
 					Domain:      "domain-1",
-					Action: models.ExecutorAction{
-						Action: models.RunAction{
-							Path: "the-path",
-						},
+					Action: &models.RunAction{
+						Path: "the-path",
 					},
 				}, nil)
 			})
@@ -528,19 +522,15 @@ var _ = Describe("Desired LRP Handlers", func() {
 					{
 						ProcessGuid: "process-guid-0",
 						Domain:      "domain-1",
-						Action: models.ExecutorAction{
-							Action: models.RunAction{
-								Path: "the-path",
-							},
+						Action: &models.RunAction{
+							Path: "the-path",
 						},
 					},
 					{
 						ProcessGuid: "process-guid-1",
 						Domain:      "domain-1",
-						Action: models.ExecutorAction{
-							Action: models.RunAction{
-								Path: "the-path",
-							},
+						Action: &models.RunAction{
+							Path: "the-path",
 						},
 					},
 				}, nil)
@@ -622,19 +612,15 @@ var _ = Describe("Desired LRP Handlers", func() {
 					{
 						ProcessGuid: "process-guid-0",
 						Domain:      "domain-1",
-						Action: models.ExecutorAction{
-							Action: models.RunAction{
-								Path: "the-path",
-							},
+						Action: &models.RunAction{
+							Path: "the-path",
 						},
 					},
 					{
 						ProcessGuid: "process-guid-1",
 						Domain:      "domain-1",
-						Action: models.ExecutorAction{
-							Action: models.RunAction{
-								Path: "the-path",
-							},
+						Action: &models.RunAction{
+							Path: "the-path",
 						},
 					},
 				}, nil)

@@ -41,9 +41,7 @@ var _ = Describe("TaskHandler", func() {
 			Domain:     "test-domain",
 			RootFSPath: "docker://docker",
 			Stack:      "some-stack",
-			Action: models.ExecutorAction{
-				Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}},
-			},
+			Action:     &models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}},
 			MemoryMB:   24,
 			DiskMB:     12,
 			CPUWeight:  10,
@@ -58,9 +56,7 @@ var _ = Describe("TaskHandler", func() {
 			Domain:     "test-domain",
 			RootFSPath: "docker://docker",
 			Stack:      "some-stack",
-			Action: models.ExecutorAction{
-				Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}},
-			},
+			Action:     &models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}},
 			MemoryMB:   24,
 			DiskMB:     12,
 			CPUWeight:  10,
@@ -211,10 +207,8 @@ var _ = Describe("TaskHandler", func() {
 					{
 						TaskGuid: "task-guid-1",
 						Domain:   "domain-1",
-						Action: models.ExecutorAction{
-							Action: models.RunAction{
-								Path: "the-path",
-							},
+						Action: &models.RunAction{
+							Path: "the-path",
 						},
 					},
 				}, nil)
@@ -253,10 +247,8 @@ var _ = Describe("TaskHandler", func() {
 					{
 						TaskGuid: "task-guid-1",
 						Domain:   "domain-1",
-						Action: models.ExecutorAction{
-							Action: models.RunAction{
-								Path: "the-path",
-							},
+						Action: &models.RunAction{
+							Path: "the-path",
 						},
 					},
 				}, nil)
@@ -323,10 +315,8 @@ var _ = Describe("TaskHandler", func() {
 				fakeBBS.TaskByGuidReturns(models.Task{
 					TaskGuid: "task-guid-1",
 					Domain:   "domain-1",
-					Action: models.ExecutorAction{
-						Action: models.RunAction{
-							Path: "the-path",
-						},
+					Action: &models.RunAction{
+						Path: "the-path",
 					},
 				}, nil)
 			})

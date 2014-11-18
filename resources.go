@@ -1,6 +1,10 @@
 package receptor
 
-import "github.com/cloudfoundry-incubator/runtime-schema/models"
+import (
+	"encoding/json"
+
+	"github.com/cloudfoundry-incubator/runtime-schema/models"
+)
 
 type EnvironmentVariable struct {
 	Name  string `json:"name"`
@@ -22,7 +26,7 @@ const (
 )
 
 type TaskCreateRequest struct {
-	Action                models.ExecutorAction `json:"actions"`
+	Action                models.Action         `json:"-"`
 	Annotation            string                `json:"annotation,omitempty"`
 	CompletionCallbackURL string                `json:"completion_callback_url"`
 	CPUWeight             uint                  `json:"cpu_weight"`
@@ -38,8 +42,46 @@ type TaskCreateRequest struct {
 	EnvironmentVariables  []EnvironmentVariable `json:"env,omitempty"`
 }
 
+type InnerTaskCreateRequest TaskCreateRequest
+
+type mTaskCreateRequest struct {
+	ActionRaw json.RawMessage `json:"action"`
+	*InnerTaskCreateRequest
+}
+
+func (request TaskCreateRequest) MarshalJSON() ([]byte, error) {
+	actionRaw, err := models.MarshalAction(request.Action)
+	if err != nil {
+		return nil, err
+	}
+
+	innerRequest := InnerTaskCreateRequest(request)
+	mRequest := &mTaskCreateRequest{
+		ActionRaw:              actionRaw,
+		InnerTaskCreateRequest: &innerRequest,
+	}
+
+	return json.Marshal(mRequest)
+}
+
+func (request *TaskCreateRequest) UnmarshalJSON(payload []byte) error {
+	mRequest := &mTaskCreateRequest{InnerTaskCreateRequest: (*InnerTaskCreateRequest)(request)}
+	err := json.Unmarshal(payload, mRequest)
+	if err != nil {
+		return err
+	}
+
+	a, err := models.UnmarshalAction(mRequest.ActionRaw)
+	if err != nil {
+		return err
+	}
+	request.Action = a
+
+	return nil
+}
+
 type TaskResponse struct {
-	Action                models.ExecutorAction `json:"actions"`
+	Action                models.Action         `json:"-"`
 	Annotation            string                `json:"annotation,omitempty"`
 	CompletionCallbackURL string                `json:"completion_callback_url"`
 	CPUWeight             uint                  `json:"cpu_weight"`
@@ -61,24 +103,138 @@ type TaskResponse struct {
 	State                 string                `json:"state"`
 }
 
+type InnerTaskResponse TaskResponse
+
+type mTaskResponse struct {
+	ActionRaw json.RawMessage `json:"action"`
+	*InnerTaskResponse
+}
+
+func (response TaskResponse) MarshalJSON() ([]byte, error) {
+	actionRaw, err := models.MarshalAction(response.Action)
+	if err != nil {
+		return nil, err
+	}
+
+	innerResponse := InnerTaskResponse(response)
+	mResponse := &mTaskResponse{
+		ActionRaw:         actionRaw,
+		InnerTaskResponse: &innerResponse,
+	}
+
+	return json.Marshal(mResponse)
+}
+
+func (response *TaskResponse) UnmarshalJSON(payload []byte) error {
+	mResponse := &mTaskResponse{InnerTaskResponse: (*InnerTaskResponse)(response)}
+	err := json.Unmarshal(payload, mResponse)
+	if err != nil {
+		return err
+	}
+
+	a, err := models.UnmarshalAction(mResponse.ActionRaw)
+	if err != nil {
+		return err
+	}
+	response.Action = a
+
+	return nil
+}
+
 type DesiredLRPCreateRequest struct {
-	ProcessGuid          string                 `json:"process_guid"`
-	Domain               string                 `json:"domain"`
-	RootFSPath           string                 `json:"root_fs"`
-	Instances            int                    `json:"instances"`
-	Stack                string                 `json:"stack"`
-	EnvironmentVariables []EnvironmentVariable  `json:"env,omitempty"`
-	Setup                *models.ExecutorAction `json:"setup"`
-	Action               models.ExecutorAction  `json:"action"`
-	Monitor              *models.ExecutorAction `json:"monitor"`
-	DiskMB               int                    `json:"disk_mb"`
-	MemoryMB             int                    `json:"memory_mb"`
-	CPUWeight            uint                   `json:"cpu_weight"`
-	Ports                []uint32               `json:"ports"`
-	Routes               []string               `json:"routes"`
-	LogGuid              string                 `json:"log_guid"`
-	LogSource            string                 `json:"log_source"`
-	Annotation           string                 `json:"annotation,omitempty"`
+	ProcessGuid          string                `json:"process_guid"`
+	Domain               string                `json:"domain"`
+	RootFSPath           string                `json:"root_fs"`
+	Instances            int                   `json:"instances"`
+	Stack                string                `json:"stack"`
+	EnvironmentVariables []EnvironmentVariable `json:"env,omitempty"`
+	Setup                models.Action         `json:"-"`
+	Action               models.Action         `json:"-"`
+	Monitor              models.Action         `json:"-"`
+	DiskMB               int                   `json:"disk_mb"`
+	MemoryMB             int                   `json:"memory_mb"`
+	CPUWeight            uint                  `json:"cpu_weight"`
+	Ports                []uint32              `json:"ports"`
+	Routes               []string              `json:"routes"`
+	LogGuid              string                `json:"log_guid"`
+	LogSource            string                `json:"log_source"`
+	Annotation           string                `json:"annotation,omitempty"`
+}
+
+type InnerDesiredLRPCreateRequest DesiredLRPCreateRequest
+
+type mDesiredLRPCreateRequest struct {
+	SetupRaw   *json.RawMessage `json:"setup,omitempty"`
+	ActionRaw  json.RawMessage  `json:"action"`
+	MonitorRaw *json.RawMessage `json:"monitor,omitempty"`
+	*InnerDesiredLRPCreateRequest
+}
+
+func (request DesiredLRPCreateRequest) MarshalJSON() ([]byte, error) {
+	actionRaw, err := models.MarshalAction(request.Action)
+	if err != nil {
+		return nil, err
+	}
+
+	var setupRaw, monitorRaw *json.RawMessage
+	if request.Setup != nil {
+		raw, err := models.MarshalAction(request.Setup)
+		if err != nil {
+			return nil, err
+		}
+		rm := json.RawMessage(raw)
+		setupRaw = &rm
+	}
+	if request.Monitor != nil {
+		raw, err := models.MarshalAction(request.Monitor)
+		if err != nil {
+			return nil, err
+		}
+		rm := json.RawMessage(raw)
+		monitorRaw = &rm
+	}
+
+	innerRequest := InnerDesiredLRPCreateRequest(request)
+	mRequest := &mDesiredLRPCreateRequest{
+		SetupRaw:                     setupRaw,
+		ActionRaw:                    actionRaw,
+		MonitorRaw:                   monitorRaw,
+		InnerDesiredLRPCreateRequest: &innerRequest,
+	}
+
+	return json.Marshal(mRequest)
+}
+
+func (request *DesiredLRPCreateRequest) UnmarshalJSON(payload []byte) error {
+	mRequest := &mDesiredLRPCreateRequest{InnerDesiredLRPCreateRequest: (*InnerDesiredLRPCreateRequest)(request)}
+	err := json.Unmarshal(payload, mRequest)
+	if err != nil {
+		return err
+	}
+
+	a, err := models.UnmarshalAction(mRequest.ActionRaw)
+	if err != nil {
+		return err
+	}
+	request.Action = a
+
+	if mRequest.SetupRaw != nil {
+		a, err = models.UnmarshalAction(*mRequest.SetupRaw)
+		if err != nil {
+			return err
+		}
+		request.Setup = a
+	}
+
+	if mRequest.MonitorRaw != nil {
+		a, err = models.UnmarshalAction(*mRequest.MonitorRaw)
+		if err != nil {
+			return err
+		}
+		request.Monitor = a
+	}
+
+	return nil
 }
 
 type DesiredLRPUpdateRequest struct {
@@ -88,23 +244,99 @@ type DesiredLRPUpdateRequest struct {
 }
 
 type DesiredLRPResponse struct {
-	ProcessGuid          string                 `json:"process_guid"`
-	Domain               string                 `json:"domain"`
-	RootFSPath           string                 `json:"root_fs"`
-	Instances            int                    `json:"instances"`
-	Stack                string                 `json:"stack"`
-	EnvironmentVariables []EnvironmentVariable  `json:"env,omitempty"`
-	Setup                *models.ExecutorAction `json:"setup"`
-	Action               models.ExecutorAction  `json:"action"`
-	Monitor              *models.ExecutorAction `json:"monitor"`
-	DiskMB               int                    `json:"disk_mb"`
-	MemoryMB             int                    `json:"memory_mb"`
-	CPUWeight            uint                   `json:"cpu_weight"`
-	Ports                []uint32               `json:"ports"`
-	Routes               []string               `json:"routes"`
-	LogGuid              string                 `json:"log_guid"`
-	LogSource            string                 `json:"log_source"`
-	Annotation           string                 `json:"annotation,omitempty"`
+	ProcessGuid          string                `json:"process_guid"`
+	Domain               string                `json:"domain"`
+	RootFSPath           string                `json:"root_fs"`
+	Instances            int                   `json:"instances"`
+	Stack                string                `json:"stack"`
+	EnvironmentVariables []EnvironmentVariable `json:"env,omitempty"`
+	Setup                models.Action         `json:"setup"`
+	Action               models.Action         `json:"action"`
+	Monitor              models.Action         `json:"monitor"`
+	DiskMB               int                   `json:"disk_mb"`
+	MemoryMB             int                   `json:"memory_mb"`
+	CPUWeight            uint                  `json:"cpu_weight"`
+	Ports                []uint32              `json:"ports"`
+	Routes               []string              `json:"routes"`
+	LogGuid              string                `json:"log_guid"`
+	LogSource            string                `json:"log_source"`
+	Annotation           string                `json:"annotation,omitempty"`
+}
+
+type InnerDesiredLRPResponse DesiredLRPResponse
+
+type mDesiredLRPResponse struct {
+	SetupRaw   *json.RawMessage `json:"setup,omitempty"`
+	ActionRaw  json.RawMessage  `json:"action"`
+	MonitorRaw *json.RawMessage `json:"monitor,omitempty"`
+	*InnerDesiredLRPResponse
+}
+
+func (response DesiredLRPResponse) MarshalJSON() ([]byte, error) {
+	actionRaw, err := models.MarshalAction(response.Action)
+	if err != nil {
+		return nil, err
+	}
+
+	var setupRaw, monitorRaw *json.RawMessage
+	if response.Setup != nil {
+		raw, err := models.MarshalAction(response.Setup)
+		if err != nil {
+			return nil, err
+		}
+		rm := json.RawMessage(raw)
+		setupRaw = &rm
+	}
+	if response.Monitor != nil {
+		raw, err := models.MarshalAction(response.Monitor)
+		if err != nil {
+			return nil, err
+		}
+		rm := json.RawMessage(raw)
+		monitorRaw = &rm
+	}
+
+	innerResponse := InnerDesiredLRPResponse(response)
+	mResponse := &mDesiredLRPResponse{
+		SetupRaw:                setupRaw,
+		ActionRaw:               actionRaw,
+		MonitorRaw:              monitorRaw,
+		InnerDesiredLRPResponse: &innerResponse,
+	}
+
+	return json.Marshal(mResponse)
+}
+
+func (response *DesiredLRPResponse) UnmarshalJSON(payload []byte) error {
+	mResponse := &mDesiredLRPResponse{InnerDesiredLRPResponse: (*InnerDesiredLRPResponse)(response)}
+	err := json.Unmarshal(payload, mResponse)
+	if err != nil {
+		return err
+	}
+
+	a, err := models.UnmarshalAction(mResponse.ActionRaw)
+	if err != nil {
+		return err
+	}
+	response.Action = a
+
+	if mResponse.SetupRaw != nil {
+		a, err = models.UnmarshalAction(*mResponse.SetupRaw)
+		if err != nil {
+			return err
+		}
+		response.Setup = a
+	}
+
+	if mResponse.MonitorRaw != nil {
+		a, err = models.UnmarshalAction(*mResponse.MonitorRaw)
+		if err != nil {
+			return err
+		}
+		response.Monitor = a
+	}
+
+	return nil
 }
 
 const (
