@@ -89,20 +89,10 @@ var _ = Describe("Fresh Domain Handlers", func() {
 			})
 
 			Context("when the request corresponds to an invalid freshness", func() {
+				var validationError = models.ValidationError{}
+
 				BeforeEach(func() {
-					freshDomainBumpRequest = receptor.FreshDomainBumpRequest{
-						Domain:       "",
-						TTLInSeconds: -1000,
-					}
-
-					expectedFreshness = models.Freshness{
-						Domain:       "",
-						TTLInSeconds: -1000,
-					}
-				})
-
-				It("does not call BumpFreshness on the BBS", func() {
-					Ω(fakeBBS.BumpFreshnessCallCount()).Should(Equal(0))
+					fakeBBS.BumpFreshnessReturns(validationError)
 				})
 
 				It("responds with 400 BAD REQUEST", func() {
@@ -112,7 +102,7 @@ var _ = Describe("Fresh Domain Handlers", func() {
 				It("responds with a relevant error message", func() {
 					expectedBody, _ := json.Marshal(receptor.Error{
 						Type:    receptor.InvalidFreshness,
-						Message: expectedFreshness.Validate().Error(),
+						Message: validationError.Error(),
 					})
 
 					Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))

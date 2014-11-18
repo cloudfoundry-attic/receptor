@@ -109,19 +109,13 @@ var _ = Describe("Desired LRP Handlers", func() {
 		})
 
 		Context("when the desired LRP is invalid", func() {
-			var invalidDesiredLRP = receptor.DesiredLRPCreateRequest{
-				Action: models.ExecutorAction{
-					Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}},
-				},
-			}
+			var validationError = models.ValidationError{}
 
 			BeforeEach(func(done Done) {
-				defer close(done)
-				handler.Create(responseRecorder, newTestRequest(invalidDesiredLRP))
-			})
+				fakeBBS.DesireLRPReturns(validationError)
 
-			It("does not call DesireLRP on the BBS", func() {
-				Ω(fakeBBS.DesireLRPCallCount()).Should(Equal(0))
+				defer close(done)
+				handler.Create(responseRecorder, newTestRequest(validCreateLRPRequest))
 			})
 
 			It("responds with 400 BAD REQUEST", func() {
@@ -129,10 +123,9 @@ var _ = Describe("Desired LRP Handlers", func() {
 			})
 
 			It("responds with a relevant error message", func() {
-				desiredLRP := models.DesiredLRP{}
 				expectedBody, _ := json.Marshal(receptor.Error{
 					Type:    receptor.InvalidLRP,
-					Message: desiredLRP.Validate().Error(),
+					Message: validationError.Error(),
 				})
 				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
 			})

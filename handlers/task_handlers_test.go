@@ -147,19 +147,11 @@ var _ = Describe("TaskHandler", func() {
 		})
 
 		Context("when the requested task is invalid", func() {
-			var invalidTask = receptor.TaskCreateRequest{
-				TaskGuid: "invalid-task",
-				Action: models.ExecutorAction{
-					Action: models.RunAction{Path: "/bin/bash", Args: []string{"echo", "hi"}},
-				},
-			}
+			var validationError = models.ValidationError{}
 
 			BeforeEach(func() {
-				handler.Create(responseRecorder, newTestRequest(invalidTask))
-			})
-
-			It("does not call DesireTask on the BBS", func() {
-				Ω(fakeBBS.DesireTaskCallCount()).Should(Equal(0))
+				fakeBBS.DesireTaskReturns(validationError)
+				handler.Create(responseRecorder, newTestRequest(validCreateRequest))
 			})
 
 			It("responds with 400 BAD REQUEST", func() {
@@ -167,10 +159,9 @@ var _ = Describe("TaskHandler", func() {
 			})
 
 			It("responds with a relevant error message", func() {
-				task := models.Task{TaskGuid: "invalid-task"}
 				expectedBody, _ := json.Marshal(receptor.Error{
 					Type:    receptor.InvalidTask,
-					Message: task.Validate().Error(),
+					Message: validationError.Error(),
 				})
 				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
 			})

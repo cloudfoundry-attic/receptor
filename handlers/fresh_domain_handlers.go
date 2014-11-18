@@ -7,6 +7,7 @@ import (
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
+	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/pivotal-golang/lager"
 )
 
@@ -35,15 +36,14 @@ func (h *FreshDomainHandler) Bump(w http.ResponseWriter, req *http.Request) {
 
 	freshness := serialization.FreshnessFromRequest(freshDomainRequest)
 
-	err = freshness.Validate()
-	if err != nil {
-		logger.Error("freshness-invalid", err)
-		writeBadRequestResponse(w, receptor.InvalidFreshness, err)
-		return
-	}
-
 	err = h.bbs.BumpFreshness(freshness)
 	if err != nil {
+		if _, ok := err.(models.ValidationError); ok {
+			logger.Error("freshness-invalid", err)
+			writeBadRequestResponse(w, receptor.InvalidFreshness, err)
+			return
+		}
+
 		logger.Error("bump-freshness-failed", err)
 		writeUnknownErrorResponse(w, err)
 		return

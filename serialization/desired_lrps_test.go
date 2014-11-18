@@ -31,9 +31,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 			}
 		})
 		JustBeforeEach(func() {
-			var err error
-			desiredLRP, err = serialization.DesiredLRPFromRequest(request)
-			Ω(err).ShouldNot(HaveOccurred())
+			desiredLRP = serialization.DesiredLRPFromRequest(request)
 		})
 
 		It("translates the request into a DesiredLRP model, preserving attributes", func() {

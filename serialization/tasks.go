@@ -34,10 +34,6 @@ func TaskFromRequest(req receptor.TaskCreateRequest) (models.Task, error) {
 		TaskGuid:              req.TaskGuid,
 	}
 
-	err := task.Validate()
-	if err != nil {
-		return models.Task{}, err
-	}
 	return task, nil
 }
 

@@ -5,8 +5,8 @@ import (
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 )
 
-func DesiredLRPFromRequest(req receptor.DesiredLRPCreateRequest) (models.DesiredLRP, error) {
-	lrp := models.DesiredLRP{
+func DesiredLRPFromRequest(req receptor.DesiredLRPCreateRequest) models.DesiredLRP {
+	return models.DesiredLRP{
 		ProcessGuid:          req.ProcessGuid,
 		Domain:               req.Domain,
 		RootFSPath:           req.RootFSPath,
@@ -25,12 +25,6 @@ func DesiredLRPFromRequest(req receptor.DesiredLRPCreateRequest) (models.Desired
 		LogSource:            req.LogSource,
 		Annotation:           req.Annotation,
 	}
-
-	err := lrp.Validate()
-	if err != nil {
-		return models.DesiredLRP{}, err
-	}
-	return lrp, nil
 }
 
 func DesiredLRPToResponse(lrp models.DesiredLRP) receptor.DesiredLRPResponse {

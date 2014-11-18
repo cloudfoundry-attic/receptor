@@ -50,6 +50,15 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	err = h.bbs.DesireTask(task)
 	if err != nil {
+		if _, ok := err.(models.ValidationError); ok {
+			log.Error("task-request-invalid", err)
+			writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
+				Type:    receptor.InvalidTask,
+				Message: err.Error(),
+			})
+			return
+		}
+
 		log.Error("desire-task-failed", err)
 		if err == storeadapter.ErrorKeyExists {
 			writeJSONResponse(w, http.StatusConflict, receptor.Error{

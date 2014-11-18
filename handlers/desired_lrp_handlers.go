@@ -36,15 +36,16 @@ func (h *DesiredLRPHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	desiredLRP, err := serialization.DesiredLRPFromRequest(desireLRPRequest)
-	if err != nil {
-		log.Error("lrp-request-invalid", err)
-		writeBadRequestResponse(w, receptor.InvalidLRP, err)
-		return
-	}
+	desiredLRP := serialization.DesiredLRPFromRequest(desireLRPRequest)
 
 	err = h.bbs.DesireLRP(desiredLRP)
 	if err != nil {
+		if _, ok := err.(models.ValidationError); ok {
+			log.Error("lrp-request-invalid", err)
+			writeBadRequestResponse(w, receptor.InvalidLRP, err)
+			return
+		}
+
 		log.Error("desire-lrp-failed", err)
 		writeUnknownErrorResponse(w, err)
 		return

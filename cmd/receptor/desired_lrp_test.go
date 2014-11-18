@@ -67,8 +67,7 @@ var _ = Describe("Desired LRP API", func() {
 		})
 
 		It("fetches the desired lrp with the matching process guid", func() {
-			desiredLRP, err := serialization.DesiredLRPFromRequest(lrpRequest)
-			Ω(err).ShouldNot(HaveOccurred())
+			desiredLRP := serialization.DesiredLRPFromRequest(lrpRequest)
 
 			expectedLRPResponse := serialization.DesiredLRPToResponse(desiredLRP)
 			Ω(lrpResponse).Should(Equal(expectedLRPResponse))
