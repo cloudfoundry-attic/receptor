@@ -37,8 +37,8 @@ var _ = Describe("Desired LRP API", func() {
 		})
 
 		It("desires an LRP in the BBS", func() {
-			Eventually(bbs.GetAllDesiredLRPs).Should(HaveLen(1))
-			desiredLRPs, err := bbs.GetAllDesiredLRPs()
+			Eventually(bbs.DesiredLRPs).Should(HaveLen(1))
+			desiredLRPs, err := bbs.DesiredLRPs()
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(desiredLRPs[0].ProcessGuid).To(Equal(lrpToCreate.ProcessGuid))
 		})
@@ -101,8 +101,8 @@ var _ = Describe("Desired LRP API", func() {
 		})
 
 		It("updates the LRP in the BBS", func() {
-			Eventually(bbs.GetAllDesiredLRPs).Should(HaveLen(1))
-			desiredLRPs, err := bbs.GetAllDesiredLRPs()
+			Eventually(bbs.DesiredLRPs).Should(HaveLen(1))
+			desiredLRPs, err := bbs.DesiredLRPs()
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(desiredLRPs[0].Instances).To(Equal(instances))
 			Ω(desiredLRPs[0].Routes).To(Equal(routes))
@@ -143,7 +143,7 @@ var _ = Describe("Desired LRP API", func() {
 				err := client.CreateDesiredLRP(newValidDesiredLRPCreateRequest())
 				Ω(err).ShouldNot(HaveOccurred())
 			}
-			lrpResponses, getErr = client.GetAllDesiredLRPs()
+			lrpResponses, getErr = client.DesiredLRPs()
 		})
 
 		It("responds without an error", func() {
@@ -174,7 +174,7 @@ var _ = Describe("Desired LRP API", func() {
 				err := client.CreateDesiredLRP(lrp)
 				Ω(err).ShouldNot(HaveOccurred())
 			}
-			lrpResponses, getErr = client.GetAllDesiredLRPsByDomain(expectedDomain)
+			lrpResponses, getErr = client.DesiredLRPsByDomain(expectedDomain)
 		})
 
 		It("responds without an error", func() {

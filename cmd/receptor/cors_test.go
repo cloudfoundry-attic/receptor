@@ -79,7 +79,7 @@ var _ = Describe("CORS support", func() {
 func doGetRequest() (*http.Request, *http.Response) {
 	reqGen := rata.NewRequestGenerator("http://"+receptorAddress, receptor.Routes)
 
-	req, err := reqGen.CreateRequest(receptor.GetAllTasksRoute, nil, nil)
+	req, err := reqGen.CreateRequest(receptor.TasksRoute, nil, nil)
 	Ω(err).ShouldNot(HaveOccurred())
 
 	req.Header.Set("Origin", "example.com")

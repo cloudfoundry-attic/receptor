@@ -24,7 +24,7 @@ func NewCellHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) *CellHandler {
 func (h *CellHandler) GetAll(w http.ResponseWriter, req *http.Request) {
 	logger := h.logger.Session("get-all-cells-handler")
 
-	cellPresences, err := h.bbs.GetAllCells()
+	cellPresences, err := h.bbs.Cells()
 	if err != nil {
 		logger.Error("failed-to-fetch-cells", err)
 		writeUnknownErrorResponse(w, err)

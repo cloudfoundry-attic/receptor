@@ -18,25 +18,25 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string, co
 
 	actions := rata.Handlers{
 		// Tasks
-		receptor.CreateTaskRoute:          route(taskHandler.Create),
-		receptor.GetAllTasksRoute:         route(taskHandler.GetAll),
-		receptor.GetAllTasksByDomainRoute: route(taskHandler.GetAllByDomain),
-		receptor.GetTaskRoute:             route(taskHandler.GetByGuid),
-		receptor.DeleteTaskRoute:          route(taskHandler.Delete),
-		receptor.CancelTaskRoute:          route(taskHandler.Cancel),
+		receptor.CreateTaskRoute:    route(taskHandler.Create),
+		receptor.TasksRoute:         route(taskHandler.GetAll),
+		receptor.TasksByDomainRoute: route(taskHandler.GetAllByDomain),
+		receptor.GetTaskRoute:       route(taskHandler.GetByGuid),
+		receptor.DeleteTaskRoute:    route(taskHandler.Delete),
+		receptor.CancelTaskRoute:    route(taskHandler.Cancel),
 
 		// DesiredLRPs
-		receptor.CreateDesiredLRPRoute:          route(desiredLRPHandler.Create),
-		receptor.GetDesiredLRPRoute:             route(desiredLRPHandler.Get),
-		receptor.UpdateDesiredLRPRoute:          route(desiredLRPHandler.Update),
-		receptor.DeleteDesiredLRPRoute:          route(desiredLRPHandler.Delete),
-		receptor.GetAllDesiredLRPsRoute:         route(desiredLRPHandler.GetAll),
-		receptor.GetAllDesiredLRPsByDomainRoute: route(desiredLRPHandler.GetAllByDomain),
+		receptor.CreateDesiredLRPRoute:    route(desiredLRPHandler.Create),
+		receptor.GetDesiredLRPRoute:       route(desiredLRPHandler.Get),
+		receptor.UpdateDesiredLRPRoute:    route(desiredLRPHandler.Update),
+		receptor.DeleteDesiredLRPRoute:    route(desiredLRPHandler.Delete),
+		receptor.DesiredLRPsRoute:         route(desiredLRPHandler.GetAll),
+		receptor.DesiredLRPsByDomainRoute: route(desiredLRPHandler.GetAllByDomain),
 
 		// ActualLRPs
-		receptor.GetAllActualLRPsRoute:                    route(actualLRPHandler.GetAll),
-		receptor.GetAllActualLRPsByDomainRoute:            route(actualLRPHandler.GetAllByDomain),
-		receptor.GetAllActualLRPsByProcessGuidRoute:       route(actualLRPHandler.GetAllByProcessGuid),
+		receptor.ActualLRPsRoute:                          route(actualLRPHandler.GetAll),
+		receptor.ActualLRPsByDomainRoute:                  route(actualLRPHandler.GetAllByDomain),
+		receptor.ActualLRPsByProcessGuidRoute:             route(actualLRPHandler.GetAllByProcessGuid),
 		receptor.KillActualLRPsByProcessGuidAndIndexRoute: route(actualLRPHandler.KillByProcessGuidAndIndex),
 
 		// Cells

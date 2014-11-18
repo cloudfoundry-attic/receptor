@@ -67,17 +67,17 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TaskHandler) GetAll(w http.ResponseWriter, req *http.Request) {
-	tasks, err := h.bbs.GetAllTasks()
+	tasks, err := h.bbs.Tasks()
 	writeTaskResponse(w, h.logger.Session("get-all-tasks-handler"), tasks, err)
 }
 
 func (h *TaskHandler) GetAllByDomain(w http.ResponseWriter, req *http.Request) {
-	tasks, err := h.bbs.GetAllTasksByDomain(req.FormValue(":domain"))
+	tasks, err := h.bbs.TasksByDomain(req.FormValue(":domain"))
 	writeTaskResponse(w, h.logger.Session("get-tasks-by-domain-handler"), tasks, err)
 }
 
 func (h *TaskHandler) GetByGuid(w http.ResponseWriter, req *http.Request) {
-	task, err := h.bbs.GetTaskByGuid(req.FormValue(":task_guid"))
+	task, err := h.bbs.TaskByGuid(req.FormValue(":task_guid"))
 	if err == storeadapter.ErrorKeyNotFound {
 		h.logger.Error("failed-to-fetch-task", err)
 		writeJSONResponse(w, http.StatusNotFound, receptor.Error{

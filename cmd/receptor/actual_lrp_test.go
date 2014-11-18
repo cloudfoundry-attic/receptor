@@ -43,7 +43,7 @@ var _ = Describe("Actual LRP API", func() {
 		var getErr error
 
 		BeforeEach(func() {
-			actualLRPResponses, getErr = client.GetAllActualLRPs()
+			actualLRPResponses, getErr = client.ActualLRPs()
 		})
 
 		It("responds without an error", func() {
@@ -55,7 +55,7 @@ var _ = Describe("Actual LRP API", func() {
 		})
 
 		It("has the correct data from the bbs", func() {
-			actualLRPs, err := bbs.GetAllActualLRPs()
+			actualLRPs, err := bbs.ActualLRPs()
 			Ω(err).ShouldNot(HaveOccurred())
 
 			expectedResponses := make([]receptor.ActualLRPResponse, 0, lrpCount)
@@ -72,7 +72,7 @@ var _ = Describe("Actual LRP API", func() {
 		var getErr error
 
 		BeforeEach(func() {
-			actualLRPResponses, getErr = client.GetAllActualLRPsByDomain("domain-1")
+			actualLRPResponses, getErr = client.ActualLRPsByDomain("domain-1")
 		})
 
 		It("responds without an error", func() {
@@ -84,7 +84,7 @@ var _ = Describe("Actual LRP API", func() {
 		})
 
 		It("has the correct data from the bbs", func() {
-			actualLRPs, err := bbs.GetAllActualLRPsByDomain("domain-1")
+			actualLRPs, err := bbs.ActualLRPsByDomain("domain-1")
 			Ω(err).ShouldNot(HaveOccurred())
 
 			expectedResponses := make([]receptor.ActualLRPResponse, 0, 2)
@@ -101,7 +101,7 @@ var _ = Describe("Actual LRP API", func() {
 		var getErr error
 
 		BeforeEach(func() {
-			actualLRPResponses, getErr = client.GetAllActualLRPsByProcessGuid("process-guid-0")
+			actualLRPResponses, getErr = client.ActualLRPsByProcessGuid("process-guid-0")
 		})
 
 		It("responds without an error", func() {
@@ -113,7 +113,7 @@ var _ = Describe("Actual LRP API", func() {
 		})
 
 		It("has the correct data from the bbs", func() {
-			actualLRPs, err := bbs.GetActualLRPsByProcessGuid("process-guid-0")
+			actualLRPs, err := bbs.ActualLRPsByProcessGuid("process-guid-0")
 			Ω(err).ShouldNot(HaveOccurred())
 
 			expectedResponses := make([]receptor.ActualLRPResponse, 0, 1)
@@ -140,7 +140,7 @@ var _ = Describe("Actual LRP API", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 			err = bbs.ReportActualLRPAsRunning(lrp, "cell-id")
 			Ω(err).ShouldNot(HaveOccurred())
-			actualLRPResponses, getErr = client.GetAllActualLRPsByProcessGuidAndIndex("process-guid-0", 0)
+			actualLRPResponses, getErr = client.ActualLRPsByProcessGuidAndIndex("process-guid-0", 0)
 		})
 
 		It("responds without an error", func() {
@@ -152,7 +152,7 @@ var _ = Describe("Actual LRP API", func() {
 		})
 
 		It("has the correct data from the bbs", func() {
-			actualLRPs, err := bbs.GetActualLRPsByProcessGuidAndIndex("process-guid-0", 0)
+			actualLRPs, err := bbs.ActualLRPsByProcessGuidAndIndex("process-guid-0", 0)
 			Ω(err).ShouldNot(HaveOccurred())
 
 			expectedResponses := make([]receptor.ActualLRPResponse, 0, 1)
@@ -187,7 +187,7 @@ var _ = Describe("Actual LRP API", func() {
 		})
 
 		It("places the correct stop instance requests in the bbs", func() {
-			stopLRPInstances, err := bbs.GetAllStopLRPInstances()
+			stopLRPInstances, err := bbs.StopLRPInstances()
 			Ω(err).ShouldNot(HaveOccurred())
 
 			Ω(stopLRPInstances).Should(HaveLen(1))

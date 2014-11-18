@@ -66,7 +66,7 @@ func (h *DesiredLRPHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	desiredLRP, err := h.bbs.GetDesiredLRPByProcessGuid(processGuid)
+	desiredLRP, err := h.bbs.DesiredLRPByProcessGuid(processGuid)
 	if err == storeadapter.ErrorKeyNotFound {
 		writeLRPNotFoundResponse(w)
 		return
@@ -152,7 +152,7 @@ func (h *DesiredLRPHandler) Delete(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h *DesiredLRPHandler) GetAll(w http.ResponseWriter, req *http.Request) {
-	desiredLRPs, err := h.bbs.GetAllDesiredLRPs()
+	desiredLRPs, err := h.bbs.DesiredLRPs()
 	writeDesiredLRPResponse(w, h.logger.Session("get-all-desired-lrps-handler"), desiredLRPs, err)
 }
 
@@ -167,7 +167,7 @@ func (h *DesiredLRPHandler) GetAllByDomain(w http.ResponseWriter, req *http.Requ
 		return
 	}
 
-	desiredLRPs, err := h.bbs.GetAllDesiredLRPsByDomain(lrpDomain)
+	desiredLRPs, err := h.bbs.DesiredLRPsByDomain(lrpDomain)
 	writeDesiredLRPResponse(w, log, desiredLRPs, err)
 }
 

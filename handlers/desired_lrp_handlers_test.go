@@ -179,7 +179,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when reading tasks from BBS succeeds", func() {
 			BeforeEach(func() {
-				fakeBBS.GetDesiredLRPByProcessGuidReturns(models.DesiredLRP{
+				fakeBBS.DesiredLRPByProcessGuidReturns(models.DesiredLRP{
 					ProcessGuid: "process-guid-0",
 					Domain:      "domain-1",
 					Action: models.ExecutorAction{
@@ -190,9 +190,9 @@ var _ = Describe("Desired LRP Handlers", func() {
 				}, nil)
 			})
 
-			It("calls GetDesiredLRPByProcessGuid on the BBS", func() {
-				Ω(fakeBBS.GetDesiredLRPByProcessGuidCallCount()).Should(Equal(1))
-				Ω(fakeBBS.GetDesiredLRPByProcessGuidArgsForCall(0)).Should(Equal("process-guid-0"))
+			It("calls DesiredLRPByProcessGuid on the BBS", func() {
+				Ω(fakeBBS.DesiredLRPByProcessGuidCallCount()).Should(Equal(1))
+				Ω(fakeBBS.DesiredLRPByProcessGuidArgsForCall(0)).Should(Equal("process-guid-0"))
 			})
 
 			It("responds with 200 Status OK", func() {
@@ -209,7 +209,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when reading from the BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.GetDesiredLRPByProcessGuidReturns(models.DesiredLRP{}, errors.New("Something went wrong"))
+				fakeBBS.DesiredLRPByProcessGuidReturns(models.DesiredLRP{}, errors.New("Something went wrong"))
 			})
 
 			It("responds with an error", func() {
@@ -219,12 +219,12 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when the BBS returns no lrp", func() {
 			BeforeEach(func() {
-				fakeBBS.GetDesiredLRPByProcessGuidReturns(models.DesiredLRP{}, storeadapter.ErrorKeyNotFound)
+				fakeBBS.DesiredLRPByProcessGuidReturns(models.DesiredLRP{}, storeadapter.ErrorKeyNotFound)
 			})
 
-			It("calls GetDesiredLRPByProcessGuid on the BBS", func() {
-				Ω(fakeBBS.GetDesiredLRPByProcessGuidCallCount()).Should(Equal(1))
-				Ω(fakeBBS.GetDesiredLRPByProcessGuidArgsForCall(0)).Should(Equal("process-guid-0"))
+			It("calls DesiredLRPByProcessGuid on the BBS", func() {
+				Ω(fakeBBS.DesiredLRPByProcessGuidCallCount()).Should(Equal(1))
+				Ω(fakeBBS.DesiredLRPByProcessGuidArgsForCall(0)).Should(Equal("process-guid-0"))
 			})
 
 			It("responds with 404 Status NOT FOUND", func() {
@@ -248,8 +248,8 @@ var _ = Describe("Desired LRP Handlers", func() {
 				req.Form = url.Values{}
 			})
 
-			It("does not call GetDesiredLRPByProcessGuid on the BBS", func() {
-				Ω(fakeBBS.GetDesiredLRPByProcessGuidCallCount()).Should(Equal(0))
+			It("does not call DesiredLRPByProcessGuid on the BBS", func() {
+				Ω(fakeBBS.DesiredLRPByProcessGuidCallCount()).Should(Equal(0))
 			})
 
 			It("responds with 400 BAD REQUEST", func() {
@@ -531,7 +531,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when reading LRPs from BBS succeeds", func() {
 			BeforeEach(func() {
-				fakeBBS.GetAllDesiredLRPsReturns([]models.DesiredLRP{
+				fakeBBS.DesiredLRPsReturns([]models.DesiredLRP{
 					{
 						ProcessGuid: "process-guid-0",
 						Domain:      "domain-1",
@@ -554,7 +554,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 			})
 
 			It("call the BBS to retrieve the desired LRP", func() {
-				Ω(fakeBBS.GetAllDesiredLRPsCallCount()).Should(Equal(1))
+				Ω(fakeBBS.DesiredLRPsCallCount()).Should(Equal(1))
 			})
 
 			It("responds with 200 Status OK", func() {
@@ -573,11 +573,11 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when the BBS returns no lrps", func() {
 			BeforeEach(func() {
-				fakeBBS.GetAllDesiredLRPsReturns([]models.DesiredLRP{}, nil)
+				fakeBBS.DesiredLRPsReturns([]models.DesiredLRP{}, nil)
 			})
 
 			It("call the BBS to retrieve the desired LRP", func() {
-				Ω(fakeBBS.GetAllDesiredLRPsCallCount()).Should(Equal(1))
+				Ω(fakeBBS.DesiredLRPsCallCount()).Should(Equal(1))
 			})
 
 			It("responds with 200 Status OK", func() {
@@ -591,7 +591,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when reading from the BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.GetAllDesiredLRPsReturns([]models.DesiredLRP{}, errors.New("Something went wrong"))
+				fakeBBS.DesiredLRPsReturns([]models.DesiredLRP{}, errors.New("Something went wrong"))
 			})
 
 			It("responds with an error", func() {
@@ -625,7 +625,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when reading LRPs by domain from BBS succeeds", func() {
 			BeforeEach(func() {
-				fakeBBS.GetAllDesiredLRPsByDomainReturns([]models.DesiredLRP{
+				fakeBBS.DesiredLRPsByDomainReturns([]models.DesiredLRP{
 					{
 						ProcessGuid: "process-guid-0",
 						Domain:      "domain-1",
@@ -648,8 +648,8 @@ var _ = Describe("Desired LRP Handlers", func() {
 			})
 
 			It("call the BBS to retrieve the desired LRP", func() {
-				Ω(fakeBBS.GetAllDesiredLRPsByDomainCallCount()).Should(Equal(1))
-				Ω(fakeBBS.GetAllDesiredLRPsByDomainArgsForCall(0)).Should(Equal("domain-1"))
+				Ω(fakeBBS.DesiredLRPsByDomainCallCount()).Should(Equal(1))
+				Ω(fakeBBS.DesiredLRPsByDomainArgsForCall(0)).Should(Equal("domain-1"))
 			})
 
 			It("responds with 200 Status OK", func() {
@@ -668,12 +668,12 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when the BBS returns no lrps", func() {
 			BeforeEach(func() {
-				fakeBBS.GetAllDesiredLRPsByDomainReturns([]models.DesiredLRP{}, nil)
+				fakeBBS.DesiredLRPsByDomainReturns([]models.DesiredLRP{}, nil)
 			})
 
 			It("call the BBS to retrieve the desired LRP", func() {
-				Ω(fakeBBS.GetAllDesiredLRPsByDomainCallCount()).Should(Equal(1))
-				Ω(fakeBBS.GetAllDesiredLRPsByDomainArgsForCall(0)).Should(Equal("domain-1"))
+				Ω(fakeBBS.DesiredLRPsByDomainCallCount()).Should(Equal(1))
+				Ω(fakeBBS.DesiredLRPsByDomainArgsForCall(0)).Should(Equal("domain-1"))
 			})
 
 			It("responds with 200 Status OK", func() {
@@ -691,7 +691,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 			})
 
 			It("should not call the BBS to retrieve the desired LRP", func() {
-				Ω(fakeBBS.GetAllDesiredLRPsByDomainCallCount()).Should(Equal(0))
+				Ω(fakeBBS.DesiredLRPsByDomainCallCount()).Should(Equal(0))
 			})
 
 			It("responds with 400 BAD REQUEST", func() {
@@ -710,7 +710,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when reading from the BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.GetAllDesiredLRPsByDomainReturns([]models.DesiredLRP{}, errors.New("Something went wrong"))
+				fakeBBS.DesiredLRPsByDomainReturns([]models.DesiredLRP{}, errors.New("Something went wrong"))
 			})
 
 			It("responds with an error", func() {

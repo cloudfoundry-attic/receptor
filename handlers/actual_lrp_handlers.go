@@ -27,7 +27,7 @@ func NewActualLRPHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) *ActualLRPHan
 func (h *ActualLRPHandler) GetAll(w http.ResponseWriter, req *http.Request) {
 	logger := h.logger.Session("get-all-actual-lrps-handler")
 
-	actualLRPs, err := h.bbs.GetAllActualLRPs()
+	actualLRPs, err := h.bbs.ActualLRPs()
 	if err != nil {
 		logger.Error("failed-to-fetch-actual-lrps", err)
 		writeUnknownErrorResponse(w, err)
@@ -55,7 +55,7 @@ func (h *ActualLRPHandler) GetAllByDomain(w http.ResponseWriter, req *http.Reque
 		return
 	}
 
-	actualLRPs, err := h.bbs.GetAllActualLRPsByDomain(domain)
+	actualLRPs, err := h.bbs.ActualLRPsByDomain(domain)
 	if err != nil {
 		logger.Error("failed-to-fetch-actual-lrps-by-domain", err)
 		writeUnknownErrorResponse(w, err)
@@ -89,7 +89,7 @@ func (h *ActualLRPHandler) GetAllByProcessGuid(w http.ResponseWriter, req *http.
 	var err error
 
 	if indexString == "" {
-		actualLRPs, err = h.bbs.GetActualLRPsByProcessGuid(processGuid)
+		actualLRPs, err = h.bbs.ActualLRPsByProcessGuid(processGuid)
 	} else {
 		logger = logger.Session("and-index", lager.Data{
 			"Index": indexString,
@@ -103,7 +103,7 @@ func (h *ActualLRPHandler) GetAllByProcessGuid(w http.ResponseWriter, req *http.
 			return
 		}
 
-		actualLRPs, err = h.bbs.GetActualLRPsByProcessGuidAndIndex(processGuid, index)
+		actualLRPs, err = h.bbs.ActualLRPsByProcessGuidAndIndex(processGuid, index)
 	}
 
 	if err != nil {
@@ -150,7 +150,7 @@ func (h *ActualLRPHandler) KillByProcessGuidAndIndex(w http.ResponseWriter, req 
 		return
 	}
 
-	actualLRPs, err := h.bbs.GetActualLRPsByProcessGuidAndIndex(processGuid, index)
+	actualLRPs, err := h.bbs.ActualLRPsByProcessGuidAndIndex(processGuid, index)
 	if err != nil {
 		logger.Error("failed-to-fetch-actual-lrps-by-process-guid-and-index", err)
 		writeUnknownErrorResponse(w, err)

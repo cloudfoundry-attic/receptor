@@ -13,8 +13,8 @@ import (
 
 type Client interface {
 	CreateTask(TaskCreateRequest) error
-	GetAllTasks() ([]TaskResponse, error)
-	GetAllTasksByDomain(domain string) ([]TaskResponse, error)
+	Tasks() ([]TaskResponse, error)
+	TasksByDomain(domain string) ([]TaskResponse, error)
 	GetTask(taskId string) (TaskResponse, error)
 	DeleteTask(taskId string) error
 	CancelTask(taskId string) error
@@ -23,13 +23,13 @@ type Client interface {
 	GetDesiredLRP(processGuid string) (DesiredLRPResponse, error)
 	UpdateDesiredLRP(processGuid string, update DesiredLRPUpdateRequest) error
 	DeleteDesiredLRP(processGuid string) error
-	GetAllDesiredLRPs() ([]DesiredLRPResponse, error)
-	GetAllDesiredLRPsByDomain(domain string) ([]DesiredLRPResponse, error)
+	DesiredLRPs() ([]DesiredLRPResponse, error)
+	DesiredLRPsByDomain(domain string) ([]DesiredLRPResponse, error)
 
-	GetAllActualLRPs() ([]ActualLRPResponse, error)
-	GetAllActualLRPsByDomain(domain string) ([]ActualLRPResponse, error)
-	GetAllActualLRPsByProcessGuid(processGuid string) ([]ActualLRPResponse, error)
-	GetAllActualLRPsByProcessGuidAndIndex(processGuid string, index int) ([]ActualLRPResponse, error)
+	ActualLRPs() ([]ActualLRPResponse, error)
+	ActualLRPsByDomain(domain string) ([]ActualLRPResponse, error)
+	ActualLRPsByProcessGuid(processGuid string) ([]ActualLRPResponse, error)
+	ActualLRPsByProcessGuidAndIndex(processGuid string, index int) ([]ActualLRPResponse, error)
 	KillActualLRPsByProcessGuidAndIndex(processGuid string, index int) error
 
 	Cells() ([]CellResponse, error)
@@ -58,15 +58,15 @@ func (c *client) CreateTask(request TaskCreateRequest) error {
 	return c.doRequest(CreateTaskRoute, nil, nil, request, nil)
 }
 
-func (c *client) GetAllTasks() ([]TaskResponse, error) {
+func (c *client) Tasks() ([]TaskResponse, error) {
 	tasks := []TaskResponse{}
-	err := c.doRequest(GetAllTasksRoute, nil, nil, nil, &tasks)
+	err := c.doRequest(TasksRoute, nil, nil, nil, &tasks)
 	return tasks, err
 }
 
-func (c *client) GetAllTasksByDomain(domain string) ([]TaskResponse, error) {
+func (c *client) TasksByDomain(domain string) ([]TaskResponse, error) {
 	tasks := []TaskResponse{}
-	err := c.doRequest(GetAllTasksByDomainRoute, rata.Params{"domain": domain}, nil, nil, &tasks)
+	err := c.doRequest(TasksByDomainRoute, rata.Params{"domain": domain}, nil, nil, &tasks)
 	return tasks, err
 }
 
@@ -102,39 +102,39 @@ func (c *client) DeleteDesiredLRP(processGuid string) error {
 	return c.doRequest(DeleteDesiredLRPRoute, rata.Params{"process_guid": processGuid}, nil, nil, nil)
 }
 
-func (c *client) GetAllDesiredLRPs() ([]DesiredLRPResponse, error) {
+func (c *client) DesiredLRPs() ([]DesiredLRPResponse, error) {
 	var desiredLRPs []DesiredLRPResponse
-	err := c.doRequest(GetAllDesiredLRPsRoute, nil, nil, nil, &desiredLRPs)
+	err := c.doRequest(DesiredLRPsRoute, nil, nil, nil, &desiredLRPs)
 	return desiredLRPs, err
 }
 
-func (c *client) GetAllDesiredLRPsByDomain(domain string) ([]DesiredLRPResponse, error) {
+func (c *client) DesiredLRPsByDomain(domain string) ([]DesiredLRPResponse, error) {
 	var desiredLRPs []DesiredLRPResponse
-	err := c.doRequest(GetAllDesiredLRPsByDomainRoute, rata.Params{"domain": domain}, nil, nil, &desiredLRPs)
+	err := c.doRequest(DesiredLRPsByDomainRoute, rata.Params{"domain": domain}, nil, nil, &desiredLRPs)
 	return desiredLRPs, err
 }
 
-func (c *client) GetAllActualLRPs() ([]ActualLRPResponse, error) {
+func (c *client) ActualLRPs() ([]ActualLRPResponse, error) {
 	var actualLRPs []ActualLRPResponse
-	err := c.doRequest(GetAllActualLRPsRoute, nil, nil, nil, &actualLRPs)
+	err := c.doRequest(ActualLRPsRoute, nil, nil, nil, &actualLRPs)
 	return actualLRPs, err
 }
 
-func (c *client) GetAllActualLRPsByDomain(domain string) ([]ActualLRPResponse, error) {
+func (c *client) ActualLRPsByDomain(domain string) ([]ActualLRPResponse, error) {
 	var actualLRPs []ActualLRPResponse
-	err := c.doRequest(GetAllActualLRPsByDomainRoute, rata.Params{"domain": domain}, nil, nil, &actualLRPs)
+	err := c.doRequest(ActualLRPsByDomainRoute, rata.Params{"domain": domain}, nil, nil, &actualLRPs)
 	return actualLRPs, err
 }
 
-func (c *client) GetAllActualLRPsByProcessGuid(processGuid string) ([]ActualLRPResponse, error) {
+func (c *client) ActualLRPsByProcessGuid(processGuid string) ([]ActualLRPResponse, error) {
 	var actualLRPs []ActualLRPResponse
-	err := c.doRequest(GetAllActualLRPsByProcessGuidRoute, rata.Params{"process_guid": processGuid}, nil, nil, &actualLRPs)
+	err := c.doRequest(ActualLRPsByProcessGuidRoute, rata.Params{"process_guid": processGuid}, nil, nil, &actualLRPs)
 	return actualLRPs, err
 }
 
-func (c *client) GetAllActualLRPsByProcessGuidAndIndex(processGuid string, index int) ([]ActualLRPResponse, error) {
+func (c *client) ActualLRPsByProcessGuidAndIndex(processGuid string, index int) ([]ActualLRPResponse, error) {
 	var actualLRPs []ActualLRPResponse
-	err := c.doRequest(GetAllActualLRPsByProcessGuidRoute, rata.Params{"process_guid": processGuid}, url.Values{"index": []string{strconv.Itoa(index)}}, nil, &actualLRPs)
+	err := c.doRequest(ActualLRPsByProcessGuidRoute, rata.Params{"process_guid": processGuid}, url.Values{"index": []string{strconv.Itoa(index)}}, nil, &actualLRPs)
 	return actualLRPs, err
 }
 

@@ -205,7 +205,7 @@ var _ = Describe("TaskHandler", func() {
 	Describe("GetAll", func() {
 		Context("when reading tasks from the BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.GetAllTasksReturns([]models.Task{}, errors.New("Something went wrong"))
+				fakeBBS.TasksReturns([]models.Task{}, errors.New("Something went wrong"))
 			})
 
 			It("responds with an error", func() {
@@ -216,7 +216,7 @@ var _ = Describe("TaskHandler", func() {
 
 		Context("when reading tasks from BBS succeeds", func() {
 			BeforeEach(func() {
-				fakeBBS.GetAllTasksReturns([]models.Task{
+				fakeBBS.TasksReturns([]models.Task{
 					{
 						TaskGuid: "task-guid-1",
 						Domain:   "domain-1",
@@ -247,7 +247,7 @@ var _ = Describe("TaskHandler", func() {
 
 		Context("when reading tasks from the BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.GetAllTasksByDomainReturns([]models.Task{}, errors.New("Something went wrong"))
+				fakeBBS.TasksByDomainReturns([]models.Task{}, errors.New("Something went wrong"))
 			})
 
 			It("responds with an error", func() {
@@ -258,7 +258,7 @@ var _ = Describe("TaskHandler", func() {
 
 		Context("when reading tasks from BBS succeeds", func() {
 			BeforeEach(func() {
-				fakeBBS.GetAllTasksByDomainReturns([]models.Task{
+				fakeBBS.TasksByDomainReturns([]models.Task{
 					{
 						TaskGuid: "task-guid-1",
 						Domain:   "domain-1",
@@ -273,7 +273,7 @@ var _ = Describe("TaskHandler", func() {
 
 			It("uses the given domain", func() {
 				handler.GetAllByDomain(responseRecorder, request)
-				Ω(fakeBBS.GetAllTasksByDomainArgsForCall(0)).Should(Equal("a-domain"))
+				Ω(fakeBBS.TasksByDomainArgsForCall(0)).Should(Equal("a-domain"))
 			})
 
 			It("excludes internal fields", func() {
@@ -294,7 +294,7 @@ var _ = Describe("TaskHandler", func() {
 
 		Context("when the task cannot be found in the BBS", func() {
 			BeforeEach(func() {
-				fakeBBS.GetTaskByGuidReturns(models.Task{}, storeadapter.ErrorKeyNotFound)
+				fakeBBS.TaskByGuidReturns(models.Task{}, storeadapter.ErrorKeyNotFound)
 			})
 
 			It("responds with a 404 NOT FOUND", func() {
@@ -318,7 +318,7 @@ var _ = Describe("TaskHandler", func() {
 
 		Context("when reading the task from the BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.GetTaskByGuidReturns(models.Task{}, errors.New("Something went wrong"))
+				fakeBBS.TaskByGuidReturns(models.Task{}, errors.New("Something went wrong"))
 			})
 
 			It("responds with an error", func() {
@@ -329,7 +329,7 @@ var _ = Describe("TaskHandler", func() {
 
 		Context("when the task is successfully found in the BBS", func() {
 			BeforeEach(func() {
-				fakeBBS.GetTaskByGuidReturns(models.Task{
+				fakeBBS.TaskByGuidReturns(models.Task{
 					TaskGuid: "task-guid-1",
 					Domain:   "domain-1",
 					Action: models.ExecutorAction{
@@ -342,7 +342,7 @@ var _ = Describe("TaskHandler", func() {
 
 			It("retrieves the task by the given guid", func() {
 				handler.GetByGuid(responseRecorder, request)
-				Ω(fakeBBS.GetTaskByGuidArgsForCall(0)).Should(Equal("the-task-guid"))
+				Ω(fakeBBS.TaskByGuidArgsForCall(0)).Should(Equal("the-task-guid"))
 			})
 
 			It("excludes internal fields", func() {

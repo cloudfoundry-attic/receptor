@@ -54,11 +54,11 @@ var _ = Describe("Cell Handlers", func() {
 
 		Context("when reading Cells from BBS succeeds", func() {
 			BeforeEach(func() {
-				fakeBBS.GetAllCellsReturns(cellPresences, nil)
+				fakeBBS.CellsReturns(cellPresences, nil)
 			})
 
 			It("call the BBS to retrieve the actual LRPs", func() {
-				Ω(fakeBBS.GetAllCellsCallCount()).Should(Equal(1))
+				Ω(fakeBBS.CellsCallCount()).Should(Equal(1))
 			})
 
 			It("responds with 200 Status OK", func() {
@@ -79,7 +79,7 @@ var _ = Describe("Cell Handlers", func() {
 
 		Context("when the BBS returns no cells", func() {
 			BeforeEach(func() {
-				fakeBBS.GetAllCellsReturns([]models.CellPresence{}, nil)
+				fakeBBS.CellsReturns([]models.CellPresence{}, nil)
 			})
 
 			It("responds with 200 Status OK", func() {
@@ -93,7 +93,7 @@ var _ = Describe("Cell Handlers", func() {
 
 		Context("when reading from the BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.GetAllCellsReturns([]models.CellPresence{}, errors.New("Something went wrong"))
+				fakeBBS.CellsReturns([]models.CellPresence{}, errors.New("Something went wrong"))
 			})
 
 			It("responds with an error", func() {

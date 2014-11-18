@@ -40,7 +40,7 @@ var _ = Describe("Cell API", func() {
 
 		BeforeEach(func() {
 			Eventually(func() []models.CellPresence {
-				cellPresences, err := bbs.GetAllCells()
+				cellPresences, err := bbs.Cells()
 				Ω(err).ShouldNot(HaveOccurred())
 				return cellPresences
 			}).Should(HaveLen(1))
@@ -53,7 +53,7 @@ var _ = Describe("Cell API", func() {
 		})
 
 		It("has the correct data from the bbs", func() {
-			cellPresences, err := bbs.GetAllCells()
+			cellPresences, err := bbs.Cells()
 			Ω(err).ShouldNot(HaveOccurred())
 
 			expectedResponses := make([]receptor.CellResponse, 0, 1)

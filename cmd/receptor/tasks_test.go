@@ -118,7 +118,7 @@ var _ = Describe("Task API", func() {
 	Describe("GET /v1/tasks", func() {
 		Context("when there are no tasks", func() {
 			It("returns an empty array", func() {
-				tasks, err := client.GetAllTasks()
+				tasks, err := client.Tasks()
 				Ω(err).ShouldNot(HaveOccurred())
 				Ω(tasks).Should(BeEmpty())
 			})
@@ -148,7 +148,7 @@ var _ = Describe("Task API", func() {
 			})
 
 			It("returns an array of all the tasks", func() {
-				tasks, err := client.GetAllTasks()
+				tasks, err := client.Tasks()
 				Ω(err).ShouldNot(HaveOccurred())
 
 				taskGuids := []string{}
@@ -195,7 +195,7 @@ var _ = Describe("Task API", func() {
 		})
 
 		It("returns an array of all the tasks for the domain", func() {
-			tasks, err := client.GetAllTasksByDomain("test-domain")
+			tasks, err := client.TasksByDomain("test-domain")
 			Ω(err).ShouldNot(HaveOccurred())
 
 			taskGuids := []string{}
@@ -283,7 +283,7 @@ var _ = Describe("Task API", func() {
 				err := client.DeleteTask("task-guid-1")
 				Ω(err).ShouldNot(HaveOccurred())
 
-				_, err = bbs.GetTaskByGuid("task-guid-1")
+				_, err = bbs.TaskByGuid("task-guid-1")
 				Ω(err).Should(Equal(storeadapter.ErrorKeyNotFound))
 			})
 		})
@@ -296,7 +296,7 @@ var _ = Describe("Task API", func() {
 
 			It("does not delete the task", func() {
 				client.DeleteTask("task-guid-1")
-				_, err := bbs.GetTaskByGuid("task-guid-1")
+				_, err := bbs.TaskByGuid("task-guid-1")
 				Ω(err).ShouldNot(HaveOccurred())
 			})
 		})
@@ -335,7 +335,7 @@ var _ = Describe("Task API", func() {
 		})
 
 		It("cancels the task", func() {
-			task, err := bbs.GetTaskByGuid("task-guid-1")
+			task, err := bbs.TaskByGuid("task-guid-1")
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(task.State).Should(Equal(models.TaskStateCompleted))
 		})
