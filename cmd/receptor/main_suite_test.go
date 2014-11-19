@@ -49,7 +49,7 @@ var receptorProcess ifrit.Process
 
 func TestReceptor(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Receptor Suite")
+	RunSpecs(t, "Receptor Cmd Suite")
 }
 
 var _ = SynchronizedBeforeSuite(

@@ -71,9 +71,14 @@ func (request *TaskCreateRequest) UnmarshalJSON(payload []byte) error {
 		return err
 	}
 
-	a, err := models.UnmarshalAction(mRequest.ActionRaw)
-	if err != nil {
-		return err
+	var a models.Action
+	if mRequest.ActionRaw == nil {
+		a = nil
+	} else {
+		a, err = models.UnmarshalAction(mRequest.ActionRaw)
+		if err != nil {
+			return err
+		}
 	}
 	request.Action = a
 
@@ -132,9 +137,14 @@ func (response *TaskResponse) UnmarshalJSON(payload []byte) error {
 		return err
 	}
 
-	a, err := models.UnmarshalAction(mResponse.ActionRaw)
-	if err != nil {
-		return err
+	var a models.Action
+	if mResponse.ActionRaw == nil {
+		a = nil
+	} else {
+		a, err = models.UnmarshalAction(mResponse.ActionRaw)
+		if err != nil {
+			return err
+		}
 	}
 	response.Action = a
 
@@ -165,18 +175,23 @@ type InnerDesiredLRPCreateRequest DesiredLRPCreateRequest
 
 type mDesiredLRPCreateRequest struct {
 	SetupRaw   *json.RawMessage `json:"setup,omitempty"`
-	ActionRaw  json.RawMessage  `json:"action"`
+	ActionRaw  *json.RawMessage `json:"action"`
 	MonitorRaw *json.RawMessage `json:"monitor,omitempty"`
 	*InnerDesiredLRPCreateRequest
 }
 
 func (request DesiredLRPCreateRequest) MarshalJSON() ([]byte, error) {
-	actionRaw, err := models.MarshalAction(request.Action)
-	if err != nil {
-		return nil, err
+	var setupRaw, actionRaw, monitorRaw *json.RawMessage
+
+	if request.Action != nil {
+		raw, err := models.MarshalAction(request.Action)
+		if err != nil {
+			return nil, err
+		}
+		rm := json.RawMessage(raw)
+		actionRaw = &rm
 	}
 
-	var setupRaw, monitorRaw *json.RawMessage
 	if request.Setup != nil {
 		raw, err := models.MarshalAction(request.Setup)
 		if err != nil {
@@ -185,6 +200,7 @@ func (request DesiredLRPCreateRequest) MarshalJSON() ([]byte, error) {
 		rm := json.RawMessage(raw)
 		setupRaw = &rm
 	}
+
 	if request.Monitor != nil {
 		raw, err := models.MarshalAction(request.Monitor)
 		if err != nil {
@@ -212,27 +228,37 @@ func (request *DesiredLRPCreateRequest) UnmarshalJSON(payload []byte) error {
 		return err
 	}
 
-	a, err := models.UnmarshalAction(mRequest.ActionRaw)
-	if err != nil {
-		return err
+	var a models.Action
+
+	if mRequest.ActionRaw == nil {
+		a = nil
+	} else {
+		a, err = models.UnmarshalAction(*mRequest.ActionRaw)
+		if err != nil {
+			return err
+		}
 	}
 	request.Action = a
 
-	if mRequest.SetupRaw != nil {
+	if mRequest.SetupRaw == nil {
+		a = nil
+	} else {
 		a, err = models.UnmarshalAction(*mRequest.SetupRaw)
 		if err != nil {
 			return err
 		}
-		request.Setup = a
 	}
+	request.Setup = a
 
-	if mRequest.MonitorRaw != nil {
+	if mRequest.MonitorRaw == nil {
+		a = nil
+	} else {
 		a, err = models.UnmarshalAction(*mRequest.MonitorRaw)
 		if err != nil {
 			return err
 		}
-		request.Monitor = a
 	}
+	request.Monitor = a
 
 	return nil
 }
@@ -267,18 +293,23 @@ type InnerDesiredLRPResponse DesiredLRPResponse
 
 type mDesiredLRPResponse struct {
 	SetupRaw   *json.RawMessage `json:"setup,omitempty"`
-	ActionRaw  json.RawMessage  `json:"action"`
+	ActionRaw  *json.RawMessage `json:"action"`
 	MonitorRaw *json.RawMessage `json:"monitor,omitempty"`
 	*InnerDesiredLRPResponse
 }
 
 func (response DesiredLRPResponse) MarshalJSON() ([]byte, error) {
-	actionRaw, err := models.MarshalAction(response.Action)
-	if err != nil {
-		return nil, err
+	var setupRaw, actionRaw, monitorRaw *json.RawMessage
+
+	if response.Action != nil {
+		raw, err := models.MarshalAction(response.Action)
+		if err != nil {
+			return nil, err
+		}
+		rm := json.RawMessage(raw)
+		actionRaw = &rm
 	}
 
-	var setupRaw, monitorRaw *json.RawMessage
 	if response.Setup != nil {
 		raw, err := models.MarshalAction(response.Setup)
 		if err != nil {
@@ -314,27 +345,37 @@ func (response *DesiredLRPResponse) UnmarshalJSON(payload []byte) error {
 		return err
 	}
 
-	a, err := models.UnmarshalAction(mResponse.ActionRaw)
-	if err != nil {
-		return err
+	var a models.Action
+
+	if mResponse.ActionRaw == nil {
+		a = nil
+	} else {
+		a, err = models.UnmarshalAction(*mResponse.ActionRaw)
+		if err != nil {
+			return err
+		}
 	}
 	response.Action = a
 
-	if mResponse.SetupRaw != nil {
+	if mResponse.SetupRaw == nil {
+		a = nil
+	} else {
 		a, err = models.UnmarshalAction(*mResponse.SetupRaw)
 		if err != nil {
 			return err
 		}
-		response.Setup = a
 	}
+	response.Setup = a
 
-	if mResponse.MonitorRaw != nil {
+	if mResponse.MonitorRaw == nil {
+		a = nil
+	} else {
 		a, err = models.UnmarshalAction(*mResponse.MonitorRaw)
 		if err != nil {
 			return err
 		}
-		response.Monitor = a
 	}
+	response.Monitor = a
 
 	return nil
 }
