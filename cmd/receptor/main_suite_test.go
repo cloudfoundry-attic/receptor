@@ -2,6 +2,7 @@ package main_test
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/cloudfoundry-incubator/receptor"
@@ -22,8 +23,10 @@ import (
 	"time"
 )
 
-const username = "username"
-const password = "password"
+const (
+	username = "username"
+	password = "password"
+)
 
 var natsPort int
 var natsAddress string
@@ -86,7 +89,15 @@ var _ = BeforeEach(func() {
 	bbs = Bbs.NewBBS(etcdRunner.Adapter(), timeprovider.NewTimeProvider(), logger)
 
 	receptorAddress = fmt.Sprintf("127.0.0.1:%d", 6700+GinkgoParallelNode())
-	client = receptor.NewClient(receptorAddress, username, password)
+
+	receptorURL := &url.URL{
+		Scheme: "http",
+		Host:   receptorAddress,
+		User:   url.UserPassword(username, password),
+	}
+
+	client = receptor.NewClient(receptorURL.String())
+
 	receptorArgs = testrunner.Args{
 		RegisterWithRouter: true,
 		DomainNames:        "example.com",

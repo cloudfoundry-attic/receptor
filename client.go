@@ -7,7 +7,6 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/cloudfoundry/gunk/urljoiner"
 	"github.com/tedsuo/rata"
 )
 
@@ -38,18 +37,14 @@ type Client interface {
 	FreshDomains() ([]FreshDomainResponse, error)
 }
 
-func NewClient(addr, user, password string) Client {
+func NewClient(url string) Client {
 	return &client{
-		user:       user,
-		password:   password,
 		httpClient: &http.Client{},
-		reqGen:     rata.NewRequestGenerator(urljoiner.Join("http://", addr), Routes),
+		reqGen:     rata.NewRequestGenerator(url, Routes),
 	}
 }
 
 type client struct {
-	user       string
-	password   string
 	httpClient *http.Client
 	reqGen     *rata.RequestGenerator
 }
@@ -172,7 +167,6 @@ func (c *client) doRequest(requestName string, params rata.Params, queryParams u
 
 	req.URL.RawQuery = queryParams.Encode()
 	req.ContentLength = int64(len(requestJson))
-	req.SetBasicAuth(c.user, c.password)
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
