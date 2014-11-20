@@ -60,7 +60,7 @@ var _ = Describe("Task API", func() {
 		})
 
 		It("desires the task in the BBS", func() {
-			Eventually(bbs.GetAllPendingTasks).Should(HaveLen(1))
+			Eventually(bbs.PendingTasks).Should(HaveLen(1))
 		})
 
 		Context("when trying to create a task with a GUID that already exists", func() {
