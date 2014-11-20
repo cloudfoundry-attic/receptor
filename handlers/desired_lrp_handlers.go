@@ -79,7 +79,12 @@ func (h *DesiredLRPHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response := serialization.DesiredLRPToResponse(desiredLRP)
+	if desiredLRP == nil {
+		writeLRPNotFoundResponse(w)
+		return
+	}
+
+	response := serialization.DesiredLRPToResponse(*desiredLRP)
 
 	writeJSONResponse(w, http.StatusOK, response)
 }

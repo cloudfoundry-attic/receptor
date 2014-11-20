@@ -168,7 +168,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when reading tasks from BBS succeeds", func() {
 			BeforeEach(func() {
-				fakeBBS.DesiredLRPByProcessGuidReturns(models.DesiredLRP{
+				fakeBBS.DesiredLRPByProcessGuidReturns(&models.DesiredLRP{
 					ProcessGuid: "process-guid-0",
 					Domain:      "domain-1",
 					Action: &models.RunAction{
@@ -196,7 +196,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when reading from the BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.DesiredLRPByProcessGuidReturns(models.DesiredLRP{}, errors.New("Something went wrong"))
+				fakeBBS.DesiredLRPByProcessGuidReturns(nil, errors.New("Something went wrong"))
 			})
 
 			It("responds with an error", func() {
@@ -204,14 +204,30 @@ var _ = Describe("Desired LRP Handlers", func() {
 			})
 		})
 
-		Context("when the BBS returns no lrp", func() {
+		Context("when the BBS returns a nil lrp", func() {
 			BeforeEach(func() {
-				fakeBBS.DesiredLRPByProcessGuidReturns(models.DesiredLRP{}, storeadapter.ErrorKeyNotFound)
+				fakeBBS.DesiredLRPByProcessGuidReturns(nil, nil)
 			})
 
-			It("calls DesiredLRPByProcessGuid on the BBS", func() {
-				Ω(fakeBBS.DesiredLRPByProcessGuidCallCount()).Should(Equal(1))
-				Ω(fakeBBS.DesiredLRPByProcessGuidArgsForCall(0)).Should(Equal("process-guid-0"))
+			It("responds with 404 Status NOT FOUND", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusNotFound))
+			})
+
+			It("returns an LRPNotFound error", func() {
+				var responseError receptor.Error
+				err := json.Unmarshal(responseRecorder.Body.Bytes(), &responseError)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(responseError).Should(Equal(receptor.Error{
+					Type:    receptor.LRPNotFound,
+					Message: "LRP not found",
+				}))
+			})
+		})
+
+		Context("when the BBS reports no lrp found", func() {
+			BeforeEach(func() {
+				fakeBBS.DesiredLRPByProcessGuidReturns(nil, storeadapter.ErrorKeyNotFound)
 			})
 
 			It("responds with 404 Status NOT FOUND", func() {

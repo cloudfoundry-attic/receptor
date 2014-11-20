@@ -87,6 +87,7 @@ func (h *TaskHandler) GetAllByDomain(w http.ResponseWriter, req *http.Request) {
 
 func (h *TaskHandler) GetByGuid(w http.ResponseWriter, req *http.Request) {
 	task, err := h.bbs.TaskByGuid(req.FormValue(":task_guid"))
+
 	if err == storeadapter.ErrorKeyNotFound {
 		h.logger.Error("failed-to-fetch-task", err)
 		writeJSONResponse(w, http.StatusNotFound, receptor.Error{
@@ -94,13 +95,24 @@ func (h *TaskHandler) GetByGuid(w http.ResponseWriter, req *http.Request) {
 			Message: "task guid not found",
 		})
 		return
-	} else if err != nil {
+	}
+
+	if err != nil {
 		h.logger.Error("failed-to-fetch-task", err)
 		writeUnknownErrorResponse(w, err)
 		return
 	}
 
-	writeJSONResponse(w, http.StatusOK, serialization.TaskToResponse(task))
+	if task == nil {
+		h.logger.Error("failed-to-fetch-task", err)
+		writeJSONResponse(w, http.StatusNotFound, receptor.Error{
+			Type:    receptor.TaskNotFound,
+			Message: "task guid not found",
+		})
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, serialization.TaskToResponse(*task))
 }
 
 func (h *TaskHandler) Delete(w http.ResponseWriter, req *http.Request) {
