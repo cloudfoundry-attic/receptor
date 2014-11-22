@@ -161,6 +161,7 @@ type DesiredLRPCreateRequest struct {
 	Setup                models.Action         `json:"-"`
 	Action               models.Action         `json:"-"`
 	Monitor              models.Action         `json:"-"`
+	StartTimeout         uint                  `json:"start_timeout"`
 	DiskMB               int                   `json:"disk_mb"`
 	MemoryMB             int                   `json:"memory_mb"`
 	CPUWeight            uint                  `json:"cpu_weight"`
@@ -279,6 +280,7 @@ type DesiredLRPResponse struct {
 	Setup                models.Action         `json:"setup"`
 	Action               models.Action         `json:"action"`
 	Monitor              models.Action         `json:"monitor"`
+	StartTimeout         uint                  `json:"start_timeout"`
 	DiskMB               int                   `json:"disk_mb"`
 	MemoryMB             int                   `json:"memory_mb"`
 	CPUWeight            uint                  `json:"cpu_weight"`

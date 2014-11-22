@@ -26,6 +26,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				Action: &models.RunAction{
 					Path: "the-path",
 				},
+				StartTimeout: 4,
 			}
 		})
 		JustBeforeEach(func() {
@@ -38,6 +39,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 			Ω(desiredLRP.Stack).Should(Equal("the-stack"))
 			Ω(desiredLRP.RootFSPath).Should(Equal("the-rootfs-path"))
 			Ω(desiredLRP.Annotation).Should(Equal("foo"))
+			Ω(desiredLRP.StartTimeout).Should(Equal(uint(4)))
 			Ω(desiredLRP.Ports).Should(HaveLen(2))
 			Ω(desiredLRP.Ports[0]).Should(Equal(uint32(2345)))
 			Ω(desiredLRP.Ports[1]).Should(Equal(uint32(6789)))
@@ -56,10 +58,11 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				EnvironmentVariables: []models.EnvironmentVariable{
 					{Name: "ENV_VAR_NAME", Value: "value"},
 				},
-				Action:    &models.RunAction{Path: "/bin/true"},
-				DiskMB:    126,
-				MemoryMB:  1234,
-				CPUWeight: 192,
+				Action:       &models.RunAction{Path: "/bin/true"},
+				StartTimeout: 4,
+				DiskMB:       126,
+				MemoryMB:     1234,
+				CPUWeight:    192,
 				Ports: []uint32{
 					456,
 				},
@@ -80,10 +83,11 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				EnvironmentVariables: []receptor.EnvironmentVariable{
 					{Name: "ENV_VAR_NAME", Value: "value"},
 				},
-				Action:    &models.RunAction{Path: "/bin/true"},
-				DiskMB:    126,
-				MemoryMB:  1234,
-				CPUWeight: 192,
+				Action:       &models.RunAction{Path: "/bin/true"},
+				StartTimeout: 4,
+				DiskMB:       126,
+				MemoryMB:     1234,
+				CPUWeight:    192,
 				Ports: []uint32{
 					456,
 				},
