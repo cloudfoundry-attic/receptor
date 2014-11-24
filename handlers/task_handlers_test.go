@@ -294,7 +294,7 @@ var _ = Describe("TaskHandler", func() {
 
 				Ω(taskError).Should(Equal(receptor.Error{
 					Type:    receptor.TaskNotFound,
-					Message: "task guid not found",
+					Message: "task with guid 'the-task-guid' not found",
 				}))
 			})
 		})
@@ -318,7 +318,7 @@ var _ = Describe("TaskHandler", func() {
 
 				Ω(taskError).Should(Equal(receptor.Error{
 					Type:    receptor.TaskNotFound,
-					Message: "task guid not found",
+					Message: "task with guid 'the-task-guid' not found",
 				}))
 			})
 		})
@@ -421,7 +421,7 @@ var _ = Describe("TaskHandler", func() {
 
 				Ω(taskError).Should(Equal(receptor.Error{
 					Type:    receptor.TaskNotFound,
-					Message: "task guid not found",
+					Message: "task with guid 'the-task-guid' not found",
 				}))
 			})
 		})

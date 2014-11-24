@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/cloudfoundry-incubator/receptor"
@@ -69,7 +70,7 @@ func (h *DesiredLRPHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	desiredLRP, err := h.bbs.DesiredLRPByProcessGuid(processGuid)
 	if err == storeadapter.ErrorKeyNotFound {
-		writeLRPNotFoundResponse(w)
+		writeDesiredLRPNotFoundResponse(w, processGuid)
 		return
 	}
 
@@ -80,7 +81,7 @@ func (h *DesiredLRPHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if desiredLRP == nil {
-		writeLRPNotFoundResponse(w)
+		writeDesiredLRPNotFoundResponse(w, processGuid)
 		return
 	}
 
@@ -115,7 +116,7 @@ func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	err = h.bbs.UpdateDesiredLRP(processGuid, update)
 	if err == storeadapter.ErrorKeyNotFound {
-		writeLRPNotFoundResponse(w)
+		writeDesiredLRPNotFoundResponse(w, processGuid)
 		return
 	}
 
@@ -144,7 +145,7 @@ func (h *DesiredLRPHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	err := h.bbs.RemoveDesiredLRPByProcessGuid(processGuid)
 
 	if err == storeadapter.ErrorKeyNotFound {
-		writeLRPNotFoundResponse(w)
+		writeDesiredLRPNotFoundResponse(w, processGuid)
 		return
 	}
 
@@ -192,9 +193,9 @@ func writeDesiredLRPResponse(w http.ResponseWriter, logger lager.Logger, desired
 	writeJSONResponse(w, http.StatusOK, responses)
 }
 
-func writeLRPNotFoundResponse(w http.ResponseWriter) {
+func writeDesiredLRPNotFoundResponse(w http.ResponseWriter, processGuid string) {
 	writeJSONResponse(w, http.StatusNotFound, receptor.Error{
-		Type:    receptor.LRPNotFound,
-		Message: "LRP not found",
+		Type:    receptor.DesiredLRPNotFound,
+		Message: fmt.Sprintf("Desired LRP with guid '%s' not found", processGuid),
 	})
 }

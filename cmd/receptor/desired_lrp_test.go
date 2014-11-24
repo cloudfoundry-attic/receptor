@@ -128,7 +128,7 @@ var _ = Describe("Desired LRP API", func() {
 		It("deletes the desired lrp with the matching process guid", func() {
 			_, getErr := client.GetDesiredLRP(lrpRequest.ProcessGuid)
 			Ω(getErr).Should(BeAssignableToTypeOf(receptor.Error{}))
-			Ω(getErr.(receptor.Error).Type).Should(Equal(receptor.LRPNotFound))
+			Ω(getErr.(receptor.Error).Type).Should(Equal(receptor.DesiredLRPNotFound))
 		})
 	})
 

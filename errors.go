@@ -15,8 +15,8 @@ const (
 	TaskNotFound          = "TaskNotFound"
 	InvalidTask           = "InvalidTask"
 
-	LRPNotFound = "LRPNotFound"
-	InvalidLRP  = "InvalidLRP"
+	DesiredLRPNotFound = "DesiredLRPNotFound"
+	InvalidLRP         = "InvalidLRP"
 
 	InvalidFreshness = "InvalidFreshness"
 
@@ -25,4 +25,6 @@ const (
 
 	UnknownError = "UnknownError"
 	Unauthorized = "Unauthorized"
+
+	ActualLRPIndexNotFound = "ActualLRPIndexNotFound"
 )

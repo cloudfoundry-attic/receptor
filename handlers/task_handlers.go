@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/cloudfoundry-incubator/receptor"
@@ -86,14 +87,13 @@ func (h *TaskHandler) GetAllByDomain(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h *TaskHandler) GetByGuid(w http.ResponseWriter, req *http.Request) {
-	task, err := h.bbs.TaskByGuid(req.FormValue(":task_guid"))
+	guid := req.FormValue(":task_guid")
+
+	task, err := h.bbs.TaskByGuid(guid)
 
 	if err == storeadapter.ErrorKeyNotFound {
 		h.logger.Error("failed-to-fetch-task", err)
-		writeJSONResponse(w, http.StatusNotFound, receptor.Error{
-			Type:    receptor.TaskNotFound,
-			Message: "task guid not found",
-		})
+		writeTaskNotFoundResponse(w, guid)
 		return
 	}
 
@@ -105,10 +105,7 @@ func (h *TaskHandler) GetByGuid(w http.ResponseWriter, req *http.Request) {
 
 	if task == nil {
 		h.logger.Error("failed-to-fetch-task", err)
-		writeJSONResponse(w, http.StatusNotFound, receptor.Error{
-			Type:    receptor.TaskNotFound,
-			Message: "task guid not found",
-		})
+		writeTaskNotFoundResponse(w, guid)
 		return
 	}
 
@@ -123,10 +120,7 @@ func (h *TaskHandler) Delete(w http.ResponseWriter, req *http.Request) {
 		switch err {
 		case Bbs.ErrTaskNotFound:
 			h.logger.Error("task-not-found", err)
-			writeJSONResponse(w, http.StatusConflict, receptor.Error{
-				Type:    receptor.TaskNotFound,
-				Message: "task guid not found",
-			})
+			writeTaskNotFoundResponse(w, guid)
 		case Bbs.ErrTaskNotResolvable:
 			h.logger.Error("task-not-completed", err)
 			writeJSONResponse(w, http.StatusConflict, receptor.Error{
@@ -148,14 +142,13 @@ func (h *TaskHandler) Delete(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h *TaskHandler) Cancel(w http.ResponseWriter, req *http.Request) {
-	err := h.bbs.CancelTask(req.FormValue(":task_guid"))
+	guid := req.FormValue(":task_guid")
+
+	err := h.bbs.CancelTask(guid)
 
 	if err == Bbs.ErrTaskNotFound {
 		h.logger.Error("failed-to-cancel-task", err)
-		writeJSONResponse(w, http.StatusNotFound, receptor.Error{
-			Type:    receptor.TaskNotFound,
-			Message: "task guid not found",
-		})
+		writeTaskNotFoundResponse(w, guid)
 		return
 	} else if err != nil {
 		h.logger.Error("failed-to-fetch-task", err)
@@ -177,4 +170,11 @@ func writeTaskResponse(w http.ResponseWriter, logger lager.Logger, tasks []model
 	}
 
 	writeJSONResponse(w, http.StatusOK, taskResponses)
+}
+
+func writeTaskNotFoundResponse(w http.ResponseWriter, taskGuid string) {
+	writeJSONResponse(w, http.StatusNotFound, receptor.Error{
+		Type:    receptor.TaskNotFound,
+		Message: fmt.Sprintf("task with guid '%s' not found", taskGuid),
+	})
 }

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -158,7 +159,12 @@ func (h *ActualLRPHandler) KillByProcessGuidAndIndex(w http.ResponseWriter, req 
 	}
 
 	if len(actualLRPs) == 0 {
-		writeLRPNotFoundResponse(w)
+		errorMessage := fmt.Sprintf("process-guid '%s' does not exist or has no instances at index %d", processGuid, index)
+		logger.Error("no-instances-to-delete", errors.New(errorMessage))
+		writeJSONResponse(w, http.StatusNotFound, receptor.Error{
+			Type:    receptor.ActualLRPIndexNotFound,
+			Message: errorMessage,
+		})
 		return
 	}
 

@@ -219,8 +219,8 @@ var _ = Describe("Desired LRP Handlers", func() {
 				Ω(err).ShouldNot(HaveOccurred())
 
 				Ω(responseError).Should(Equal(receptor.Error{
-					Type:    receptor.LRPNotFound,
-					Message: "LRP not found",
+					Type:    receptor.DesiredLRPNotFound,
+					Message: "Desired LRP with guid 'process-guid-0' not found",
 				}))
 			})
 		})
@@ -240,8 +240,8 @@ var _ = Describe("Desired LRP Handlers", func() {
 				Ω(err).ShouldNot(HaveOccurred())
 
 				Ω(responseError).Should(Equal(receptor.Error{
-					Type:    receptor.LRPNotFound,
-					Message: "LRP not found",
+					Type:    receptor.DesiredLRPNotFound,
+					Message: "Desired LRP with guid 'process-guid-0' not found",
 				}))
 			})
 		})
@@ -391,8 +391,8 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 			It("responds with a relevant error message", func() {
 				expectedBody, _ := json.Marshal(receptor.Error{
-					Type:    receptor.LRPNotFound,
-					Message: "LRP not found",
+					Type:    receptor.DesiredLRPNotFound,
+					Message: "Desired LRP with guid 'some-guid' not found",
 				})
 
 				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
@@ -495,8 +495,8 @@ var _ = Describe("Desired LRP Handlers", func() {
 				Ω(err).ShouldNot(HaveOccurred())
 
 				Ω(responseError).Should(Equal(receptor.Error{
-					Type:    receptor.LRPNotFound,
-					Message: "LRP not found",
+					Type:    receptor.DesiredLRPNotFound,
+					Message: "Desired LRP with guid 'process-guid-0' not found",
 				}))
 			})
 		})
