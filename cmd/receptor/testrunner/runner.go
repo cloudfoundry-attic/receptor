@@ -24,7 +24,7 @@ type Args struct {
 
 func (args Args) ArgSlice() []string {
 	return []string{
-		"-registerWithRouter", strconv.FormatBool(args.RegisterWithRouter),
+		"-registerWithRouter=" + strconv.FormatBool(args.RegisterWithRouter),
 		"-domainNames", args.DomainNames,
 		"-address", args.Address,
 		"-etcdCluster", args.EtcdCluster,
