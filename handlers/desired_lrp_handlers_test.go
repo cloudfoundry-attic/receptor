@@ -9,9 +9,9 @@ import (
 
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
+	"github.com/cloudfoundry-incubator/runtime-schema/bbs/bbserrors"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
-	"github.com/cloudfoundry/storeadapter"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-golang/lager"
@@ -227,7 +227,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when the BBS reports no lrp found", func() {
 			BeforeEach(func() {
-				fakeBBS.DesiredLRPByProcessGuidReturns(nil, storeadapter.ErrorKeyNotFound)
+				fakeBBS.DesiredLRPByProcessGuidReturns(nil, bbserrors.ErrStoreResourceNotFound)
 			})
 
 			It("responds with 404 Status NOT FOUND", func() {
@@ -374,7 +374,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 		Context("when the BBS indicates the LRP was not found", func() {
 			BeforeEach(func(done Done) {
 				defer close(done)
-				fakeBBS.UpdateDesiredLRPReturns(storeadapter.ErrorKeyNotFound)
+				fakeBBS.UpdateDesiredLRPReturns(bbserrors.ErrStoreResourceNotFound)
 				handler.Update(responseRecorder, req)
 			})
 
@@ -482,7 +482,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when the BBS returns no lrp", func() {
 			BeforeEach(func() {
-				fakeBBS.RemoveDesiredLRPByProcessGuidReturns(storeadapter.ErrorKeyNotFound)
+				fakeBBS.RemoveDesiredLRPByProcessGuidReturns(bbserrors.ErrStoreResourceNotFound)
 			})
 
 			It("responds with 404 Status NOT FOUND", func() {

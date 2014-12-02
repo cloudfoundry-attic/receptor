@@ -8,8 +8,8 @@ import (
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
+	"github.com/cloudfoundry-incubator/runtime-schema/bbs/bbserrors"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
-	"github.com/cloudfoundry/storeadapter"
 	"github.com/pivotal-golang/lager"
 )
 
@@ -61,7 +61,7 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 		}
 
 		log.Error("desire-task-failed", err)
-		if err == storeadapter.ErrorKeyExists {
+		if err == bbserrors.ErrStoreResourceExists {
 			writeJSONResponse(w, http.StatusConflict, receptor.Error{
 				Type:    receptor.TaskGuidAlreadyExists,
 				Message: "task already exists",
@@ -91,7 +91,7 @@ func (h *TaskHandler) GetByGuid(w http.ResponseWriter, req *http.Request) {
 
 	task, err := h.bbs.TaskByGuid(guid)
 
-	if err == storeadapter.ErrorKeyNotFound {
+	if err == bbserrors.ErrStoreResourceNotFound {
 		h.logger.Error("failed-to-fetch-task", err)
 		writeTaskNotFoundResponse(w, guid)
 		return
@@ -118,10 +118,10 @@ func (h *TaskHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	err := h.bbs.ResolvingTask(guid)
 	if err != nil {
 		switch err {
-		case Bbs.ErrTaskNotFound:
+		case bbserrors.ErrTaskNotFound:
 			h.logger.Error("task-not-found", err)
 			writeTaskNotFoundResponse(w, guid)
-		case Bbs.ErrTaskNotResolvable:
+		case bbserrors.ErrTaskCannotBeMarkedAsResolving:
 			h.logger.Error("task-not-completed", err)
 			writeJSONResponse(w, http.StatusConflict, receptor.Error{
 				Type:    receptor.TaskNotDeletable,
@@ -146,7 +146,7 @@ func (h *TaskHandler) Cancel(w http.ResponseWriter, req *http.Request) {
 
 	err := h.bbs.CancelTask(guid)
 
-	if err == Bbs.ErrTaskNotFound {
+	if err == bbserrors.ErrTaskNotFound {
 		h.logger.Error("failed-to-cancel-task", err)
 		writeTaskNotFoundResponse(w, guid)
 		return

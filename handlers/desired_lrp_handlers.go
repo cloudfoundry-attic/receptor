@@ -9,8 +9,8 @@ import (
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
+	"github.com/cloudfoundry-incubator/runtime-schema/bbs/bbserrors"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
-	"github.com/cloudfoundry/storeadapter"
 	"github.com/pivotal-golang/lager"
 )
 
@@ -69,7 +69,7 @@ func (h *DesiredLRPHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	desiredLRP, err := h.bbs.DesiredLRPByProcessGuid(processGuid)
-	if err == storeadapter.ErrorKeyNotFound {
+	if err == bbserrors.ErrStoreResourceNotFound {
 		writeDesiredLRPNotFoundResponse(w, processGuid)
 		return
 	}
@@ -115,7 +115,7 @@ func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
 	update := serialization.DesiredLRPUpdateFromRequest(desireLRPRequest)
 
 	err = h.bbs.UpdateDesiredLRP(processGuid, update)
-	if err == storeadapter.ErrorKeyNotFound {
+	if err == bbserrors.ErrStoreResourceNotFound {
 		writeDesiredLRPNotFoundResponse(w, processGuid)
 		return
 	}
@@ -143,8 +143,7 @@ func (h *DesiredLRPHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	}
 
 	err := h.bbs.RemoveDesiredLRPByProcessGuid(processGuid)
-
-	if err == storeadapter.ErrorKeyNotFound {
+	if err == bbserrors.ErrStoreResourceNotFound {
 		writeDesiredLRPNotFoundResponse(w, processGuid)
 		return
 	}

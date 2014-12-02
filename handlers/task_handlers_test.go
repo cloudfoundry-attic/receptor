@@ -8,10 +8,9 @@ import (
 
 	"github.com/cloudfoundry-incubator/receptor"
 	. "github.com/cloudfoundry-incubator/receptor/handlers"
-	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
+	"github.com/cloudfoundry-incubator/runtime-schema/bbs/bbserrors"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
-	"github.com/cloudfoundry/storeadapter"
 	"github.com/pivotal-golang/lager"
 
 	. "github.com/onsi/ginkgo"
@@ -277,7 +276,7 @@ var _ = Describe("TaskHandler", func() {
 
 		Context("when the BBS reports the task not found", func() {
 			BeforeEach(func() {
-				fakeBBS.TaskByGuidReturns(nil, storeadapter.ErrorKeyNotFound)
+				fakeBBS.TaskByGuidReturns(nil, bbserrors.ErrStoreResourceNotFound)
 			})
 
 			It("responds with a 404 NOT FOUND", func() {
@@ -407,7 +406,7 @@ var _ = Describe("TaskHandler", func() {
 
 		Context("when the task cannot be found in the BBS", func() {
 			BeforeEach(func() {
-				fakeBBS.CancelTaskReturns(Bbs.ErrTaskNotFound)
+				fakeBBS.CancelTaskReturns(bbserrors.ErrTaskNotFound)
 			})
 
 			It("responds with a 404 NOT FOUND", func() {

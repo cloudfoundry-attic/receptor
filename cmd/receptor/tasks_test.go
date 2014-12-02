@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/cloudfoundry-incubator/receptor"
+	"github.com/cloudfoundry-incubator/runtime-schema/bbs/bbserrors"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
-	"github.com/cloudfoundry/storeadapter"
 	"github.com/tedsuo/ifrit/ginkgomon"
 
 	. "github.com/onsi/ginkgo"
@@ -266,7 +266,7 @@ var _ = Describe("Task API", func() {
 				Ω(err).ShouldNot(HaveOccurred())
 
 				_, err = bbs.TaskByGuid("task-guid-1")
-				Ω(err).Should(Equal(storeadapter.ErrorKeyNotFound))
+				Ω(err).Should(Equal(bbserrors.ErrStoreResourceNotFound))
 			})
 		})
 
