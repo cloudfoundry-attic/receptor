@@ -21,15 +21,16 @@ var _ = Describe("Actual LRP API", func() {
 
 		for i := 0; i < lrpCount; i++ {
 			index := strconv.Itoa(i)
-			lrp, err := models.NewActualLRP(
+			lrp := models.NewActualLRP(
 				"process-guid-"+index,
 				"instance-guid-"+index,
 				"cell-id",
 				fmt.Sprintf("domain-%d", i/2),
 				i,
+				models.ActualLRPStateRunning,
 			)
-			Ω(err).ShouldNot(HaveOccurred())
-			err = bbs.ReportActualLRPAsRunning(lrp, "cell-id")
+
+			_, err := bbs.StartActualLRP(lrp)
 			Ω(err).ShouldNot(HaveOccurred())
 		}
 	})
@@ -96,7 +97,7 @@ var _ = Describe("Actual LRP API", func() {
 		})
 	})
 
-	Describe("GET /v1/desired_lrps/:process_guid/actual_lrps", func() {
+	Describe("GET /v1/actual_lrps/:process_guid", func() {
 		var actualLRPResponses []receptor.ActualLRPResponse
 		var getErr error
 
@@ -125,42 +126,35 @@ var _ = Describe("Actual LRP API", func() {
 		})
 	})
 
-	Describe("GET /v1/desired_lrps/:process_guid/actual_lrps?index=:index", func() {
-		var actualLRPResponses []receptor.ActualLRPResponse
+	Describe("GET /v1/actual_lrps/index/:index", func() {
+		var actualLRPResponse receptor.ActualLRPResponse
 		var getErr error
+		var processGuid string
+		var index int
 
 		BeforeEach(func() {
-			lrp, err := models.NewActualLRP(
-				"process-guid-0",
+			processGuid = "process-guid-0"
+			index = 1
+
+			lrp := models.NewActualLRP(
+				processGuid,
 				"instance-guid-0",
 				"cell-id",
 				"domain-0",
-				1,
+				index,
+				models.ActualLRPStateRunning,
 			)
-			Ω(err).ShouldNot(HaveOccurred())
-			err = bbs.ReportActualLRPAsRunning(lrp, "cell-id")
-			Ω(err).ShouldNot(HaveOccurred())
-			actualLRPResponses, getErr = client.ActualLRPsByProcessGuidAndIndex("process-guid-0", 0)
-		})
 
-		It("responds without an error", func() {
+			_, err := bbs.StartActualLRP(lrp)
+			Ω(err).ShouldNot(HaveOccurred())
+			actualLRPResponse, getErr = client.ActualLRPByProcessGuidAndIndex(processGuid, index)
 			Ω(getErr).ShouldNot(HaveOccurred())
 		})
 
-		It("fetches all of the actual lrps for the process guid", func() {
-			Ω(actualLRPResponses).Should(HaveLen(1))
-		})
-
 		It("has the correct data from the bbs", func() {
-			actualLRPs, err := bbs.ActualLRPsByProcessGuidAndIndex("process-guid-0", 0)
+			actualLRP, err := bbs.ActualLRPByProcessGuidAndIndex(processGuid, index)
 			Ω(err).ShouldNot(HaveOccurred())
-
-			expectedResponses := make([]receptor.ActualLRPResponse, 0, 1)
-			for _, actualLRP := range actualLRPs {
-				expectedResponses = append(expectedResponses, serialization.ActualLRPToResponse(actualLRP)) // Fix to only include guids with index 0
-			}
-
-			Ω(actualLRPResponses).Should(ConsistOf(expectedResponses))
+			Ω(actualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(*actualLRP)))
 		})
 	})
 })

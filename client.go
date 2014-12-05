@@ -28,8 +28,8 @@ type Client interface {
 	ActualLRPs() ([]ActualLRPResponse, error)
 	ActualLRPsByDomain(domain string) ([]ActualLRPResponse, error)
 	ActualLRPsByProcessGuid(processGuid string) ([]ActualLRPResponse, error)
-	ActualLRPsByProcessGuidAndIndex(processGuid string, index int) ([]ActualLRPResponse, error)
-	KillActualLRPsByProcessGuidAndIndex(processGuid string, index int) error
+	ActualLRPByProcessGuidAndIndex(processGuid string, index int) (ActualLRPResponse, error)
+	KillActualLRPByProcessGuidAndIndex(processGuid string, index int) error
 
 	Cells() ([]CellResponse, error)
 
@@ -127,14 +127,14 @@ func (c *client) ActualLRPsByProcessGuid(processGuid string) ([]ActualLRPRespons
 	return actualLRPs, err
 }
 
-func (c *client) ActualLRPsByProcessGuidAndIndex(processGuid string, index int) ([]ActualLRPResponse, error) {
-	var actualLRPs []ActualLRPResponse
-	err := c.doRequest(ActualLRPsByProcessGuidRoute, rata.Params{"process_guid": processGuid}, url.Values{"index": []string{strconv.Itoa(index)}}, nil, &actualLRPs)
-	return actualLRPs, err
+func (c *client) ActualLRPByProcessGuidAndIndex(processGuid string, index int) (ActualLRPResponse, error) {
+	var actualLRP ActualLRPResponse
+	err := c.doRequest(ActualLRPByProcessGuidAndIndexRoute, rata.Params{"process_guid": processGuid, "index": strconv.Itoa(index)}, nil, nil, &actualLRP)
+	return actualLRP, err
 }
 
-func (c *client) KillActualLRPsByProcessGuidAndIndex(processGuid string, index int) error {
-	err := c.doRequest(KillActualLRPsByProcessGuidAndIndexRoute, rata.Params{"process_guid": processGuid}, url.Values{"index": []string{strconv.Itoa(index)}}, nil, nil)
+func (c *client) KillActualLRPByProcessGuidAndIndex(processGuid string, index int) error {
+	err := c.doRequest(KillActualLRPByProcessGuidAndIndexRoute, rata.Params{"process_guid": processGuid, "index": strconv.Itoa(index)}, nil, nil, nil)
 	return err
 }
 
@@ -172,6 +172,7 @@ func (c *client) doRequest(requestName string, params rata.Params, queryParams u
 	if err != nil {
 		return err
 	}
+	defer res.Body.Close()
 
 	if res.StatusCode > 299 {
 		errResponse := Error{}
@@ -180,7 +181,7 @@ func (c *client) doRequest(requestName string, params rata.Params, queryParams u
 	}
 
 	if response != nil {
-		return json.NewDecoder(res.Body).Decode(&response)
+		return json.NewDecoder(res.Body).Decode(response)
 	} else {
 		return nil
 	}

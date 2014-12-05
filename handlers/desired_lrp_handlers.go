@@ -22,12 +22,12 @@ type DesiredLRPHandler struct {
 func NewDesiredLRPHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) *DesiredLRPHandler {
 	return &DesiredLRPHandler{
 		bbs:    bbs,
-		logger: logger,
+		logger: logger.Session("desired-lrp-handler"),
 	}
 }
 
 func (h *DesiredLRPHandler) Create(w http.ResponseWriter, r *http.Request) {
-	log := h.logger.Session("create-desired-lrp-handler")
+	log := h.logger.Session("create")
 	desireLRPRequest := receptor.DesiredLRPCreateRequest{}
 
 	err := json.NewDecoder(r.Body).Decode(&desireLRPRequest)
@@ -57,7 +57,7 @@ func (h *DesiredLRPHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 func (h *DesiredLRPHandler) Get(w http.ResponseWriter, r *http.Request) {
 	processGuid := r.FormValue(":process_guid")
-	log := h.logger.Session("get-desired-lrp-by-process-guid-handler", lager.Data{
+	log := h.logger.Session("get", lager.Data{
 		"ProcessGuid": processGuid,
 	})
 
@@ -92,7 +92,7 @@ func (h *DesiredLRPHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
 	processGuid := r.FormValue(":process_guid")
-	log := h.logger.Session("update-desired-lrp-handler", lager.Data{
+	log := h.logger.Session("update", lager.Data{
 		"ProcessGuid": processGuid,
 	})
 
@@ -131,7 +131,7 @@ func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 func (h *DesiredLRPHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	processGuid := req.FormValue(":process_guid")
-	log := h.logger.Session("delete-desired-lrp-handler", lager.Data{
+	log := h.logger.Session("delete", lager.Data{
 		"ProcessGuid": processGuid,
 	})
 
@@ -159,13 +159,15 @@ func (h *DesiredLRPHandler) Delete(w http.ResponseWriter, req *http.Request) {
 
 func (h *DesiredLRPHandler) GetAll(w http.ResponseWriter, req *http.Request) {
 	desiredLRPs, err := h.bbs.DesiredLRPs()
-	writeDesiredLRPResponse(w, h.logger.Session("get-all-desired-lrps-handler"), desiredLRPs, err)
+	writeDesiredLRPResponse(w, h.logger.Session("get-all"), desiredLRPs, err)
 }
 
 func (h *DesiredLRPHandler) GetAllByDomain(w http.ResponseWriter, req *http.Request) {
-	log := h.logger.Session("get-all-desired-lrps-by-domain-handler")
-
 	lrpDomain := req.FormValue(":domain")
+	log := h.logger.Session("get-all-by-domain", lager.Data{
+		"Domain": lrpDomain,
+	})
+
 	if lrpDomain == "" {
 		err := errors.New("domain missing from request")
 		log.Error("missing-domain", err)

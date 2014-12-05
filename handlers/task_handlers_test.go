@@ -3,6 +3,7 @@ package handlers_test
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 
@@ -201,23 +202,40 @@ var _ = Describe("TaskHandler", func() {
 		})
 
 		Context("when reading tasks from BBS succeeds", func() {
+			var expectedTasks []receptor.TaskResponse
+
 			BeforeEach(func() {
-				fakeBBS.TasksReturns([]models.Task{
-					{
-						TaskGuid: "task-guid-1",
-						Domain:   "domain-1",
-						Action: &models.RunAction{
-							Path: "the-path",
-						},
+				task := models.Task{
+					TaskGuid: "task-guid-1",
+					Domain:   "domain-1",
+					Action: &models.RunAction{
+						Path: "the-path",
 					},
+					State: models.TaskStatePending,
+				}
+
+				fakeBBS.TasksReturns([]models.Task{
+					task,
 				}, nil)
+
+				expectedTasks = []receptor.TaskResponse{
+					{
+						TaskGuid: task.TaskGuid,
+						Domain:   task.Domain,
+						Action:   task.Action,
+						State:    receptor.TaskStatePending,
+					},
+				}
 			})
 
-			It("excludes internal fields", func() {
+			It("gets all tasks", func() {
+				var tasks []receptor.TaskResponse
+
 				handler.GetAll(responseRecorder, newTestRequest(""))
 				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
-				Ω(responseRecorder.Body.String()).Should(ContainSubstring("task-guid-1"))
-				Ω(responseRecorder.Body.String()).ShouldNot(ContainSubstring("internal stuff"))
+				err := json.Unmarshal(responseRecorder.Body.Bytes(), &tasks)
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(expectedTasks).Should(Equal(tasks))
 			})
 		})
 	})
@@ -241,16 +259,27 @@ var _ = Describe("TaskHandler", func() {
 		})
 
 		Context("when reading tasks from BBS succeeds", func() {
+			var expectedTasks []receptor.TaskResponse
+
 			BeforeEach(func() {
-				fakeBBS.TasksByDomainReturns([]models.Task{
-					{
-						TaskGuid: "task-guid-1",
-						Domain:   "domain-1",
-						Action: &models.RunAction{
-							Path: "the-path",
-						},
+				task := models.Task{
+					TaskGuid: "task-guid-1",
+					Domain:   "domain-1",
+					Action: &models.RunAction{
+						Path: "the-path",
 					},
-				}, nil)
+					State: models.TaskStateResolving,
+				}
+				fakeBBS.TasksByDomainReturns([]models.Task{task}, nil)
+
+				expectedTasks = []receptor.TaskResponse{
+					{
+						TaskGuid: task.TaskGuid,
+						Domain:   task.Domain,
+						Action:   task.Action,
+						State:    receptor.TaskStateResolving,
+					},
+				}
 			})
 
 			It("uses the given domain", func() {
@@ -258,20 +287,55 @@ var _ = Describe("TaskHandler", func() {
 				Ω(fakeBBS.TasksByDomainArgsForCall(0)).Should(Equal("a-domain"))
 			})
 
-			It("excludes internal fields", func() {
+			It("gets all tasks by domain", func() {
+				var tasks []receptor.TaskResponse
+
 				handler.GetAllByDomain(responseRecorder, request)
 				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
-				Ω(responseRecorder.Body.String()).Should(ContainSubstring("task-guid-1"))
-				Ω(responseRecorder.Body.String()).ShouldNot(ContainSubstring("internal stuff"))
+				err := json.Unmarshal(responseRecorder.Body.Bytes(), &tasks)
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(expectedTasks).Should(Equal(tasks))
 			})
 		})
 	})
 
 	Describe("GetByGuid", func() {
+		var taskGuid string
 		BeforeEach(func() {
+			taskGuid = "the-task-guid"
+		})
+
+		JustBeforeEach(func() {
 			var err error
-			request, err = http.NewRequest("", "http://example.com?:task_guid=the-task-guid", nil)
+			request, err = http.NewRequest("", fmt.Sprintf("http://example.com/?:task_guid=%s", taskGuid), nil)
 			Ω(err).ShouldNot(HaveOccurred())
+			handler.GetByGuid(responseRecorder, request)
+		})
+
+		Context("when the guid is not provided", func() {
+			BeforeEach(func() {
+				taskGuid = ""
+			})
+
+			It("does not call TaskByGuid", func() {
+				Ω(fakeBBS.TaskByGuidCallCount()).Should(Equal(0))
+			})
+
+			It("responds with a 400 Bad Request", func() {
+				handler.GetByGuid(responseRecorder, request)
+				Ω(responseRecorder.Code).Should(Equal(http.StatusBadRequest))
+			})
+
+			It("responds with a relevant error message", func() {
+				var taskError receptor.Error
+
+				err := json.Unmarshal(responseRecorder.Body.Bytes(), &taskError)
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(taskError).Should(Equal(receptor.Error{
+					Type:    receptor.InvalidRequest,
+					Message: "task_guid missing from request",
+				}))
+			})
 		})
 
 		Context("when the BBS reports the task not found", func() {
@@ -279,14 +343,11 @@ var _ = Describe("TaskHandler", func() {
 				fakeBBS.TaskByGuidReturns(nil, bbserrors.ErrStoreResourceNotFound)
 			})
 
-			It("responds with a 404 NOT FOUND", func() {
-				handler.GetByGuid(responseRecorder, request)
+			It("responds with a 404", func() {
 				Ω(responseRecorder.Code).Should(Equal(http.StatusNotFound))
 			})
 
 			It("responds with a TaskNotFound error in the body", func() {
-				handler.GetByGuid(responseRecorder, request)
-
 				var taskError receptor.Error
 				err := json.Unmarshal(responseRecorder.Body.Bytes(), &taskError)
 				Ω(err).ShouldNot(HaveOccurred())
@@ -304,13 +365,10 @@ var _ = Describe("TaskHandler", func() {
 			})
 
 			It("responds with a 404 NOT FOUND", func() {
-				handler.GetByGuid(responseRecorder, request)
 				Ω(responseRecorder.Code).Should(Equal(http.StatusNotFound))
 			})
 
 			It("responds with a TaskNotFound error in the body", func() {
-				handler.GetByGuid(responseRecorder, request)
-
 				var taskError receptor.Error
 				err := json.Unmarshal(responseRecorder.Body.Bytes(), &taskError)
 				Ω(err).ShouldNot(HaveOccurred())
@@ -328,32 +386,44 @@ var _ = Describe("TaskHandler", func() {
 			})
 
 			It("responds with an error", func() {
-				handler.GetByGuid(responseRecorder, request)
 				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
 			})
 		})
 
 		Context("when the task is successfully found in the BBS", func() {
+			var expectedTask receptor.TaskResponse
+
 			BeforeEach(func() {
-				fakeBBS.TaskByGuidReturns(&models.Task{
+				task := &models.Task{
 					TaskGuid: "task-guid-1",
 					Domain:   "domain-1",
 					Action: &models.RunAction{
 						Path: "the-path",
 					},
-				}, nil)
+					State: models.TaskStateClaimed,
+				}
+
+				fakeBBS.TaskByGuidReturns(task, nil)
+
+				expectedTask = receptor.TaskResponse{
+					TaskGuid: task.TaskGuid,
+					Domain:   task.Domain,
+					Action:   task.Action,
+					State:    receptor.TaskStateClaimed,
+				}
 			})
 
 			It("retrieves the task by the given guid", func() {
-				handler.GetByGuid(responseRecorder, request)
 				Ω(fakeBBS.TaskByGuidArgsForCall(0)).Should(Equal("the-task-guid"))
 			})
 
-			It("excludes internal fields", func() {
-				handler.GetByGuid(responseRecorder, request)
+			It("gets the task", func() {
 				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
-				Ω(responseRecorder.Body.String()).Should(ContainSubstring("task-guid-1"))
-				Ω(responseRecorder.Body.String()).ShouldNot(ContainSubstring("internal stuff"))
+
+				var actualTask receptor.TaskResponse
+				err := json.Unmarshal(responseRecorder.Body.Bytes(), &actualTask)
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(expectedTask).Should(Equal(actualTask))
 			})
 		})
 	})

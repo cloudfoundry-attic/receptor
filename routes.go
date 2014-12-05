@@ -20,10 +20,11 @@ const (
 	DesiredLRPsByDomainRoute = "DesiredLRPsByDomain"
 
 	// ActualLRPs
-	ActualLRPsRoute                          = "ActualLRPs"
-	ActualLRPsByDomainRoute                  = "ActualLRPsByDomain"
-	ActualLRPsByProcessGuidRoute             = "ActualLRPsByProcessGuid"
-	KillActualLRPsByProcessGuidAndIndexRoute = "KillActualLRPsByProcessGuidAndIndex"
+	ActualLRPsRoute                         = "ActualLRPs"
+	ActualLRPsByDomainRoute                 = "ActualLRPsByDomain"
+	ActualLRPsByProcessGuidRoute            = "ActualLRPsByProcessGuid"
+	ActualLRPByProcessGuidAndIndexRoute     = "ActualLRPByProcessGuidAndIndex"
+	KillActualLRPByProcessGuidAndIndexRoute = "KillActualLRPByProcessGuidAndIndex"
 
 	// Cells
 	CellsRoute = "Cells"
@@ -53,8 +54,9 @@ var Routes = rata.Routes{
 	// ActualLRPs
 	{Path: "/v1/actual_lrps", Method: "GET", Name: ActualLRPsRoute},
 	{Path: "/v1/domains/:domain/actual_lrps", Method: "GET", Name: ActualLRPsByDomainRoute},
-	{Path: "/v1/desired_lrps/:process_guid/actual_lrps", Method: "GET", Name: ActualLRPsByProcessGuidRoute},
-	{Path: "/v1/desired_lrps/:process_guid/actual_lrps", Method: "DELETE", Name: KillActualLRPsByProcessGuidAndIndexRoute},
+	{Path: "/v1/actual_lrps/:process_guid", Method: "GET", Name: ActualLRPsByProcessGuidRoute},
+	{Path: "/v1/actual_lrps/:process_guid/index/:index", Method: "GET", Name: ActualLRPByProcessGuidAndIndexRoute},
+	{Path: "/v1/actual_lrps/:process_guid/index/:index", Method: "DELETE", Name: KillActualLRPByProcessGuidAndIndexRoute},
 
 	// Cells
 	{Path: "/v1/cells", Method: "GET", Name: CellsRoute},

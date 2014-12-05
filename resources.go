@@ -382,22 +382,25 @@ func (response *DesiredLRPResponse) UnmarshalJSON(payload []byte) error {
 	return nil
 }
 
+type ActualLRPState string
+
 const (
-	ActualLRPStateInvalid  = "INVALID"
-	ActualLRPStateStarting = "STARTING"
-	ActualLRPStateRunning  = "RUNNING"
+	ActualLRPStateInvalid   ActualLRPState = "INVALID"
+	ActualLRPStateUnclaimed ActualLRPState = "UNCLAIMED"
+	ActualLRPStateClaimed   ActualLRPState = "CLAIMED"
+	ActualLRPStateRunning   ActualLRPState = "RUNNING"
 )
 
 type ActualLRPResponse struct {
-	ProcessGuid  string        `json:"process_guid"`
-	InstanceGuid string        `json:"instance_guid"`
-	CellID       string        `json:"cell_id"`
-	Domain       string        `json:"domain"`
-	Index        int           `json:"index"`
-	Host         string        `json:"host"`
-	Ports        []PortMapping `json:"ports"`
-	State        string        `json:"state"`
-	Since        int64         `json:"since"`
+	ProcessGuid  string         `json:"process_guid"`
+	InstanceGuid string         `json:"instance_guid"`
+	CellID       string         `json:"cell_id"`
+	Domain       string         `json:"domain"`
+	Index        int            `json:"index"`
+	Host         string         `json:"host"`
+	Ports        []PortMapping  `json:"ports"`
+	State        ActualLRPState `json:"state"`
+	Since        int64          `json:"since"`
 }
 
 type CellResponse struct {

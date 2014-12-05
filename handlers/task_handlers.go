@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -21,12 +22,12 @@ type TaskHandler struct {
 func NewTaskHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) *TaskHandler {
 	return &TaskHandler{
 		bbs:    bbs,
-		logger: logger,
+		logger: logger.Session("task-handler"),
 	}
 }
 
 func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
-	log := h.logger.Session("create-task-handler")
+	log := h.logger.Session("create")
 	taskRequest := receptor.TaskCreateRequest{}
 
 	err := json.NewDecoder(r.Body).Decode(&taskRequest)
@@ -78,19 +79,40 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 func (h *TaskHandler) GetAll(w http.ResponseWriter, req *http.Request) {
 	tasks, err := h.bbs.Tasks()
-	writeTaskResponse(w, h.logger.Session("get-all-tasks-handler"), tasks, err)
+	writeTaskResponse(w, h.logger.Session("get-all"), tasks, err)
 }
 
 func (h *TaskHandler) GetAllByDomain(w http.ResponseWriter, req *http.Request) {
-	tasks, err := h.bbs.TasksByDomain(req.FormValue(":domain"))
-	writeTaskResponse(w, h.logger.Session("get-tasks-by-domain-handler"), tasks, err)
+	domain := req.FormValue(":domain")
+	logger := h.logger.Session("get-all-by-domain", lager.Data{
+		"Domain": domain,
+	})
+
+	if domain == "" {
+		err := errors.New("domain missing from request")
+		logger.Error("missing-domain", err)
+		writeBadRequestResponse(w, receptor.InvalidRequest, err)
+		return
+	}
+
+	tasks, err := h.bbs.TasksByDomain(domain)
+	writeTaskResponse(w, logger, tasks, err)
 }
 
 func (h *TaskHandler) GetByGuid(w http.ResponseWriter, req *http.Request) {
 	guid := req.FormValue(":task_guid")
+	logger := h.logger.Session("get-by-guid", lager.Data{
+		"TaskGuid": guid,
+	})
+
+	if guid == "" {
+		err := errors.New("task_guid missing from request")
+		logger.Error("missing-task-guid", err)
+		writeBadRequestResponse(w, receptor.InvalidRequest, err)
+		return
+	}
 
 	task, err := h.bbs.TaskByGuid(guid)
-
 	if err == bbserrors.ErrStoreResourceNotFound {
 		h.logger.Error("failed-to-fetch-task", err)
 		writeTaskNotFoundResponse(w, guid)

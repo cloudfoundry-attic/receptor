@@ -19,14 +19,16 @@ func ActualLRPToResponse(actualLRP models.ActualLRP) receptor.ActualLRPResponse 
 	}
 }
 
-func actualLRPStateToResponseState(state models.ActualLRPState) string {
+func actualLRPStateToResponseState(state models.ActualLRPState) receptor.ActualLRPState {
 	switch state {
-	case models.ActualLRPStateInvalid:
-		return receptor.ActualLRPStateInvalid
-	case models.ActualLRPStateStarting:
-		return receptor.ActualLRPStateStarting
+	case models.ActualLRPStateUnclaimed:
+		return receptor.ActualLRPStateUnclaimed
+	case models.ActualLRPStateClaimed:
+		return receptor.ActualLRPStateClaimed
 	case models.ActualLRPStateRunning:
 		return receptor.ActualLRPStateRunning
+	default:
+		return receptor.ActualLRPStateInvalid
 	}
 
 	return ""

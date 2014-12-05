@@ -17,12 +17,12 @@ type CellHandler struct {
 func NewCellHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) *CellHandler {
 	return &CellHandler{
 		bbs:    bbs,
-		logger: logger,
+		logger: logger.Session("cell-handler"),
 	}
 }
 
 func (h *CellHandler) GetAll(w http.ResponseWriter, req *http.Request) {
-	logger := h.logger.Session("get-all-cells-handler")
+	logger := h.logger.Session("get-all")
 
 	cellPresences, err := h.bbs.Cells()
 	if err != nil {

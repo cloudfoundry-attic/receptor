@@ -21,12 +21,12 @@ type ActualLRPHandler struct {
 func NewActualLRPHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) *ActualLRPHandler {
 	return &ActualLRPHandler{
 		bbs:    bbs,
-		logger: logger,
+		logger: logger.Session("actual-lrp-handler"),
 	}
 }
 
 func (h *ActualLRPHandler) GetAll(w http.ResponseWriter, req *http.Request) {
-	logger := h.logger.Session("get-all-actual-lrps-handler")
+	logger := h.logger.Session("get-all")
 
 	actualLRPs, err := h.bbs.ActualLRPs()
 	if err != nil {
@@ -45,7 +45,7 @@ func (h *ActualLRPHandler) GetAll(w http.ResponseWriter, req *http.Request) {
 
 func (h *ActualLRPHandler) GetAllByDomain(w http.ResponseWriter, req *http.Request) {
 	domain := req.FormValue(":domain")
-	logger := h.logger.Session("get-all-by-domain-actual-lrps-handler", lager.Data{
+	logger := h.logger.Session("get-all-by-domain", lager.Data{
 		"Domain": domain,
 	})
 
@@ -73,7 +73,7 @@ func (h *ActualLRPHandler) GetAllByDomain(w http.ResponseWriter, req *http.Reque
 
 func (h *ActualLRPHandler) GetAllByProcessGuid(w http.ResponseWriter, req *http.Request) {
 	processGuid := req.FormValue(":process_guid")
-	logger := h.logger.Session("get-all-by-process-guid-actual-lrps-handler", lager.Data{
+	logger := h.logger.Session("get-all-by-process-guid", lager.Data{
 		"ProcessGuid": processGuid,
 	})
 
@@ -84,29 +84,10 @@ func (h *ActualLRPHandler) GetAllByProcessGuid(w http.ResponseWriter, req *http.
 		return
 	}
 
-	indexString := req.FormValue("index")
-
 	var actualLRPs []models.ActualLRP
 	var err error
 
-	if indexString == "" {
-		actualLRPs, err = h.bbs.ActualLRPsByProcessGuid(processGuid)
-	} else {
-		logger = logger.Session("and-index", lager.Data{
-			"Index": indexString,
-		})
-
-		index, indexErr := strconv.Atoi(indexString)
-		if indexErr != nil {
-			err = errors.New("index not a number")
-			logger.Error("invalid-index", err)
-			writeBadRequestResponse(w, receptor.InvalidRequest, err)
-			return
-		}
-
-		actualLRPs, err = h.bbs.ActualLRPsByProcessGuidAndIndex(processGuid, index)
-	}
-
+	actualLRPs, err = h.bbs.ActualLRPsByProcessGuid(processGuid)
 	if err != nil {
 		logger.Error("failed-to-fetch-actual-lrps-by-process-guid", err)
 		writeUnknownErrorResponse(w, err)
@@ -121,10 +102,58 @@ func (h *ActualLRPHandler) GetAllByProcessGuid(w http.ResponseWriter, req *http.
 	writeJSONResponse(w, http.StatusOK, responses)
 }
 
+func (h *ActualLRPHandler) GetByProcessGuidAndIndex(w http.ResponseWriter, req *http.Request) {
+	processGuid := req.FormValue(":process_guid")
+	indexString := req.FormValue(":index")
+
+	logger := h.logger.Session("get-by-process-guid-and-index", lager.Data{
+		"ProcessGuid": processGuid,
+		"Index":       indexString,
+	})
+
+	if processGuid == "" {
+		err := errors.New("process_guid missing from request")
+		logger.Error("missing-process-guid", err)
+		writeBadRequestResponse(w, receptor.InvalidRequest, err)
+		return
+	}
+
+	if indexString == "" {
+		err := errors.New("index missing from request")
+		logger.Error("missing-index", err)
+		writeBadRequestResponse(w, receptor.InvalidRequest, err)
+		return
+	}
+
+	var err error
+
+	index, indexErr := strconv.Atoi(indexString)
+	if indexErr != nil {
+		err = errors.New("index not a number")
+		logger.Error("invalid-index", err)
+		writeBadRequestResponse(w, receptor.InvalidRequest, err)
+		return
+	}
+
+	actualLRP, err := h.bbs.ActualLRPByProcessGuidAndIndex(processGuid, index)
+	if err != nil {
+		logger.Error("failed-to-fetch-actual-lrps-by-process-guid", err)
+		writeUnknownErrorResponse(w, err)
+		return
+	}
+
+	if actualLRP == nil {
+		writeJSONResponse(w, http.StatusNotFound, nil)
+		return
+	}
+
+	writeJSONResponse(w, http.StatusOK, serialization.ActualLRPToResponse(*actualLRP))
+}
+
 func (h *ActualLRPHandler) KillByProcessGuidAndIndex(w http.ResponseWriter, req *http.Request) {
 	processGuid := req.FormValue(":process_guid")
-	indexString := req.FormValue("index")
-	logger := h.logger.Session("kill-by-process-guid-and-index-actual-lrps-handler", lager.Data{
+	indexString := req.FormValue(":index")
+	logger := h.logger.Session("kill-by-process-guid-and-index", lager.Data{
 		"ProcessGuid": processGuid,
 		"Index":       indexString,
 	})
@@ -151,26 +180,26 @@ func (h *ActualLRPHandler) KillByProcessGuidAndIndex(w http.ResponseWriter, req 
 		return
 	}
 
-	actualLRPs, err := h.bbs.ActualLRPsByProcessGuidAndIndex(processGuid, index)
+	actualLRP, err := h.bbs.ActualLRPByProcessGuidAndIndex(processGuid, index)
 	if err != nil {
-		logger.Error("failed-to-fetch-actual-lrps-by-process-guid-and-index", err)
+		logger.Error("failed-to-fetch-actual-lrp-by-process-guid-and-index", err)
 		writeUnknownErrorResponse(w, err)
 		return
 	}
 
-	if len(actualLRPs) == 0 {
-		errorMessage := fmt.Sprintf("process-guid '%s' does not exist or has no instances at index %d", processGuid, index)
-		logger.Error("no-instances-to-delete", errors.New(errorMessage))
+	if actualLRP == nil {
+		err := fmt.Errorf("process-guid '%s' does not exist or has no instance at index %d", processGuid, index)
+		logger.Error("no-instances-to-delete", err)
 		writeJSONResponse(w, http.StatusNotFound, receptor.Error{
 			Type:    receptor.ActualLRPIndexNotFound,
-			Message: errorMessage,
+			Message: err.Error(),
 		})
 		return
 	}
 
-	err = h.bbs.RequestStopLRPInstances(actualLRPs)
+	err = h.bbs.RequestStopLRPInstance(*actualLRP)
 	if err != nil {
-		logger.Error("failed-to-request-stop-lrp-instances", err)
+		logger.Error("failed-to-request-stop-lrp-instance", err)
 		writeUnknownErrorResponse(w, err)
 		return
 	}

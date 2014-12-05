@@ -19,12 +19,12 @@ type FreshDomainHandler struct {
 func NewFreshDomainHandler(bbs Bbs.ReceptorBBS, logger lager.Logger) *FreshDomainHandler {
 	return &FreshDomainHandler{
 		bbs:    bbs,
-		logger: logger,
+		logger: logger.Session("fresh-domain-handler"),
 	}
 }
 
 func (h *FreshDomainHandler) Bump(w http.ResponseWriter, req *http.Request) {
-	logger := h.logger.Session("bump-fresh-domain-handler")
+	logger := h.logger.Session("bump")
 	freshDomainRequest := receptor.FreshDomainBumpRequest{}
 
 	err := json.NewDecoder(req.Body).Decode(&freshDomainRequest)
@@ -53,7 +53,7 @@ func (h *FreshDomainHandler) Bump(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h *FreshDomainHandler) GetAll(w http.ResponseWriter, req *http.Request) {
-	logger := h.logger.Session("get-all-fresh-domains-handler")
+	logger := h.logger.Session("get-all")
 
 	freshnesses, err := h.bbs.Freshnesses()
 	if err != nil {

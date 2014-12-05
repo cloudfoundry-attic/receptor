@@ -45,7 +45,7 @@ var _ = Describe("ActualLRP Serialization", func() {
 						HostPort:      9876,
 					},
 				},
-				State: "RUNNING",
+				State: receptor.ActualLRPStateRunning,
 				Since: 99999999999,
 			}
 
@@ -54,10 +54,11 @@ var _ = Describe("ActualLRP Serialization", func() {
 		})
 
 		It("maps model states to receptor states", func() {
-			expectedStateMap := map[models.ActualLRPState]string{
-				models.ActualLRPStateInvalid:  "INVALID",
-				models.ActualLRPStateStarting: "STARTING",
-				models.ActualLRPStateRunning:  "RUNNING",
+			expectedStateMap := map[models.ActualLRPState]receptor.ActualLRPState{
+				models.ActualLRPStateInvalid:   receptor.ActualLRPStateInvalid,
+				models.ActualLRPStateUnclaimed: receptor.ActualLRPStateUnclaimed,
+				models.ActualLRPStateClaimed:   receptor.ActualLRPStateClaimed,
+				models.ActualLRPStateRunning:   receptor.ActualLRPStateRunning,
 			}
 
 			for modelState, jsonState := range expectedStateMap {
