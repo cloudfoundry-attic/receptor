@@ -168,17 +168,7 @@ func (h *ActualLRPHandler) KillByProcessGuidAndIndex(w http.ResponseWriter, req 
 		return
 	}
 
-	stopInstances := make([]models.StopLRPInstance, 0, len(actualLRPs))
-
-	for _, actualLRP := range actualLRPs {
-		stopInstances = append(stopInstances, models.StopLRPInstance{
-			ProcessGuid:  actualLRP.ProcessGuid,
-			Index:        actualLRP.Index,
-			InstanceGuid: actualLRP.InstanceGuid,
-		})
-	}
-
-	err = h.bbs.RequestStopLRPInstances(stopInstances)
+	err = h.bbs.RequestStopLRPInstances(actualLRPs)
 	if err != nil {
 		logger.Error("failed-to-request-stop-lrp-instances", err)
 		writeUnknownErrorResponse(w, err)
