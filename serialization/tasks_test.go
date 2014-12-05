@@ -49,7 +49,6 @@ var _ = Describe("Task Serialization", func() {
 			EXPECTED_STATE_MAP := map[models.TaskState]string{
 				models.TaskStateInvalid:   "INVALID",
 				models.TaskStatePending:   "PENDING",
-				models.TaskStateClaimed:   "CLAIMED",
 				models.TaskStateRunning:   "RUNNING",
 				models.TaskStateCompleted: "COMPLETED",
 				models.TaskStateResolving: "RESOLVING",

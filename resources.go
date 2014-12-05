@@ -19,7 +19,6 @@ type PortMapping struct {
 const (
 	TaskStateInvalid   = "INVALID"
 	TaskStatePending   = "PENDING"
-	TaskStateClaimed   = "CLAIMED"
 	TaskStateRunning   = "RUNNING"
 	TaskStateCompleted = "COMPLETED"
 	TaskStateResolving = "RESOLVING"

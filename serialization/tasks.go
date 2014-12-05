@@ -73,8 +73,6 @@ func taskStateToResponseState(state models.TaskState) string {
 		return receptor.TaskStateInvalid
 	case models.TaskStatePending:
 		return receptor.TaskStatePending
-	case models.TaskStateClaimed:
-		return receptor.TaskStateClaimed
 	case models.TaskStateRunning:
 		return receptor.TaskStateRunning
 	case models.TaskStateCompleted:

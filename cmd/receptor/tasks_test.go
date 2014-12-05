@@ -75,9 +75,6 @@ var _ = Describe("Task API", func() {
 
 		Describe("when the task completes", func() {
 			BeforeEach(func() {
-				err := bbs.ClaimTask("task-guid-1", "the-cell-id")
-				Ω(err).ShouldNot(HaveOccurred())
-
 				err = bbs.StartTask("task-guid-1", "the-cell-id")
 				Ω(err).ShouldNot(HaveOccurred())
 			})
@@ -212,9 +209,7 @@ var _ = Describe("Task API", func() {
 		})
 
 		It("includes all of the task's publicly-visible fields", func() {
-			err := bbs.ClaimTask("task-guid-1", "the-cell-id")
-			Ω(err).ShouldNot(HaveOccurred())
-			err = bbs.StartTask("task-guid-1", "the-cell-id")
+			err := bbs.StartTask("task-guid-1", "the-cell-id")
 			Ω(err).ShouldNot(HaveOccurred())
 			err = bbs.CompleteTask("task-guid-1", true, "the-failure-reason", "the-task-result")
 			Ω(err).ShouldNot(HaveOccurred())
@@ -246,9 +241,6 @@ var _ = Describe("Task API", func() {
 			}
 
 			err := bbs.DesireTask(task)
-			Ω(err).ShouldNot(HaveOccurred())
-
-			err = bbs.ClaimTask("task-guid-1", "the-cell-id")
 			Ω(err).ShouldNot(HaveOccurred())
 
 			err = bbs.StartTask("task-guid-1", "the-cell-id")
@@ -303,9 +295,6 @@ var _ = Describe("Task API", func() {
 			}
 
 			err := bbs.DesireTask(task)
-			Ω(err).ShouldNot(HaveOccurred())
-
-			err = bbs.ClaimTask("task-guid-1", "the-cell-id")
 			Ω(err).ShouldNot(HaveOccurred())
 
 			err = bbs.StartTask("task-guid-1", "the-cell-id")
