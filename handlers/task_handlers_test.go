@@ -400,7 +400,7 @@ var _ = Describe("TaskHandler", func() {
 					Action: &models.RunAction{
 						Path: "the-path",
 					},
-					State: models.TaskStateClaimed,
+					State: models.TaskStateRunning,
 				}
 
 				fakeBBS.TaskByGuidReturns(task, nil)
@@ -409,7 +409,7 @@ var _ = Describe("TaskHandler", func() {
 					TaskGuid: task.TaskGuid,
 					Domain:   task.Domain,
 					Action:   task.Action,
-					State:    receptor.TaskStateClaimed,
+					State:    receptor.TaskStateRunning,
 				}
 			})
 
