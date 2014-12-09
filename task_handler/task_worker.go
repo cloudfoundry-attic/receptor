@@ -1,4 +1,4 @@
-package task_watcher
+package task_handler
 
 import (
 	"bytes"
@@ -15,14 +15,22 @@ import (
 	"github.com/tedsuo/ifrit/grouper"
 )
 
-func newTaskWorkerPool(poolSize int, taskQueue <-chan models.Task, bbs Bbs.ReceptorBBS, logger lager.Logger) ifrit.Runner {
-	members := make(grouper.Members, poolSize)
-	for i := 0; i < poolSize; i++ {
+const MAX_RETRIES = 3
+
+const POOL_SIZE = 20
+
+func NewTaskWorkerPool(bbs Bbs.ReceptorBBS, logger lager.Logger) (ifrit.Runner, chan<- models.Task) {
+	taskQueue := make(chan models.Task, POOL_SIZE)
+
+	members := make(grouper.Members, POOL_SIZE)
+
+	for i := 0; i < POOL_SIZE; i++ {
 		name := fmt.Sprintf("task-worker-%d", i)
 		members[i].Name = name
 		members[i].Runner = newTaskWorker(taskQueue, bbs, logger.Session(name))
 	}
-	return grouper.NewParallel(os.Interrupt, members)
+
+	return grouper.NewParallel(os.Interrupt, members), taskQueue
 }
 
 func newTaskWorker(taskQueue <-chan models.Task, bbs Bbs.ReceptorBBS, logger lager.Logger) *taskWorker {

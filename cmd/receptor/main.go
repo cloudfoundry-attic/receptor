@@ -13,12 +13,14 @@ import (
 	cf_lager "github.com/cloudfoundry-incubator/cf-lager"
 	"github.com/cloudfoundry-incubator/natbeat"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
-	"github.com/cloudfoundry-incubator/receptor/task_watcher"
+	"github.com/cloudfoundry-incubator/receptor/task_handler"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
+	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/cloudfoundry/dropsonde"
 	"github.com/cloudfoundry/gunk/timeprovider"
 	"github.com/cloudfoundry/gunk/workpool"
 	"github.com/cloudfoundry/storeadapter/etcdstoreadapter"
+	"github.com/nu7hatch/gouuid"
 	"github.com/pivotal-golang/lager"
 	"github.com/pivotal-golang/localip"
 	"github.com/tedsuo/ifrit"
@@ -43,6 +45,18 @@ var serverAddress = flag.String(
 	"address",
 	"",
 	"The host:port that the server is bound to.",
+)
+
+var taskHandlerAddress = flag.String(
+	"taskHandlerAddress",
+	"127.0.0.1:1169", // "taskhandler".each_char.collect(&:ord).inject(:+)
+	"The host:port for the internal task completion callback",
+)
+
+var heartbeatInterval = flag.Duration(
+	"heartbeatInterval",
+	60*time.Second,
+	"the interval between heartbeats for maintaining presence",
 )
 
 var etcdCluster = flag.String(
@@ -124,9 +138,14 @@ func main() {
 
 	handler := handlers.New(bbs, logger, *username, *password, *corsEnabled)
 
+	worker, enqueue := task_handler.NewTaskWorkerPool(bbs, logger)
+	taskHandler := task_handler.NewHandler(enqueue, logger)
+
 	members := grouper.Members{
 		{"server", http_server.New(*serverAddress, handler)},
-		{"watcher", task_watcher.New(bbs, logger)},
+		{"worker", worker},
+		{"task_complete_handler", http_server.New(*taskHandlerAddress, taskHandler)},
+		{"heartbeater", initializeReceptorHeartbeat(*taskHandlerAddress, *heartbeatInterval, bbs, logger)},
 	}
 
 	if *registerWithRouter {
@@ -210,4 +229,17 @@ func initializeServerRegistration(logger lager.Logger) (registration natbeat.Reg
 		Host: host,
 		Port: port,
 	}
+}
+
+func initializeReceptorHeartbeat(taskHandlerAddress string, interval time.Duration, bbs Bbs.ReceptorBBS, logger lager.Logger) ifrit.Runner {
+	guid, err := uuid.NewV4()
+	if err != nil {
+		logger.Error("failed-to-generate-guid", err)
+		os.Exit(1)
+	}
+
+	return bbs.NewReceptorHeartbeat(models.ReceptorPresence{
+		ReceptorID:  guid.String(),
+		ReceptorURL: "http://" + taskHandlerAddress,
+	}, interval)
 }

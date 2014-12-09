@@ -46,6 +46,7 @@ var logger lager.Logger
 var client receptor.Client
 var receptorBinPath string
 var receptorAddress string
+var receptorTaskHandlerAddress string
 var receptorArgs testrunner.Args
 var receptorRunner *ginkgomon.Runner
 var receptorProcess ifrit.Process
@@ -89,6 +90,7 @@ var _ = BeforeEach(func() {
 	bbs = Bbs.NewBBS(etcdRunner.Adapter(), timeprovider.NewTimeProvider(), logger)
 
 	receptorAddress = fmt.Sprintf("127.0.0.1:%d", 6700+GinkgoParallelNode())
+	receptorTaskHandlerAddress = fmt.Sprintf("127.0.0.1:%d", 1169+GinkgoParallelNode())
 
 	receptorURL := &url.URL{
 		Scheme: "http",
@@ -102,6 +104,7 @@ var _ = BeforeEach(func() {
 		RegisterWithRouter: true,
 		DomainNames:        "example.com",
 		Address:            receptorAddress,
+		TaskHandlerAddress: receptorTaskHandlerAddress,
 		EtcdCluster:        etcdUrl,
 		Username:           username,
 		Password:           password,

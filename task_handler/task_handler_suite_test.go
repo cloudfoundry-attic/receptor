@@ -1,4 +1,4 @@
-package task_watcher_test
+package task_handler_test
 
 import (
 	. "github.com/onsi/ginkgo"
@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestTaskWatcher(t *testing.T) {
+func TestTaskHandler(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "TaskWatcher Suite")
+	RunSpecs(t, "TaskHandler Suite")
 }

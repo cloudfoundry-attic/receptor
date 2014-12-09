@@ -12,6 +12,7 @@ type Args struct {
 	RegisterWithRouter       bool
 	DomainNames              string
 	Address                  string
+	TaskHandlerAddress       string
 	EtcdCluster              string
 	Username                 string
 	Password                 string
@@ -27,6 +28,7 @@ func (args Args) ArgSlice() []string {
 		"-registerWithRouter=" + strconv.FormatBool(args.RegisterWithRouter),
 		"-domainNames", args.DomainNames,
 		"-address", args.Address,
+		"-taskHandlerAddress", args.TaskHandlerAddress,
 		"-etcdCluster", args.EtcdCluster,
 		"-username", args.Username,
 		"-password", args.Password,
