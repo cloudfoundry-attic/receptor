@@ -17,6 +17,7 @@ import (
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/cloudfoundry/dropsonde"
+	"github.com/cloudfoundry/gunk/diegonats"
 	"github.com/cloudfoundry/gunk/timeprovider"
 	"github.com/cloudfoundry/gunk/workpool"
 	"github.com/cloudfoundry/storeadapter/etcdstoreadapter"
@@ -150,10 +151,10 @@ func main() {
 
 	if *registerWithRouter {
 		registration := initializeServerRegistration(logger)
-
+		natsClient := diegonats.NewClient()
 		members = append(members, grouper.Member{
 			Name:   "background_heartbeat",
-			Runner: natbeat.NewBackgroundHeartbeat(*natsAddresses, *natsUsername, *natsPassword, logger, registration),
+			Runner: natbeat.NewBackgroundHeartbeat(natsClient, *natsAddresses, *natsUsername, *natsPassword, logger, registration),
 		})
 	}
 
