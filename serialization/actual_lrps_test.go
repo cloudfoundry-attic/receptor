@@ -55,7 +55,6 @@ var _ = Describe("ActualLRP Serialization", func() {
 
 		It("maps model states to receptor states", func() {
 			expectedStateMap := map[models.ActualLRPState]receptor.ActualLRPState{
-				models.ActualLRPStateInvalid:   receptor.ActualLRPStateInvalid,
 				models.ActualLRPStateUnclaimed: receptor.ActualLRPStateUnclaimed,
 				models.ActualLRPStateClaimed:   receptor.ActualLRPStateClaimed,
 				models.ActualLRPStateRunning:   receptor.ActualLRPStateRunning,
@@ -65,6 +64,9 @@ var _ = Describe("ActualLRP Serialization", func() {
 				actualLRP.State = modelState
 				Ω(serialization.ActualLRPToResponse(actualLRP).State).Should(Equal(jsonState))
 			}
+
+			actualLRP.State = ""
+			Ω(serialization.ActualLRPToResponse(actualLRP).State).Should(Equal(receptor.ActualLRPStateInvalid))
 		})
 	})
 })
