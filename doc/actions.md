@@ -22,6 +22,7 @@ The run action runs a process in the container:
     "run": {
         "path": "/path/to/executable",
         "args": ["some", "args to", "pass in"],
+        "dir": "/path/to/working/directory",
         "env": [
             {"name": "ENVNAME", "value": "ENVVALUE"},
         ],
@@ -36,7 +37,11 @@ The run action runs a process in the container:
 
 #### `path` [required]
 
-The path to the executable
+The path to the executable.
+
+#### `dir` [optional]
+
+The working directory in which to execute the process.
 
 #### `args` [optional]
 
