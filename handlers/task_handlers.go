@@ -140,20 +140,23 @@ func (h *TaskHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	err := h.bbs.ResolvingTask(guid)
 	if err != nil {
 		switch err.(type) {
-		case bbserrors.TaskNotFoundError:
-			h.logger.Error("task-not-found", err)
-			writeTaskNotFoundResponse(w, guid)
 		case bbserrors.TaskStateTransitionError:
 			h.logger.Error("invalid-task-state-transition", err)
 			writeJSONResponse(w, http.StatusConflict, receptor.Error{
 				Type:    receptor.TaskNotDeletable,
 				Message: "This task has not been completed. Please retry when it is completed.",
 			})
+			return
 		default:
+			if err == bbserrors.ErrStoreResourceNotFound {
+				h.logger.Error("task-not-found", err)
+				writeTaskNotFoundResponse(w, guid)
+				return
+			}
 			h.logger.Error("failed-to-mark-task-resolving", err)
 			writeUnknownErrorResponse(w, err)
+			return
 		}
-		return
 	}
 
 	err = h.bbs.ResolveTask(guid)
@@ -168,15 +171,14 @@ func (h *TaskHandler) Cancel(w http.ResponseWriter, req *http.Request) {
 
 	err := h.bbs.CancelTask(guid)
 
-	if err != nil {
-		switch err.(type) {
-		case bbserrors.TaskNotFoundError:
-			h.logger.Error("failed-to-cancel-task", err)
-			writeTaskNotFoundResponse(w, guid)
-		default:
-			h.logger.Error("failed-to-fetch-task", err)
-			writeUnknownErrorResponse(w, err)
-		}
+	switch err {
+	case nil:
+	case bbserrors.ErrStoreResourceNotFound:
+		h.logger.Error("failed-to-cancel-task", err)
+		writeTaskNotFoundResponse(w, guid)
+	default:
+		h.logger.Error("failed-to-fetch-task", err)
+		writeUnknownErrorResponse(w, err)
 	}
 }
 

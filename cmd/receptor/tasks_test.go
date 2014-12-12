@@ -278,6 +278,7 @@ var _ = Describe("Task API", func() {
 		Context("when the task does not exist", func() {
 			It("returns a TaskNotFound error", func() {
 				err := client.DeleteTask("some-other-task-guid")
+				Ω(err).Should(HaveOccurred())
 				Ω(err.(receptor.Error).Type).Should(Equal(receptor.TaskNotFound))
 			})
 		})

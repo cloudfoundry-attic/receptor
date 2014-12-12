@@ -476,7 +476,7 @@ var _ = Describe("TaskHandler", func() {
 
 		Context("when the task cannot be found in the BBS", func() {
 			BeforeEach(func() {
-				fakeBBS.CancelTaskReturns(bbserrors.TaskNotFoundError{})
+				fakeBBS.CancelTaskReturns(bbserrors.ErrStoreResourceNotFound)
 			})
 
 			It("responds with a 404 NOT FOUND", func() {
