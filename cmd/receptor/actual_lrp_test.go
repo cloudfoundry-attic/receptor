@@ -21,16 +21,17 @@ var _ = Describe("Actual LRP API", func() {
 
 		for i := 0; i < lrpCount; i++ {
 			index := strconv.Itoa(i)
-			lrp := models.NewActualLRP(
+			lrpKey := models.NewActualLRPKey(
 				"process-guid-"+index,
+				i,
+				fmt.Sprintf("domain-%d", i/2),
+			)
+			containerKey := models.NewActualLRPContainerKey(
 				"instance-guid-"+index,
 				"cell-id",
-				fmt.Sprintf("domain-%d", i/2),
-				i,
-				models.ActualLRPStateRunning,
 			)
-
-			_, err := bbs.StartActualLRP(lrp)
+			netInfo := models.NewActualLRPNetInfo("the-host", []models.PortMapping{{ContainerPort: 80, HostPort: uint32(1000 + i)}})
+			_, err := bbs.StartActualLRP(lrpKey, containerKey, netInfo)
 			Ω(err).ShouldNot(HaveOccurred())
 		}
 	})
@@ -136,17 +137,19 @@ var _ = Describe("Actual LRP API", func() {
 			processGuid = "process-guid-0"
 			index = 1
 
-			lrp := models.NewActualLRP(
+			lrpKey := models.NewActualLRPKey(
 				processGuid,
+				index,
+				"domain-0",
+			)
+			containerKey := models.NewActualLRPContainerKey(
 				"instance-guid-0",
 				"cell-id",
-				"domain-0",
-				index,
-				models.ActualLRPStateRunning,
 			)
-
-			_, err := bbs.StartActualLRP(lrp)
+			netInfo := models.NewActualLRPNetInfo("the-host", []models.PortMapping{{ContainerPort: 80, HostPort: 2345}})
+			_, err := bbs.StartActualLRP(lrpKey, containerKey, netInfo)
 			Ω(err).ShouldNot(HaveOccurred())
+
 			actualLRPResponse, getErr = client.ActualLRPByProcessGuidAndIndex(processGuid, index)
 			Ω(getErr).ShouldNot(HaveOccurred())
 		})

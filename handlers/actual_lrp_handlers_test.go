@@ -26,30 +26,39 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		actualLRPs = []models.ActualLRP{
 			{
-				ProcessGuid:  "process-guid-0",
-				Index:        1,
-				InstanceGuid: "instance-guid-0",
-				CellID:       "cell-id-0",
-				Domain:       "domain-0",
-				Ports: []models.PortMapping{
-					{
-						ContainerPort: 999,
-						HostPort:      888,
+				ActualLRPKey: models.NewActualLRPKey(
+					"process-guid-0",
+					1,
+					"domain-0",
+				),
+				ActualLRPContainerKey: models.NewActualLRPContainerKey(
+					"instance-guid-0",
+					"cell-id-0",
+				),
+				ActualLRPNetInfo: models.NewActualLRPNetInfo(
+					"the-host",
+					[]models.PortMapping{
+						{
+							ContainerPort: 999,
+							HostPort:      888,
+						},
 					},
-				},
+				),
+				State: models.ActualLRPStateRunning,
+				Since: 1138,
 			},
 			{
-				ProcessGuid:  "process-guid-1",
-				Index:        2,
-				InstanceGuid: "instance-guid-1",
-				CellID:       "cell-id-1",
-				Domain:       "domain-1",
-				Ports: []models.PortMapping{
-					{
-						ContainerPort: 777,
-						HostPort:      666,
-					},
-				},
+				ActualLRPKey: models.NewActualLRPKey(
+					"process-guid-1",
+					2,
+					"domain-1",
+				),
+				ActualLRPContainerKey: models.NewActualLRPContainerKey(
+					"instance-guid-1",
+					"cell-id-1",
+				),
+				State: models.ActualLRPStateClaimed,
+				Since: 3147,
 			},
 		}
 	)
