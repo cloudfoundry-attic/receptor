@@ -167,6 +167,7 @@ func (c *client) doRequest(requestName string, params rata.Params, queryParams u
 
 	req.URL.RawQuery = queryParams.Encode()
 	req.ContentLength = int64(len(requestJson))
+	req.Header.Set("Content-Type", "application/json")
 
 	res, err := c.httpClient.Do(req)
 	if err != nil {
