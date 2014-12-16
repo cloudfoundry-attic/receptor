@@ -10,6 +10,7 @@ import (
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
+	"github.com/cloudfoundry-incubator/runtime-schema/bbs/bbserrors"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	. "github.com/onsi/ginkgo"
@@ -328,7 +329,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 	})
 
-	Describe("GetAllByProcessGuidAndIndex", func() {
+	Describe("GetByProcessGuidAndIndex", func() {
 		var req *http.Request
 
 		BeforeEach(func() {
@@ -388,7 +389,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		Context("when the BBS does not return any actual LRP", func() {
 			BeforeEach(func() {
-				fakeBBS.ActualLRPByProcessGuidAndIndexReturns(nil, nil)
+				fakeBBS.ActualLRPByProcessGuidAndIndexReturns(nil, bbserrors.ErrStoreResourceNotFound)
 			})
 
 			It("responds with 404 Not Found", func() {

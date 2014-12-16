@@ -9,6 +9,7 @@ import (
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
+	"github.com/cloudfoundry-incubator/runtime-schema/bbs/bbserrors"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/pivotal-golang/lager"
 )
@@ -136,14 +137,14 @@ func (h *ActualLRPHandler) GetByProcessGuidAndIndex(w http.ResponseWriter, req *
 	}
 
 	actualLRP, err := h.bbs.ActualLRPByProcessGuidAndIndex(processGuid, index)
-	if err != nil {
-		logger.Error("failed-to-fetch-actual-lrps-by-process-guid", err)
-		writeUnknownErrorResponse(w, err)
+	if err == bbserrors.ErrStoreResourceNotFound {
+		writeJSONResponse(w, http.StatusNotFound, nil)
 		return
 	}
 
-	if actualLRP == nil {
-		writeJSONResponse(w, http.StatusNotFound, nil)
+	if err != nil {
+		logger.Error("failed-to-fetch-actual-lrps-by-process-guid", err)
+		writeUnknownErrorResponse(w, err)
 		return
 	}
 
