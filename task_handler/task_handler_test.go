@@ -49,6 +49,9 @@ var _ = Describe("TaskWatcher", func() {
 			Failed:        true,
 			FailureReason: "'cause",
 			Result:        "some result",
+			Stack:         "java",
+			Domain:        "some-domain",
+			Action:        &models.RunAction{Path: "true"},
 		}
 
 		BeforeEach(func() {
