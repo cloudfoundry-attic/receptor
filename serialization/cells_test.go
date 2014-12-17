@@ -14,10 +14,7 @@ var _ = Describe("CellPresence Serialization", func() {
 		var cellPresence models.CellPresence
 
 		BeforeEach(func() {
-			cellPresence = models.CellPresence{
-				CellID: "cell-id-0",
-				Stack:  "stack-0",
-			}
+			cellPresence = models.NewCellPresence("cell-id-0", "stack-0", "1.2.3.4")
 		})
 
 		It("serializes all the fields", func() {

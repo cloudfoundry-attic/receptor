@@ -239,8 +239,6 @@ func initializeReceptorHeartbeat(taskHandlerAddress string, interval time.Durati
 		os.Exit(1)
 	}
 
-	return bbs.NewReceptorHeartbeat(models.ReceptorPresence{
-		ReceptorID:  guid.String(),
-		ReceptorURL: "http://" + taskHandlerAddress,
-	}, interval)
+	presence := models.NewReceptorPresence(guid.String(), "http://"+taskHandlerAddress)
+	return bbs.NewReceptorHeartbeat(presence, interval)
 }

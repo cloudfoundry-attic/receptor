@@ -37,14 +37,8 @@ var _ = Describe("Cell Handlers", func() {
 
 		BeforeEach(func() {
 			cellPresences = []models.CellPresence{
-				{
-					CellID: "cell-id-0",
-					Stack:  "stack-0",
-				},
-				{
-					CellID: "cell-id-1",
-					Stack:  "stack-1",
-				},
+				models.NewCellPresence("cell-id-0", "stack-0", "1.2.3.4"),
+				models.NewCellPresence("cell-id-1", "stack-1", "4.5.6.7"),
 			}
 		})
 
