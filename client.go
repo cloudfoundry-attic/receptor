@@ -105,7 +105,7 @@ func (c *client) DesiredLRPs() ([]DesiredLRPResponse, error) {
 
 func (c *client) DesiredLRPsByDomain(domain string) ([]DesiredLRPResponse, error) {
 	var desiredLRPs []DesiredLRPResponse
-	err := c.doRequest(DesiredLRPsByDomainRoute, rata.Params{"domain": domain}, nil, nil, &desiredLRPs)
+	err := c.doRequest(DesiredLRPsRoute, nil, url.Values{"domain": []string{domain}}, nil, &desiredLRPs)
 	return desiredLRPs, err
 }
 

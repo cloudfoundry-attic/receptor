@@ -30,7 +30,6 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string, co
 		receptor.UpdateDesiredLRPRoute:    route(desiredLRPHandler.Update),
 		receptor.DeleteDesiredLRPRoute:    route(desiredLRPHandler.Delete),
 		receptor.DesiredLRPsRoute:         route(desiredLRPHandler.GetAll),
-		receptor.DesiredLRPsByDomainRoute: route(desiredLRPHandler.GetAllByDomain),
 
 		// ActualLRPs
 		receptor.ActualLRPsRoute:                         route(actualLRPHandler.GetAll),

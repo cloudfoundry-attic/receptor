@@ -16,7 +16,6 @@ const (
 	UpdateDesiredLRPRoute    = "UpdateDesiredLRP"
 	DeleteDesiredLRPRoute    = "DeleteDesiredLRP"
 	DesiredLRPsRoute         = "DesiredLRPs"
-	DesiredLRPsByDomainRoute = "DesiredLRPsByDomain"
 
 	// ActualLRPs
 	ActualLRPsRoute                         = "ActualLRPs"
@@ -42,12 +41,11 @@ var Routes = rata.Routes{
 	{Path: "/v1/tasks/:task_guid/cancel", Method: "POST", Name: CancelTaskRoute},
 
 	// DesiredLRPs
+	{Path: "/v1/desired_lrps", Method: "GET", Name: DesiredLRPsRoute},
 	{Path: "/v1/desired_lrps", Method: "POST", Name: CreateDesiredLRPRoute},
 	{Path: "/v1/desired_lrps/:process_guid", Method: "GET", Name: GetDesiredLRPRoute},
 	{Path: "/v1/desired_lrps/:process_guid", Method: "PUT", Name: UpdateDesiredLRPRoute},
 	{Path: "/v1/desired_lrps/:process_guid", Method: "DELETE", Name: DeleteDesiredLRPRoute},
-	{Path: "/v1/desired_lrps", Method: "GET", Name: DesiredLRPsRoute},
-	{Path: "/v1/domains/:domain/desired_lrps", Method: "GET", Name: DesiredLRPsByDomainRoute},
 
 	// ActualLRPs
 	{Path: "/v1/actual_lrps", Method: "GET", Name: ActualLRPsRoute},

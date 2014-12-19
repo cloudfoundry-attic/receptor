@@ -158,25 +158,21 @@ func (h *DesiredLRPHandler) Delete(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h *DesiredLRPHandler) GetAll(w http.ResponseWriter, req *http.Request) {
-	desiredLRPs, err := h.bbs.DesiredLRPs()
-	writeDesiredLRPResponse(w, h.logger.Session("get-all"), desiredLRPs, err)
-}
-
-func (h *DesiredLRPHandler) GetAllByDomain(w http.ResponseWriter, req *http.Request) {
-	lrpDomain := req.FormValue(":domain")
-	log := h.logger.Session("get-all-by-domain", lager.Data{
-		"Domain": lrpDomain,
+	domain := req.FormValue("domain")
+	logger := h.logger.Session("get-all", lager.Data{
+		"domain": domain,
 	})
 
-	if lrpDomain == "" {
-		err := errors.New("domain missing from request")
-		log.Error("missing-domain", err)
-		writeBadRequestResponse(w, receptor.InvalidRequest, err)
-		return
+	var desiredLRPs []models.DesiredLRP
+	var err error
+
+	if domain == "" {
+		desiredLRPs, err = h.bbs.DesiredLRPs()
+	} else {
+		desiredLRPs, err = h.bbs.DesiredLRPsByDomain(domain)
 	}
 
-	desiredLRPs, err := h.bbs.DesiredLRPsByDomain(lrpDomain)
-	writeDesiredLRPResponse(w, log, desiredLRPs, err)
+	writeDesiredLRPResponse(w, logger, desiredLRPs, err)
 }
 
 func writeDesiredLRPResponse(w http.ResponseWriter, logger lager.Logger, desiredLRPs []models.DesiredLRP, err error) {

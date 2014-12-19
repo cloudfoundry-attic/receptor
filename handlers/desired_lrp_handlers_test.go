@@ -528,23 +528,29 @@ var _ = Describe("Desired LRP Handlers", func() {
 	})
 
 	Describe("GetAll", func() {
-		JustBeforeEach(func() {
-			handler.GetAll(responseRecorder, newTestRequest(""))
-		})
-
 		Context("when reading LRPs from BBS succeeds", func() {
 			BeforeEach(func() {
 				fakeBBS.DesiredLRPsReturns([]models.DesiredLRP{
 					{
-						ProcessGuid: "process-guid-0",
+						ProcessGuid: "process-guid-1",
 						Domain:      "domain-1",
 						Action: &models.RunAction{
 							Path: "the-path",
 						},
 					},
 					{
-						ProcessGuid: "process-guid-1",
-						Domain:      "domain-1",
+						ProcessGuid: "process-guid-2",
+						Domain:      "domain-2",
+						Action: &models.RunAction{
+							Path: "the-path",
+						},
+					},
+				}, nil)
+
+				fakeBBS.DesiredLRPsByDomainReturns([]models.DesiredLRP{
+					{
+						ProcessGuid: "process-guid-2",
+						Domain:      "domain-2",
 						Action: &models.RunAction{
 							Path: "the-path",
 						},
@@ -553,20 +559,40 @@ var _ = Describe("Desired LRP Handlers", func() {
 			})
 
 			It("call the BBS to retrieve the desired LRP", func() {
+				handler.GetAll(responseRecorder, newTestRequest(""))
 				Ω(fakeBBS.DesiredLRPsCallCount()).Should(Equal(1))
 			})
 
 			It("responds with 200 Status OK", func() {
+				handler.GetAll(responseRecorder, newTestRequest(""))
 				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
 			})
 
-			It("returns a list of desired lrp responses", func() {
-				response := []receptor.DesiredLRPResponse{}
-				err := json.Unmarshal(responseRecorder.Body.Bytes(), &response)
-				Ω(err).ShouldNot(HaveOccurred())
-				Ω(response).Should(HaveLen(2))
-				Ω(response[0].ProcessGuid).Should(Equal("process-guid-0"))
-				Ω(response[1].ProcessGuid).Should(Equal("process-guid-1"))
+			Context("when a domain query param is provided", func() {
+				It("returns all desired lrp responses for the domain", func() {
+					request, err := http.NewRequest("", "http://example.com?domain=domain-2", nil)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					handler.GetAll(responseRecorder, request)
+
+					response := []receptor.DesiredLRPResponse{}
+					err = json.Unmarshal(responseRecorder.Body.Bytes(), &response)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(response).Should(HaveLen(1))
+					Ω(response[0].ProcessGuid).Should(Equal("process-guid-2"))
+				})
+			})
+
+			Context("when a domain query param is not provided", func() {
+				It("returns all desired lrp responses", func() {
+					handler.GetAll(responseRecorder, newTestRequest(""))
+					response := []receptor.DesiredLRPResponse{}
+					err := json.Unmarshal(responseRecorder.Body.Bytes(), &response)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(response).Should(HaveLen(2))
+					Ω(response[0].ProcessGuid).Should(Equal("process-guid-1"))
+					Ω(response[1].ProcessGuid).Should(Equal("process-guid-2"))
+				})
 			})
 		})
 
@@ -576,14 +602,17 @@ var _ = Describe("Desired LRP Handlers", func() {
 			})
 
 			It("call the BBS to retrieve the desired LRP", func() {
+				handler.GetAll(responseRecorder, newTestRequest(""))
 				Ω(fakeBBS.DesiredLRPsCallCount()).Should(Equal(1))
 			})
 
 			It("responds with 200 Status OK", func() {
+				handler.GetAll(responseRecorder, newTestRequest(""))
 				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
 			})
 
 			It("returns an empty list", func() {
+				handler.GetAll(responseRecorder, newTestRequest(""))
 				Ω(responseRecorder.Body.String()).Should(Equal("[]"))
 			})
 		})
@@ -594,10 +623,13 @@ var _ = Describe("Desired LRP Handlers", func() {
 			})
 
 			It("responds with an error", func() {
+				handler.GetAll(responseRecorder, newTestRequest(""))
 				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
 			})
 
 			It("provides relevant error information", func() {
+				handler.GetAll(responseRecorder, newTestRequest(""))
+
 				var receptorError receptor.Error
 				err := json.Unmarshal(responseRecorder.Body.Bytes(), &receptorError)
 				Ω(err).ShouldNot(HaveOccurred())
@@ -606,119 +638,6 @@ var _ = Describe("Desired LRP Handlers", func() {
 					Type:    receptor.UnknownError,
 					Message: "Something went wrong",
 				}))
-			})
-		})
-	})
-
-	Describe("GetAllByDomain", func() {
-		var req *http.Request
-
-		BeforeEach(func() {
-			req = newTestRequest("")
-			req.Form = url.Values{":domain": []string{"domain-1"}}
-		})
-
-		JustBeforeEach(func() {
-			handler.GetAllByDomain(responseRecorder, req)
-		})
-
-		Context("when reading LRPs by domain from BBS succeeds", func() {
-			BeforeEach(func() {
-				fakeBBS.DesiredLRPsByDomainReturns([]models.DesiredLRP{
-					{
-						ProcessGuid: "process-guid-0",
-						Domain:      "domain-1",
-						Action: &models.RunAction{
-							Path: "the-path",
-						},
-					},
-					{
-						ProcessGuid: "process-guid-1",
-						Domain:      "domain-1",
-						Action: &models.RunAction{
-							Path: "the-path",
-						},
-					},
-				}, nil)
-			})
-
-			It("call the BBS to retrieve the desired LRP", func() {
-				Ω(fakeBBS.DesiredLRPsByDomainCallCount()).Should(Equal(1))
-				Ω(fakeBBS.DesiredLRPsByDomainArgsForCall(0)).Should(Equal("domain-1"))
-			})
-
-			It("responds with 200 Status OK", func() {
-				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
-			})
-
-			It("returns a list of desired lrp responses", func() {
-				response := []receptor.DesiredLRPResponse{}
-				err := json.Unmarshal(responseRecorder.Body.Bytes(), &response)
-				Ω(err).ShouldNot(HaveOccurred())
-				Ω(response).Should(HaveLen(2))
-				Ω(response[0].ProcessGuid).Should(Equal("process-guid-0"))
-				Ω(response[1].ProcessGuid).Should(Equal("process-guid-1"))
-			})
-		})
-
-		Context("when the BBS returns no lrps", func() {
-			BeforeEach(func() {
-				fakeBBS.DesiredLRPsByDomainReturns([]models.DesiredLRP{}, nil)
-			})
-
-			It("call the BBS to retrieve the desired LRP", func() {
-				Ω(fakeBBS.DesiredLRPsByDomainCallCount()).Should(Equal(1))
-				Ω(fakeBBS.DesiredLRPsByDomainArgsForCall(0)).Should(Equal("domain-1"))
-			})
-
-			It("responds with 200 Status OK", func() {
-				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
-			})
-
-			It("returns an empty list", func() {
-				Ω(responseRecorder.Body.String()).Should(Equal("[]"))
-			})
-		})
-
-		Context("when the :domain is blank", func() {
-			BeforeEach(func() {
-				req.Form = url.Values{}
-			})
-
-			It("should not call the BBS to retrieve the desired LRP", func() {
-				Ω(fakeBBS.DesiredLRPsByDomainCallCount()).Should(Equal(0))
-			})
-
-			It("responds with 400 BAD REQUEST", func() {
-				Ω(responseRecorder.Code).Should(Equal(http.StatusBadRequest))
-			})
-
-			It("responds with a relevant error message", func() {
-				expectedBody, _ := json.Marshal(receptor.Error{
-					Type:    receptor.InvalidRequest,
-					Message: "domain missing from request",
-				})
-
-				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
-			})
-		})
-
-		Context("when reading from the BBS fails", func() {
-			BeforeEach(func() {
-				fakeBBS.DesiredLRPsByDomainReturns([]models.DesiredLRP{}, errors.New("Something went wrong"))
-			})
-
-			It("responds with an error", func() {
-				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
-			})
-
-			It("responds with a relevant error message", func() {
-				expectedBody, _ := json.Marshal(receptor.Error{
-					Type:    receptor.UnknownError,
-					Message: "Something went wrong",
-				})
-
-				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
 			})
 		})
 	})
