@@ -117,7 +117,7 @@ func (c *client) ActualLRPs() ([]ActualLRPResponse, error) {
 
 func (c *client) ActualLRPsByDomain(domain string) ([]ActualLRPResponse, error) {
 	var actualLRPs []ActualLRPResponse
-	err := c.doRequest(ActualLRPsByDomainRoute, rata.Params{"domain": domain}, nil, nil, &actualLRPs)
+	err := c.doRequest(ActualLRPsRoute, nil, url.Values{"domain": []string{domain}}, nil, &actualLRPs)
 	return actualLRPs, err
 }
 

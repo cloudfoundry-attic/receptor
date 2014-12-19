@@ -33,7 +33,6 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string, co
 
 		// ActualLRPs
 		receptor.ActualLRPsRoute:                         route(actualLRPHandler.GetAll),
-		receptor.ActualLRPsByDomainRoute:                 route(actualLRPHandler.GetAllByDomain),
 		receptor.ActualLRPsByProcessGuidRoute:            route(actualLRPHandler.GetAllByProcessGuid),
 		receptor.ActualLRPByProcessGuidAndIndexRoute:     route(actualLRPHandler.GetByProcessGuidAndIndex),
 		receptor.KillActualLRPByProcessGuidAndIndexRoute: route(actualLRPHandler.KillByProcessGuidAndIndex),
