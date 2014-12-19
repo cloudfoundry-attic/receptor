@@ -4,12 +4,11 @@ import "github.com/tedsuo/rata"
 
 const (
 	// Tasks
-	CreateTaskRoute    = "CreateTask"
-	TasksRoute         = "Tasks"
-	TasksByDomainRoute = "TasksByDomain"
-	GetTaskRoute       = "GetTask"
-	DeleteTaskRoute    = "DeleteTask"
-	CancelTaskRoute    = "CancelTask"
+	CreateTaskRoute = "CreateTask"
+	TasksRoute      = "Tasks"
+	GetTaskRoute    = "GetTask"
+	DeleteTaskRoute = "DeleteTask"
+	CancelTaskRoute = "CancelTask"
 
 	// DesiredLRPs
 	CreateDesiredLRPRoute    = "CreateDesiredLRP"
@@ -38,7 +37,6 @@ var Routes = rata.Routes{
 	// Tasks
 	{Path: "/v1/tasks", Method: "POST", Name: CreateTaskRoute},
 	{Path: "/v1/tasks", Method: "GET", Name: TasksRoute},
-	{Path: "/v1/domains/:domain/tasks", Method: "GET", Name: TasksByDomainRoute},
 	{Path: "/v1/tasks/:task_guid", Method: "GET", Name: GetTaskRoute},
 	{Path: "/v1/tasks/:task_guid", Method: "DELETE", Name: DeleteTaskRoute},
 	{Path: "/v1/tasks/:task_guid/cancel", Method: "POST", Name: CancelTaskRoute},

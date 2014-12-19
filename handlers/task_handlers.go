@@ -78,24 +78,20 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *TaskHandler) GetAll(w http.ResponseWriter, req *http.Request) {
-	tasks, err := h.bbs.Tasks()
-	writeTaskResponse(w, h.logger.Session("get-all"), tasks, err)
-}
-
-func (h *TaskHandler) GetAllByDomain(w http.ResponseWriter, req *http.Request) {
-	domain := req.FormValue(":domain")
-	logger := h.logger.Session("get-all-by-domain", lager.Data{
-		"Domain": domain,
+	domain := req.FormValue("domain")
+	logger := h.logger.Session("get-all", lager.Data{
+		"domain": domain,
 	})
 
+	var tasks []models.Task
+	var err error
+
 	if domain == "" {
-		err := errors.New("domain missing from request")
-		logger.Error("missing-domain", err)
-		writeBadRequestResponse(w, receptor.InvalidRequest, err)
-		return
+		tasks, err = h.bbs.Tasks()
+	} else {
+		tasks, err = h.bbs.TasksByDomain(domain)
 	}
 
-	tasks, err := h.bbs.TasksByDomain(domain)
 	writeTaskResponse(w, logger, tasks, err)
 }
 

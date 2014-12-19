@@ -61,7 +61,7 @@ func (c *client) Tasks() ([]TaskResponse, error) {
 
 func (c *client) TasksByDomain(domain string) ([]TaskResponse, error) {
 	tasks := []TaskResponse{}
-	err := c.doRequest(TasksByDomainRoute, rata.Params{"domain": domain}, nil, nil, &tasks)
+	err := c.doRequest(TasksRoute, nil, url.Values{"domain": []string{domain}}, nil, &tasks)
 	return tasks, err
 }
 

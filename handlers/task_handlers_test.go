@@ -202,10 +202,10 @@ var _ = Describe("TaskHandler", func() {
 		})
 
 		Context("when reading tasks from BBS succeeds", func() {
-			var expectedTasks []receptor.TaskResponse
+			var domain1Task, domain2Task models.Task
 
 			BeforeEach(func() {
-				task := models.Task{
+				domain1Task = models.Task{
 					TaskGuid: "task-guid-1",
 					Domain:   "domain-1",
 					Action: &models.RunAction{
@@ -214,88 +214,76 @@ var _ = Describe("TaskHandler", func() {
 					State: models.TaskStatePending,
 				}
 
-				fakeBBS.TasksReturns([]models.Task{
-					task,
-				}, nil)
-
-				expectedTasks = []receptor.TaskResponse{
-					{
-						TaskGuid: task.TaskGuid,
-						Domain:   task.Domain,
-						Action:   task.Action,
-						State:    receptor.TaskStatePending,
-					},
-				}
-			})
-
-			It("gets all tasks", func() {
-				var tasks []receptor.TaskResponse
-
-				handler.GetAll(responseRecorder, newTestRequest(""))
-				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
-				err := json.Unmarshal(responseRecorder.Body.Bytes(), &tasks)
-				Ω(err).ShouldNot(HaveOccurred())
-				Ω(expectedTasks).Should(Equal(tasks))
-			})
-		})
-	})
-
-	Describe("GetAllByDomain", func() {
-		BeforeEach(func() {
-			var err error
-			request, err = http.NewRequest("", "http://example.com?:domain=a-domain", nil)
-			Ω(err).ShouldNot(HaveOccurred())
-		})
-
-		Context("when reading tasks from the BBS fails", func() {
-			BeforeEach(func() {
-				fakeBBS.TasksByDomainReturns([]models.Task{}, errors.New("Something went wrong"))
-			})
-
-			It("responds with an error", func() {
-				handler.GetAllByDomain(responseRecorder, request)
-				Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
-			})
-		})
-
-		Context("when reading tasks from BBS succeeds", func() {
-			var expectedTasks []receptor.TaskResponse
-
-			BeforeEach(func() {
-				task := models.Task{
-					TaskGuid: "task-guid-1",
-					Domain:   "domain-1",
+				domain2Task = models.Task{
+					TaskGuid: "task-guid-2",
+					Domain:   "domain-2",
 					Action: &models.RunAction{
 						Path: "the-path",
 					},
-					State: models.TaskStateResolving,
+					State: models.TaskStatePending,
 				}
-				fakeBBS.TasksByDomainReturns([]models.Task{task}, nil)
 
-				expectedTasks = []receptor.TaskResponse{
-					{
-						TaskGuid: task.TaskGuid,
-						Domain:   task.Domain,
-						Action:   task.Action,
-						State:    receptor.TaskStateResolving,
-					},
-				}
+				fakeBBS.TasksReturns([]models.Task{
+					domain1Task,
+					domain2Task,
+				}, nil)
+
+				fakeBBS.TasksByDomainReturns([]models.Task{
+					domain1Task,
+				}, nil)
 			})
 
-			It("uses the given domain", func() {
-				handler.GetAllByDomain(responseRecorder, request)
-				Ω(fakeBBS.TasksByDomainArgsForCall(0)).Should(Equal("a-domain"))
+			Context("when a domain query param is provided", func() {
+				It("gets all tasks", func() {
+					var tasks []receptor.TaskResponse
+
+					request, err := http.NewRequest("", "http://example.com?domain=domain-1", nil)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					handler.GetAll(responseRecorder, request)
+					Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
+					err = json.Unmarshal(responseRecorder.Body.Bytes(), &tasks)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					Ω(fakeBBS.TasksByDomainArgsForCall(0)).Should(Equal("domain-1"))
+					expectedTasks := []receptor.TaskResponse{
+						{
+							TaskGuid: domain1Task.TaskGuid,
+							Domain:   domain1Task.Domain,
+							Action:   domain1Task.Action,
+							State:    receptor.TaskStatePending,
+						},
+					}
+					Ω(tasks).Should(Equal(expectedTasks))
+				})
 			})
 
-			It("gets all tasks by domain", func() {
-				var tasks []receptor.TaskResponse
+			Context("when a domain query param is not provided", func() {
+				It("gets all tasks", func() {
+					var tasks []receptor.TaskResponse
 
-				handler.GetAllByDomain(responseRecorder, request)
-				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
-				err := json.Unmarshal(responseRecorder.Body.Bytes(), &tasks)
-				Ω(err).ShouldNot(HaveOccurred())
-				Ω(expectedTasks).Should(Equal(tasks))
+					handler.GetAll(responseRecorder, newTestRequest(""))
+					Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
+					err := json.Unmarshal(responseRecorder.Body.Bytes(), &tasks)
+					Ω(err).ShouldNot(HaveOccurred())
+					expectedTasks := []receptor.TaskResponse{
+						{
+							TaskGuid: domain1Task.TaskGuid,
+							Domain:   domain1Task.Domain,
+							Action:   domain1Task.Action,
+							State:    receptor.TaskStatePending,
+						},
+						{
+							TaskGuid: domain2Task.TaskGuid,
+							Domain:   domain2Task.Domain,
+							Action:   domain2Task.Action,
+							State:    receptor.TaskStatePending,
+						},
+					}
+					Ω(tasks).Should(ConsistOf(expectedTasks))
+				})
 			})
+
 		})
 	})
 
