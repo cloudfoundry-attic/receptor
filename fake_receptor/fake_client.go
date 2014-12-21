@@ -3,6 +3,7 @@ package fake_receptor
 
 import (
 	"sync"
+	"time"
 
 	"github.com/cloudfoundry-incubator/receptor"
 )
@@ -158,19 +159,20 @@ type FakeClient struct {
 		result1 []receptor.CellResponse
 		result2 error
 	}
-	BumpFreshDomainStub        func(receptor.FreshDomainBumpRequest) error
-	bumpFreshDomainMutex       sync.RWMutex
-	bumpFreshDomainArgsForCall []struct {
-		arg1 receptor.FreshDomainBumpRequest
+	UpsertDomainStub        func(domain string, ttl time.Duration) error
+	upsertDomainMutex       sync.RWMutex
+	upsertDomainArgsForCall []struct {
+		domain string
+		ttl    time.Duration
 	}
-	bumpFreshDomainReturns struct {
+	upsertDomainReturns struct {
 		result1 error
 	}
-	FreshDomainsStub        func() ([]receptor.FreshDomainResponse, error)
-	freshDomainsMutex       sync.RWMutex
-	freshDomainsArgsForCall []struct{}
-	freshDomainsReturns struct {
-		result1 []receptor.FreshDomainResponse
+	DomainsStub        func() ([]string, error)
+	domainsMutex       sync.RWMutex
+	domainsArgsForCall []struct{}
+	domainsReturns struct {
+		result1 []string
 		result2 error
 	}
 }
@@ -733,59 +735,60 @@ func (fake *FakeClient) CellsReturns(result1 []receptor.CellResponse, result2 er
 	}{result1, result2}
 }
 
-func (fake *FakeClient) BumpFreshDomain(arg1 receptor.FreshDomainBumpRequest) error {
-	fake.bumpFreshDomainMutex.Lock()
-	fake.bumpFreshDomainArgsForCall = append(fake.bumpFreshDomainArgsForCall, struct {
-		arg1 receptor.FreshDomainBumpRequest
-	}{arg1})
-	fake.bumpFreshDomainMutex.Unlock()
-	if fake.BumpFreshDomainStub != nil {
-		return fake.BumpFreshDomainStub(arg1)
+func (fake *FakeClient) UpsertDomain(domain string, ttl time.Duration) error {
+	fake.upsertDomainMutex.Lock()
+	fake.upsertDomainArgsForCall = append(fake.upsertDomainArgsForCall, struct {
+		domain string
+		ttl    time.Duration
+	}{domain, ttl})
+	fake.upsertDomainMutex.Unlock()
+	if fake.UpsertDomainStub != nil {
+		return fake.UpsertDomainStub(domain, ttl)
 	} else {
-		return fake.bumpFreshDomainReturns.result1
+		return fake.upsertDomainReturns.result1
 	}
 }
 
-func (fake *FakeClient) BumpFreshDomainCallCount() int {
-	fake.bumpFreshDomainMutex.RLock()
-	defer fake.bumpFreshDomainMutex.RUnlock()
-	return len(fake.bumpFreshDomainArgsForCall)
+func (fake *FakeClient) UpsertDomainCallCount() int {
+	fake.upsertDomainMutex.RLock()
+	defer fake.upsertDomainMutex.RUnlock()
+	return len(fake.upsertDomainArgsForCall)
 }
 
-func (fake *FakeClient) BumpFreshDomainArgsForCall(i int) receptor.FreshDomainBumpRequest {
-	fake.bumpFreshDomainMutex.RLock()
-	defer fake.bumpFreshDomainMutex.RUnlock()
-	return fake.bumpFreshDomainArgsForCall[i].arg1
+func (fake *FakeClient) UpsertDomainArgsForCall(i int) (string, time.Duration) {
+	fake.upsertDomainMutex.RLock()
+	defer fake.upsertDomainMutex.RUnlock()
+	return fake.upsertDomainArgsForCall[i].domain, fake.upsertDomainArgsForCall[i].ttl
 }
 
-func (fake *FakeClient) BumpFreshDomainReturns(result1 error) {
-	fake.BumpFreshDomainStub = nil
-	fake.bumpFreshDomainReturns = struct {
+func (fake *FakeClient) UpsertDomainReturns(result1 error) {
+	fake.UpsertDomainStub = nil
+	fake.upsertDomainReturns = struct {
 		result1 error
 	}{result1}
 }
 
-func (fake *FakeClient) FreshDomains() ([]receptor.FreshDomainResponse, error) {
-	fake.freshDomainsMutex.Lock()
-	fake.freshDomainsArgsForCall = append(fake.freshDomainsArgsForCall, struct{}{})
-	fake.freshDomainsMutex.Unlock()
-	if fake.FreshDomainsStub != nil {
-		return fake.FreshDomainsStub()
+func (fake *FakeClient) Domains() ([]string, error) {
+	fake.domainsMutex.Lock()
+	fake.domainsArgsForCall = append(fake.domainsArgsForCall, struct{}{})
+	fake.domainsMutex.Unlock()
+	if fake.DomainsStub != nil {
+		return fake.DomainsStub()
 	} else {
-		return fake.freshDomainsReturns.result1, fake.freshDomainsReturns.result2
+		return fake.domainsReturns.result1, fake.domainsReturns.result2
 	}
 }
 
-func (fake *FakeClient) FreshDomainsCallCount() int {
-	fake.freshDomainsMutex.RLock()
-	defer fake.freshDomainsMutex.RUnlock()
-	return len(fake.freshDomainsArgsForCall)
+func (fake *FakeClient) DomainsCallCount() int {
+	fake.domainsMutex.RLock()
+	defer fake.domainsMutex.RUnlock()
+	return len(fake.domainsArgsForCall)
 }
 
-func (fake *FakeClient) FreshDomainsReturns(result1 []receptor.FreshDomainResponse, result2 error) {
-	fake.FreshDomainsStub = nil
-	fake.freshDomainsReturns = struct {
-		result1 []receptor.FreshDomainResponse
+func (fake *FakeClient) DomainsReturns(result1 []string, result2 error) {
+	fake.DomainsStub = nil
+	fake.domainsReturns = struct {
+		result1 []string
 		result2 error
 	}{result1, result2}
 }

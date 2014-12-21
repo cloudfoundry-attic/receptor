@@ -52,7 +52,7 @@ This returns an array of [`DesiredLRPResponse`](lrps.md#fetching-desiredlrps) ob
 To fetch all DesiredLRPs in a given [`domain`](lrps.md#domain):
 
 ```
-GET /v1/domain/:domain/desired_lrps
+GET /v1/desired_lrps?domain=domain-name
 ```
 
 This returns an array of [`DesiredLRPResponse`](lrps.md#fetching-desiredlrps) objects
@@ -84,7 +84,7 @@ This returns an array of [`ActualLRPResponse`](lrps.md#fetching-actuallrps) resp
 To fetch all ActualLRPs in a given domain:
 
 ```
-GET /v1/domains/:domain/actual_lrps
+GET /v1/actual_lrps?domain=domain-name
 ```
 This returns an array of [`ActualLRPResponse`](lrps.md#fetching-actuallrps) response objects.
 
@@ -113,40 +113,5 @@ Diego supports killing the ActualLRPs for a given `process_guid` at a given `ind
 ```
 DELETE /v1/actual_lrps/:process_guid/index/:index
 ```
-
-## Freshness
-
-As described [here](lrps.md#freshness) Diego must be told when desired state is up to date before it wil take potentially destructive actions.
-
-### Bumping Freshness
-
-To mark a domain as fresh:
-
-Post a `FreshDomainBumpRequest` of the form:
-
-```
-{
-    "domain": "the-domain-to-bump",
-    "ttl_in_seconds": N
-}
-```
-
-to:
-
-```
-POST /v1/fresh_domains
-```
-
-You must repeat the post before the `ttl` expires.  To opt out of this, you may specify a `ttl` of 0.
-
-### Fetching all Fresh Domains
-
-To fetch all fresh domains:
-
-```
-GET /v1/fresh_domains
-```
-
-This returns an array of `FreshDomainResponse` objects (which are identical to `FreshDomainBumpRequest` objects).
 
 [back](README.md)

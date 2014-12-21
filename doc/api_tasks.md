@@ -30,7 +30,7 @@ This returns an array of [`TaskResponse`](tasks.md#retreiving-tasks) objects
 To fetch all Tasks in a given [`domain`](tasks.md#domain):
 
 ```
-GET /v1/domain/:domain/tasks
+GET /v1/tasks?domain=domain-name
 ```
 
 This returns an array of [`TaskResponse`](tasks.md#retreiving-tasks) objects

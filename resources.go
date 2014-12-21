@@ -406,13 +406,3 @@ type CellResponse struct {
 	CellID string `json:"cell_id"`
 	Stack  string `json:"stack"`
 }
-
-type FreshDomainBumpRequest struct {
-	Domain       string `json:"domain"`
-	TTLInSeconds int    `json:"ttl_in_seconds"`
-}
-
-type FreshDomainResponse struct {
-	Domain       string `json:"domain"`
-	TTLInSeconds int    `json:"ttl_in_seconds"`
-}

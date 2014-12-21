@@ -3,12 +3,16 @@ package receptor
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 
 	"github.com/tedsuo/rata"
 )
+
+//go:generate counterfeiter -o fake_receptor/fake_client.go . Client
 
 type Client interface {
 	CreateTask(TaskCreateRequest) error
@@ -33,8 +37,8 @@ type Client interface {
 
 	Cells() ([]CellResponse, error)
 
-	BumpFreshDomain(FreshDomainBumpRequest) error
-	FreshDomains() ([]FreshDomainResponse, error)
+	UpsertDomain(domain string, ttl time.Duration) error
+	Domains() ([]string, error)
 }
 
 func NewClient(url string) Client {
@@ -144,31 +148,51 @@ func (c *client) Cells() ([]CellResponse, error) {
 	return cells, err
 }
 
-func (c *client) BumpFreshDomain(req FreshDomainBumpRequest) error {
-	return c.doRequest(BumpFreshDomainRoute, nil, nil, req, nil)
-}
-
-func (c *client) FreshDomains() ([]FreshDomainResponse, error) {
-	var freshDomains []FreshDomainResponse
-	err := c.doRequest(FreshDomainsRoute, nil, nil, nil, &freshDomains)
-	return freshDomains, err
-}
-
-func (c *client) doRequest(requestName string, params rata.Params, queryParams url.Values, request, response interface{}) error {
-	requestJson, err := json.Marshal(request)
+func (c *client) UpsertDomain(domain string, ttl time.Duration) error {
+	req, err := c.createRequest(UpsertDomainRoute, rata.Params{"domain": domain}, nil, nil)
 	if err != nil {
 		return err
 	}
 
+	if ttl != 0 {
+		req.Header.Set("Cache-Control", fmt.Sprintf("max-age=%d", int(ttl.Seconds())))
+	}
+
+	return c.do(req, nil)
+}
+
+func (c *client) Domains() ([]string, error) {
+	var domains []string
+	err := c.doRequest(DomainsRoute, nil, nil, nil, &domains)
+	return domains, err
+}
+
+func (c *client) createRequest(requestName string, params rata.Params, queryParams url.Values, request interface{}) (*http.Request, error) {
+	requestJson, err := json.Marshal(request)
+	if err != nil {
+		return nil, err
+	}
+
 	req, err := c.reqGen.CreateRequest(requestName, params, bytes.NewReader(requestJson))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	req.URL.RawQuery = queryParams.Encode()
 	req.ContentLength = int64(len(requestJson))
 	req.Header.Set("Content-Type", "application/json")
+	return req, nil
+}
 
+func (c *client) doRequest(requestName string, params rata.Params, queryParams url.Values, request, response interface{}) error {
+	req, err := c.createRequest(requestName, params, queryParams, request)
+	if err != nil {
+		return err
+	}
+	return c.do(req, response)
+}
+
+func (c *client) do(req *http.Request, response interface{}) error {
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
@@ -183,7 +207,7 @@ func (c *client) doRequest(requestName string, params rata.Params, queryParams u
 
 	if response != nil {
 		return json.NewDecoder(res.Body).Decode(response)
-	} else {
-		return nil
 	}
+
+	return nil
 }

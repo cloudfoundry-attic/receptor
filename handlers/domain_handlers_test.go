@@ -5,10 +5,10 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
-	"github.com/cloudfoundry-incubator/receptor/serialization"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	. "github.com/onsi/ginkgo"
@@ -16,12 +16,12 @@ import (
 	"github.com/pivotal-golang/lager"
 )
 
-var _ = Describe("Fresh Domain Handlers", func() {
+var _ = Describe("Domain Handlers", func() {
 	var (
 		logger           lager.Logger
 		fakeBBS          *fake_bbs.FakeReceptorBBS
 		responseRecorder *httptest.ResponseRecorder
-		handler          *handlers.FreshDomainHandler
+		handler          *handlers.DomainHandler
 	)
 
 	BeforeEach(func() {
@@ -29,35 +29,37 @@ var _ = Describe("Fresh Domain Handlers", func() {
 		logger = lager.NewLogger("test")
 		logger.RegisterSink(lager.NewWriterSink(GinkgoWriter, lager.DEBUG))
 		responseRecorder = httptest.NewRecorder()
-		handler = handlers.NewFreshDomainHandler(fakeBBS, logger)
+		handler = handlers.NewDomainHandler(fakeBBS, logger)
 	})
 
-	Describe("Bump", func() {
+	Describe("Upsert", func() {
+		var domain string
+		var ttlInSeconds int
+
+		BeforeEach(func() {
+			domain = "domain-1"
+			ttlInSeconds = 1000
+		})
+
 		Context("with a structured request", func() {
-			var freshDomainBumpRequest receptor.FreshDomainBumpRequest
-			var expectedFreshness models.Freshness
+			var req *http.Request
 
 			BeforeEach(func() {
-				freshDomainBumpRequest = receptor.FreshDomainBumpRequest{
-					Domain:       "domain-1",
-					TTLInSeconds: 1000,
-				}
-
-				expectedFreshness = models.Freshness{
-					Domain:       "domain-1",
-					TTLInSeconds: 1000,
-				}
+				req = newTestRequest("")
+				req.URL.RawQuery = url.Values{":domain": []string{domain}}.Encode()
+				req.Header["Cache-Control"] = []string{"public", "max-age=1000"}
 			})
 
 			JustBeforeEach(func() {
-				handler.Bump(responseRecorder, newTestRequest(freshDomainBumpRequest))
+				handler.Upsert(responseRecorder, req)
 			})
 
 			Context("when the call to the BBS succeeds", func() {
-				It("calls BumpFreshness on the BBS", func() {
-					Ω(fakeBBS.BumpFreshnessCallCount()).Should(Equal(1))
-					freshness := fakeBBS.BumpFreshnessArgsForCall(0)
-					Ω(freshness).To(Equal(expectedFreshness))
+				It("calls Upsert on the BBS", func() {
+					Ω(fakeBBS.UpsertDomainCallCount()).Should(Equal(1))
+					d, ttl := fakeBBS.UpsertDomainArgsForCall(0)
+					Ω(d).To(Equal(domain))
+					Ω(ttl).To(Equal(ttlInSeconds))
 				})
 
 				It("responds with 204 Status NO CONTENT", func() {
@@ -71,7 +73,7 @@ var _ = Describe("Fresh Domain Handlers", func() {
 
 			Context("when the call to the BBS fails", func() {
 				BeforeEach(func() {
-					fakeBBS.BumpFreshnessReturns(errors.New("ka-boom"))
+					fakeBBS.UpsertDomainReturns(errors.New("ka-boom"))
 				})
 
 				It("responds with 500 INTERNAL ERROR", func() {
@@ -88,11 +90,11 @@ var _ = Describe("Fresh Domain Handlers", func() {
 				})
 			})
 
-			Context("when the request corresponds to an invalid freshness", func() {
+			Context("when the request corresponds to an invalid domain", func() {
 				var validationError = models.ValidationError{}
 
 				BeforeEach(func() {
-					fakeBBS.BumpFreshnessReturns(validationError)
+					fakeBBS.UpsertDomainReturns(validationError)
 				})
 
 				It("responds with 400 BAD REQUEST", func() {
@@ -101,21 +103,49 @@ var _ = Describe("Fresh Domain Handlers", func() {
 
 				It("responds with a relevant error message", func() {
 					expectedBody, _ := json.Marshal(receptor.Error{
-						Type:    receptor.InvalidFreshness,
+						Type:    receptor.InvalidDomain,
 						Message: validationError.Error(),
 					})
 
 					Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
 				})
 			})
+
+			Context("when no Cache-Control header is present", func() {
+				BeforeEach(func() {
+					req.Header.Del("Cache-Control")
+				})
+
+				It("sets the TTL to 0 (inifinite)", func() {
+					Ω(fakeBBS.UpsertDomainCallCount()).Should(Equal(1))
+					d, ttl := fakeBBS.UpsertDomainArgsForCall(0)
+					Ω(d).To(Equal(domain))
+					Ω(ttl).To(Equal(0))
+				})
+			})
+
+			Context("when Cache-Control header is present", func() {
+				Context("when no max-age is included", func() {
+					BeforeEach(func() {
+						req.Header.Set("Cache-Control", "public")
+					})
+
+					It("fails with an error", func() {
+						Ω(responseRecorder.Code).Should(Equal(http.StatusBadRequest))
+						expectedBody, _ := json.Marshal(receptor.Error{
+							Type:    receptor.InvalidRequest,
+							Message: handlers.ErrMaxAgeMissing.Error(),
+						})
+
+						Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
+					})
+				})
+			})
 		})
 
-		Context("when the request JSON is not valid", func() {
-			var garbageRequest []byte
-
+		Context("when the request is missing the domain", func() {
 			BeforeEach(func() {
-				garbageRequest = []byte(`garbage`)
-				handler.Bump(responseRecorder, newTestRequest(garbageRequest))
+				handler.Upsert(responseRecorder, newTestRequest(""))
 			})
 
 			It("responds with 400 BAD REQUEST", func() {
@@ -123,10 +153,9 @@ var _ = Describe("Fresh Domain Handlers", func() {
 			})
 
 			It("responds with a relevant error message", func() {
-				err := json.Unmarshal(garbageRequest, &receptor.FreshDomainBumpRequest{})
 				expectedBody, _ := json.Marshal(receptor.Error{
-					Type:    receptor.InvalidJSON,
-					Message: err.Error(),
+					Type:    receptor.InvalidRequest,
+					Message: handlers.ErrDomainMissing.Error(),
 				})
 
 				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
@@ -135,53 +164,41 @@ var _ = Describe("Fresh Domain Handlers", func() {
 	})
 
 	Describe("GetAll", func() {
-		var freshnesses []models.Freshness
+		var domains []string
 
 		BeforeEach(func() {
-			freshnesses = []models.Freshness{
-				{
-					Domain:       "domain-a",
-					TTLInSeconds: 10,
-				},
-				{
-					Domain:       "domain-b",
-					TTLInSeconds: 30,
-				},
-			}
+			domains = []string{"domain-a", "domain-b"}
 		})
 
 		JustBeforeEach(func() {
 			handler.GetAll(responseRecorder, newTestRequest(""))
 		})
 
-		Context("when reading freshnesses from BBS succeeds", func() {
+		Context("when reading domains from BBS succeeds", func() {
 			BeforeEach(func() {
-				fakeBBS.FreshnessesReturns(freshnesses, nil)
+				fakeBBS.DomainsReturns(domains, nil)
 			})
 
-			It("call the BBS to retrieve the actual LRPs", func() {
-				Ω(fakeBBS.FreshnessesCallCount()).Should(Equal(1))
+			It("call the BBS to retrieve the domains", func() {
+				Ω(fakeBBS.DomainsCallCount()).Should(Equal(1))
 			})
 
 			It("responds with 200 Status OK", func() {
 				Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
 			})
 
-			It("returns a list of fresh domain responses", func() {
-				response := []receptor.FreshDomainResponse{}
+			It("returns a list of domains", func() {
+				response := []string{}
 				err := json.Unmarshal(responseRecorder.Body.Bytes(), &response)
 				Ω(err).ShouldNot(HaveOccurred())
 
-				Ω(response).Should(HaveLen(2))
-				for _, freshness := range freshnesses {
-					Ω(response).Should(ContainElement(serialization.FreshnessToResponse(freshness)))
-				}
+				Ω(response).Should(ConsistOf(domains))
 			})
 		})
 
-		Context("when the BBS returns no freshnesses", func() {
+		Context("when the BBS returns no domains", func() {
 			BeforeEach(func() {
-				fakeBBS.FreshnessesReturns([]models.Freshness{}, nil)
+				fakeBBS.DomainsReturns([]string{}, nil)
 			})
 
 			It("responds with 200 Status OK", func() {
@@ -195,7 +212,7 @@ var _ = Describe("Fresh Domain Handlers", func() {
 
 		Context("when reading from the BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.FreshnessesReturns([]models.Freshness{}, errors.New("Something went wrong"))
+				fakeBBS.DomainsReturns([]string{}, errors.New("Something went wrong"))
 			})
 
 			It("responds with an error", func() {

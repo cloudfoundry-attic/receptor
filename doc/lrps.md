@@ -306,9 +306,9 @@ In order to perform this responsibility safely, however, Diego must have some wa
 
 To circumvent this, it is up to the consumer of Diego to inform Diego that its knowledge of the desired state is up-to-date.  We refer to this as the "freshness" of the desired state.  Consumers explicitly mark desired state as *fresh* on a domain-by-domain basis.  Failing to do so will prevent Diego from taking actions to ensure eventual consistency (in particular, Diego will refuse to stop extra instances with no corresponding desired state).
 
-To maintain freshness you perform a simple [POST](api_lrps.md#freshness).  The consumer typically supplies a TTL and attempts to bump the freshness of the domain before the TTL expires (verifying along the way, of course, that the contents of Diego's DesiredLRP are up-to-date).
+To maintain freshness you perform a simple [PUT](api_domains.md#domains).  The consumer typically supplies a TTL and attempts to bump the freshness of the domain before the TTL expires (verifying along the way, of course, that the contents of Diego's DesiredLRP are up-to-date).
 
-It is possible to opt out of this by posting freshness with *no* TTL.  In this case the freshness will never expire and Diego will always perform all its eventual consistency operations.
+It is possible to opt out of this by updating the freshness with *no* TTL.  In this case the freshness will never expire and Diego will always perform all its eventual consistency operations.
 
 > Note: only destructive operations performed during an eventual consistency convergence cycle are gated on freshness.  Diego will continue to start/stop instances when explicitly instructed to.
 

@@ -18,7 +18,7 @@ const (
 	DesiredLRPNotFound = "DesiredLRPNotFound"
 	InvalidLRP         = "InvalidLRP"
 
-	InvalidFreshness = "InvalidFreshness"
+	InvalidDomain = "InvalidDomain"
 
 	InvalidJSON    = "InvalidJSON"
 	InvalidRequest = "InvalidRequest"
