@@ -68,10 +68,7 @@ func (h *ActualLRPHandler) GetAllByProcessGuid(w http.ResponseWriter, req *http.
 		return
 	}
 
-	var actualLRPs []models.ActualLRP
-	var err error
-
-	actualLRPs, err = h.bbs.ActualLRPsByProcessGuid(processGuid)
+	actualLRPs, err := h.bbs.ActualLRPsByProcessGuid(processGuid)
 	if err != nil {
 		logger.Error("failed-to-fetch-actual-lrps-by-process-guid", err)
 		writeUnknownErrorResponse(w, err)
