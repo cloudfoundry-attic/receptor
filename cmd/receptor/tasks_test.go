@@ -100,7 +100,7 @@ var _ = Describe("Task API", func() {
 
 				Ω(testServer.ReceivedRequests()).Should(HaveLen(0))
 
-				err = bbs.CompleteTask("task-guid-1", true, "the-failure-reason", "the-result")
+				err = bbs.CompleteTask("task-guid-1", "the-cell-id", true, "the-failure-reason", "the-result")
 				Ω(err).ShouldNot(HaveOccurred())
 
 				Eventually(testServer.ReceivedRequests).Should(HaveLen(1))
@@ -211,7 +211,7 @@ var _ = Describe("Task API", func() {
 		It("includes all of the task's publicly-visible fields", func() {
 			err := bbs.StartTask("task-guid-1", "the-cell-id")
 			Ω(err).ShouldNot(HaveOccurred())
-			err = bbs.CompleteTask("task-guid-1", true, "the-failure-reason", "the-task-result")
+			err = bbs.CompleteTask("task-guid-1", "the-cell-id", true, "the-failure-reason", "the-task-result")
 			Ω(err).ShouldNot(HaveOccurred())
 
 			task, err := client.GetTask("task-guid-1")
@@ -249,7 +249,7 @@ var _ = Describe("Task API", func() {
 
 		Context("when the task is in the COMPLETED state", func() {
 			BeforeEach(func() {
-				err := bbs.CompleteTask("task-guid-1", false, "", "the-task-result")
+				err := bbs.CompleteTask("task-guid-1", "the-cell-id", false, "", "the-task-result")
 				Ω(err).ShouldNot(HaveOccurred())
 			})
 
