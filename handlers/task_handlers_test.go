@@ -326,30 +326,9 @@ var _ = Describe("TaskHandler", func() {
 			})
 		})
 
-		Context("when the BBS reports the task not found", func() {
+		Context("when the task is not found", func() {
 			BeforeEach(func() {
-				fakeBBS.TaskByGuidReturns(nil, bbserrors.ErrStoreResourceNotFound)
-			})
-
-			It("responds with a 404", func() {
-				Ω(responseRecorder.Code).Should(Equal(http.StatusNotFound))
-			})
-
-			It("responds with a TaskNotFound error in the body", func() {
-				var taskError receptor.Error
-				err := json.Unmarshal(responseRecorder.Body.Bytes(), &taskError)
-				Ω(err).ShouldNot(HaveOccurred())
-
-				Ω(taskError).Should(Equal(receptor.Error{
-					Type:    receptor.TaskNotFound,
-					Message: "task with guid 'the-task-guid' not found",
-				}))
-			})
-		})
-
-		Context("when the task is nil", func() {
-			BeforeEach(func() {
-				fakeBBS.TaskByGuidReturns(nil, nil)
+				fakeBBS.TaskByGuidReturns(models.Task{}, bbserrors.ErrStoreResourceNotFound)
 			})
 
 			It("responds with a 404 NOT FOUND", func() {
@@ -370,7 +349,7 @@ var _ = Describe("TaskHandler", func() {
 
 		Context("when reading the task from the BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.TaskByGuidReturns(nil, errors.New("Something went wrong"))
+				fakeBBS.TaskByGuidReturns(models.Task{}, errors.New("Something went wrong"))
 			})
 
 			It("responds with an error", func() {
@@ -382,7 +361,7 @@ var _ = Describe("TaskHandler", func() {
 			var expectedTask receptor.TaskResponse
 
 			BeforeEach(func() {
-				task := &models.Task{
+				task := models.Task{
 					TaskGuid: "task-guid-1",
 					Domain:   "domain-1",
 					Action: &models.RunAction{

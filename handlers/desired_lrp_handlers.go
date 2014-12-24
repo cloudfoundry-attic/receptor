@@ -75,19 +75,17 @@ func (h *DesiredLRPHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
+		if err == bbserrors.ErrStoreResourceNotFound {
+			writeDesiredLRPNotFoundResponse(w, processGuid)
+			return
+		}
+
 		log.Error("unknown-error", err)
 		writeUnknownErrorResponse(w, err)
 		return
 	}
 
-	if desiredLRP == nil {
-		writeDesiredLRPNotFoundResponse(w, processGuid)
-		return
-	}
-
-	response := serialization.DesiredLRPToResponse(*desiredLRP)
-
-	writeJSONResponse(w, http.StatusOK, response)
+	writeJSONResponse(w, http.StatusOK, serialization.DesiredLRPToResponse(desiredLRP))
 }
 
 func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {

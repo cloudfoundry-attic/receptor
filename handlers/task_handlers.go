@@ -116,18 +116,18 @@ func (h *TaskHandler) GetByGuid(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if err != nil {
+		if err == bbserrors.ErrStoreResourceNotFound {
+			h.logger.Error("failed-to-fetch-task", err)
+			writeTaskNotFoundResponse(w, guid)
+			return
+		}
+
 		h.logger.Error("failed-to-fetch-task", err)
 		writeUnknownErrorResponse(w, err)
 		return
 	}
 
-	if task == nil {
-		h.logger.Error("failed-to-fetch-task", err)
-		writeTaskNotFoundResponse(w, guid)
-		return
-	}
-
-	writeJSONResponse(w, http.StatusOK, serialization.TaskToResponse(*task))
+	writeJSONResponse(w, http.StatusOK, serialization.TaskToResponse(task))
 }
 
 func (h *TaskHandler) Delete(w http.ResponseWriter, req *http.Request) {

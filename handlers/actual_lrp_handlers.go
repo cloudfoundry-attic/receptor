@@ -128,7 +128,7 @@ func (h *ActualLRPHandler) GetByProcessGuidAndIndex(w http.ResponseWriter, req *
 		return
 	}
 
-	writeJSONResponse(w, http.StatusOK, serialization.ActualLRPToResponse(*actualLRP))
+	writeJSONResponse(w, http.StatusOK, serialization.ActualLRPToResponse(actualLRP))
 }
 
 func (h *ActualLRPHandler) KillByProcessGuidAndIndex(w http.ResponseWriter, req *http.Request) {
@@ -163,22 +163,22 @@ func (h *ActualLRPHandler) KillByProcessGuidAndIndex(w http.ResponseWriter, req 
 
 	actualLRP, err := h.bbs.ActualLRPByProcessGuidAndIndex(processGuid, index)
 	if err != nil {
+		if err == bbserrors.ErrStoreResourceNotFound {
+			responseErr := fmt.Errorf("process-guid '%s' does not exist or has no instance at index %d", processGuid, index)
+			logger.Error("no-instances-to-delete", responseErr)
+			writeJSONResponse(w, http.StatusNotFound, receptor.Error{
+				Type:    receptor.ActualLRPIndexNotFound,
+				Message: responseErr.Error(),
+			})
+			return
+		}
+
 		logger.Error("failed-to-fetch-actual-lrp-by-process-guid-and-index", err)
 		writeUnknownErrorResponse(w, err)
 		return
 	}
 
-	if actualLRP == nil {
-		err := fmt.Errorf("process-guid '%s' does not exist or has no instance at index %d", processGuid, index)
-		logger.Error("no-instances-to-delete", err)
-		writeJSONResponse(w, http.StatusNotFound, receptor.Error{
-			Type:    receptor.ActualLRPIndexNotFound,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	err = h.bbs.RequestStopLRPInstance(*actualLRP)
+	err = h.bbs.RequestStopLRPInstance(actualLRP)
 	if err != nil {
 		logger.Error("failed-to-request-stop-lrp-instance", err)
 		writeUnknownErrorResponse(w, err)

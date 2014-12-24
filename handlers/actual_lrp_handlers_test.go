@@ -281,7 +281,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		Context("when reading LRPs from BBS succeeds", func() {
 			BeforeEach(func() {
-				fakeBBS.ActualLRPByProcessGuidAndIndexReturns(&actualLRPPG1I2, nil)
+				fakeBBS.ActualLRPByProcessGuidAndIndexReturns(actualLRPPG1I2, nil)
 			})
 
 			It("calls the BBS to retrieve the actual LRPs", func() {
@@ -306,7 +306,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		Context("when reading LRPs from BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.ActualLRPByProcessGuidAndIndexReturns(nil, errors.New("Something went wrong"))
+				fakeBBS.ActualLRPByProcessGuidAndIndexReturns(models.ActualLRP{}, errors.New("Something went wrong"))
 			})
 
 			It("responds with a 500 Internal Error", func() {
@@ -325,7 +325,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		Context("when the BBS does not return any actual LRP", func() {
 			BeforeEach(func() {
-				fakeBBS.ActualLRPByProcessGuidAndIndexReturns(nil, bbserrors.ErrStoreResourceNotFound)
+				fakeBBS.ActualLRPByProcessGuidAndIndexReturns(models.ActualLRP{}, bbserrors.ErrStoreResourceNotFound)
 			})
 
 			It("responds with 404 Not Found", func() {
@@ -376,7 +376,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 			Context("when reading LRPs from BBS succeeds", func() {
 				BeforeEach(func() {
-					fakeBBS.ActualLRPByProcessGuidAndIndexReturns(&actualLRPPG1I2, nil)
+					fakeBBS.ActualLRPByProcessGuidAndIndexReturns(actualLRPPG1I2, nil)
 					fakeBBS.RequestStopLRPInstanceReturns(nil)
 				})
 
@@ -401,7 +401,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 			Context("when the BBS returns no lrps", func() {
 				BeforeEach(func() {
-					fakeBBS.ActualLRPByProcessGuidAndIndexReturns(nil, nil)
+					fakeBBS.ActualLRPByProcessGuidAndIndexReturns(models.ActualLRP{}, bbserrors.ErrStoreResourceNotFound)
 				})
 
 				It("call the BBS to retrieve the desired LRP", func() {
@@ -415,7 +415,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 			Context("when reading LRPs from BBS fails", func() {
 				BeforeEach(func() {
-					fakeBBS.ActualLRPByProcessGuidAndIndexReturns(nil, errors.New("Something went wrong"))
+					fakeBBS.ActualLRPByProcessGuidAndIndexReturns(models.ActualLRP{}, errors.New("Something went wrong"))
 				})
 
 				It("does not call the BBS to request stopping instances", func() {
@@ -438,7 +438,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 			Context("when stopping instances on the BBS fails", func() {
 				BeforeEach(func() {
-					fakeBBS.ActualLRPByProcessGuidAndIndexReturns(&actualLRPPG1I2, nil)
+					fakeBBS.ActualLRPByProcessGuidAndIndexReturns(actualLRPPG1I2, nil)
 					fakeBBS.RequestStopLRPInstanceReturns(errors.New("Something went wrong"))
 				})
 

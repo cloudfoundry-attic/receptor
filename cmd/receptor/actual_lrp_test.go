@@ -157,7 +157,7 @@ var _ = Describe("Actual LRP API", func() {
 		It("has the correct data from the bbs", func() {
 			actualLRP, err := bbs.ActualLRPByProcessGuidAndIndex(processGuid, index)
 			Ω(err).ShouldNot(HaveOccurred())
-			Ω(actualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(*actualLRP)))
+			Ω(actualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
 		})
 	})
 })
