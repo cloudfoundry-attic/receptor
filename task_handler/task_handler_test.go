@@ -13,7 +13,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("TaskWatcher", func() {
+var _ = Describe("TaskHandler", func() {
 	var (
 		enqueue chan models.Task
 
@@ -56,7 +56,7 @@ var _ = Describe("TaskWatcher", func() {
 
 		BeforeEach(func() {
 			var err error
-			payload, err = models.ToJSON(task)
+			payload, err = models.ToJSONArray(task)
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 

@@ -140,7 +140,7 @@ func main() {
 	handler := handlers.New(bbs, logger, *username, *password, *corsEnabled)
 
 	worker, enqueue := task_handler.NewTaskWorkerPool(bbs, logger)
-	taskHandler := task_handler.NewHandler(enqueue, logger)
+	taskHandler := task_handler.New(enqueue, logger)
 
 	members := grouper.Members{
 		{"server", http_server.New(*serverAddress, handler)},
