@@ -24,7 +24,7 @@ var _ = Describe("ActualLRP Serialization", func() {
 					"cell-id-0",
 				),
 				ActualLRPNetInfo: models.NewActualLRPNetInfo(
-					"host-0",
+					"address-0",
 					[]models.PortMapping{
 						{
 							ContainerPort: 2345,
@@ -44,7 +44,7 @@ var _ = Describe("ActualLRP Serialization", func() {
 				CellID:       "cell-id-0",
 				Domain:       "some-domain",
 				Index:        3,
-				Host:         "host-0",
+				Address:      "address-0",
 				Ports: []receptor.PortMapping{
 					{
 						ContainerPort: 2345,

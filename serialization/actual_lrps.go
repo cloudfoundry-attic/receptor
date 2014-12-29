@@ -12,7 +12,7 @@ func ActualLRPToResponse(actualLRP models.ActualLRP) receptor.ActualLRPResponse 
 		CellID:       actualLRP.CellID,
 		Domain:       actualLRP.Domain,
 		Index:        actualLRP.Index,
-		Host:         actualLRP.Host,
+		Address:      actualLRP.Address,
 		Ports:        PortMappingFromModel(actualLRP.Ports),
 		State:        actualLRPStateToResponseState(actualLRP.State),
 		Since:        actualLRP.Since,

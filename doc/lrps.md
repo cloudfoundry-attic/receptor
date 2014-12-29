@@ -241,7 +241,7 @@ In all cases, the consumer is given an array of `ActualLRPResponse`:
         "index": 15,
         "state": "CLAIMED" or "RUNNING"
 
-        "host": "10.10.11.11",
+        "address": "10.10.11.11",
         "ports": [
             {"container_port": 8080, "host_port": 60001},
             {"container_port": 5000, "host_port": 60002},        
@@ -282,11 +282,11 @@ The state of the ActualLRP.  When an ActualLRP is first scheduled onto a Cell it
 Once the `action` action begins running, Diego begins periodically running the `monitor` action.  As soon as the `monitor` action reports that the processes are healthy the ActualLRP will transition into the `RUNNING` state.
 
 #### Networking
-#### `host`
+#### `address`
 
-`host` contains the externally accessible IP of the host running the container.
+`address` contains the externally accessible IP of the host running the container.
 
-> `host` is only populated when the ActualLRP enters the `RUNNING` state.
+> `address` is only populated when the ActualLRP enters the `RUNNING` state.
 
 #### `ports`
 

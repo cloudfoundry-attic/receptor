@@ -396,7 +396,7 @@ type ActualLRPResponse struct {
 	CellID       string         `json:"cell_id"`
 	Domain       string         `json:"domain"`
 	Index        int            `json:"index"`
-	Host         string         `json:"host"`
+	Address      string         `json:"address"`
 	Ports        []PortMapping  `json:"ports"`
 	State        ActualLRPState `json:"state"`
 	Since        int64          `json:"since"`
