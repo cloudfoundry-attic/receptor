@@ -43,6 +43,9 @@ func New(bbs Bbs.ReceptorBBS, logger lager.Logger, username, password string, co
 		// Domains
 		receptor.UpsertDomainRoute: route(domainHandler.Upsert),
 		receptor.DomainsRoute:      route(domainHandler.GetAll),
+
+		// Event Streaming
+		receptor.EventStream: nil,
 	}
 
 	handler, err := rata.NewRouter(receptor.Routes, actions)
