@@ -12,6 +12,7 @@ import (
 	"github.com/cloudfoundry-incubator/cf-debug-server"
 	cf_lager "github.com/cloudfoundry-incubator/cf-lager"
 	"github.com/cloudfoundry-incubator/natbeat"
+	"github.com/cloudfoundry-incubator/receptor/event"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
 	"github.com/cloudfoundry-incubator/receptor/task_handler"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
@@ -123,8 +124,9 @@ func main() {
 	}
 
 	bbs := initializeReceptorBBS(logger)
+	hub := event.NewHub()
 
-	handler := handlers.New(bbs, logger, *username, *password, *corsEnabled)
+	handler := handlers.New(bbs, hub, logger, *username, *password, *corsEnabled)
 
 	worker, enqueue := task_handler.NewTaskWorkerPool(bbs, logger)
 	taskHandler := task_handler.New(enqueue, logger)
