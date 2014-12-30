@@ -5,7 +5,9 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"time"
 
+	"github.com/cloudfoundry-incubator/cf_http"
 	"github.com/cloudfoundry-incubator/receptor/task_handler"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
@@ -27,9 +29,12 @@ var _ = Describe("TaskWorker", func() {
 
 		fakeServer *ghttp.Server
 		logger     lager.Logger
+		timeout    time.Duration
 	)
 
 	BeforeEach(func() {
+		timeout = 1 * time.Second
+		cf_http.Initialize(timeout)
 		fakeServer = ghttp.NewServer()
 
 		logger = lager.NewLogger("task-watcher-test")
@@ -222,6 +227,51 @@ var _ = Describe("TaskWorker", func() {
 
 							Consistently(fakeBBS.ResolveTaskCallCount, 0.25).Should(Equal(0))
 							Consistently(fakeServer.ReceivedRequests, 0.25).Should(HaveLen(3))
+						})
+					})
+				})
+
+				Context("when the request fails with a timeout", func() {
+					var sleepCh chan time.Duration
+
+					BeforeEach(func() {
+						sleepCh = make(chan time.Duration)
+						fakeServer.RouteToHandler("POST", "/the-callback/url", func(w http.ResponseWriter, req *http.Request) {
+							time.Sleep(<-sleepCh)
+							w.WriteHeader(200)
+						})
+					})
+
+					It("retries the request 2 more times", func() {
+						simulateTaskCompleting()
+						sleepCh <- timeout + 100*time.Millisecond
+						Eventually(fakeServer.ReceivedRequests).Should(HaveLen(1))
+
+						sleepCh <- timeout + 100*time.Millisecond
+						Consistently(fakeBBS.ResolveTaskCallCount, 0.25).Should(Equal(0))
+						Eventually(fakeServer.ReceivedRequests).Should(HaveLen(2))
+
+						sleepCh <- timeout + 100*time.Millisecond
+						Consistently(fakeBBS.ResolveTaskCallCount, 0.25).Should(Equal(0))
+						Eventually(fakeServer.ReceivedRequests).Should(HaveLen(3))
+
+						Eventually(fakeBBS.ResolveTaskCallCount, 0.25).Should(Equal(0))
+					})
+
+					Context("when the request fails with timeout once and then succeeds", func() {
+						It("does resolves the task", func() {
+							simulateTaskCompleting()
+							sleepCh <- (timeout + 100*time.Millisecond)
+
+							Eventually(fakeServer.ReceivedRequests).Should(HaveLen(1))
+							Consistently(fakeBBS.ResolveTaskCallCount, 0.25).Should(Equal(0))
+
+							sleepCh <- 0
+							Eventually(fakeServer.ReceivedRequests).Should(HaveLen(2))
+							Eventually(fakeBBS.ResolveTaskCallCount, 0.25).Should(Equal(1))
+
+							_, resolvedTaskGuid := fakeBBS.ResolveTaskArgsForCall(0)
+							Ω(resolvedTaskGuid).Should(Equal("the-task-guid"))
 						})
 					})
 				})
