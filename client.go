@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/cloudfoundry-incubator/cf-http"
 	"github.com/tedsuo/rata"
 )
 
@@ -43,7 +44,7 @@ type Client interface {
 
 func NewClient(url string) Client {
 	return &client{
-		httpClient: &http.Client{},
+		httpClient: cf_http.NewClient(),
 		reqGen:     rata.NewRequestGenerator(url, Routes),
 	}
 }

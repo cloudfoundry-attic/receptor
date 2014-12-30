@@ -10,6 +10,7 @@ import (
 	"time"
 
 	cf_debug_server "github.com/cloudfoundry-incubator/cf-debug-server"
+	"github.com/cloudfoundry-incubator/cf-http"
 	cf_lager "github.com/cloudfoundry-incubator/cf-lager"
 	"github.com/cloudfoundry-incubator/natbeat"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
@@ -120,9 +121,18 @@ var dropsondeDestination = flag.String(
 	"Destination for dropsonde-emitted metrics.",
 )
 
-func main() {
-	flag.Parse()
+var communicationTimeout = flag.Duration(
+	"communicationTimeout",
+	10*time.Second,
+	"Timeout applied to all HTTP requests.",
+)
 
+func init() {
+	flag.Parse()
+	cf_http.Initialize(*communicationTimeout)
+}
+
+func main() {
 	cf_debug_server.Run()
 
 	logger := cf_lager.New("receptor")
