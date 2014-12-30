@@ -32,8 +32,5 @@ func writeJSONResponse(w http.ResponseWriter, statusCode int, jsonObj interface{
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
-	_, err = w.Write(jsonBytes)
-	if err != nil {
-		panic("Unable to write response: " + err.Error())
-	}
+	w.Write(jsonBytes)
 }
