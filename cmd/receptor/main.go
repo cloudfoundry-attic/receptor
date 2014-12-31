@@ -102,22 +102,9 @@ var natsPassword = flag.String(
 	"Password for nats user.",
 )
 
-var initialHeartbeatInterval = flag.Duration(
-	"initialHeartbeatInterval",
-	time.Second,
-	"Heartbeat interval to use prior to router greeting.",
-)
-
-var dropsondeOrigin = flag.String(
-	"dropsondeOrigin",
-	"receptor",
-	"Origin identifier for dropsonde-emitted metrics.",
-)
-
-var dropsondeDestination = flag.String(
-	"dropsondeDestination",
-	"localhost:3457",
-	"Destination for dropsonde-emitted metrics.",
+const (
+	dropsondeDestination = "localhost:3457"
+	dropsondeOrigin      = "receptor"
 )
 
 func main() {
@@ -184,7 +171,7 @@ func validateNatsArguments() error {
 }
 
 func initializeDropsonde(logger lager.Logger) {
-	err := dropsonde.Initialize(*dropsondeDestination, *dropsondeOrigin)
+	err := dropsonde.Initialize(dropsondeDestination, dropsondeOrigin)
 	if err != nil {
 		logger.Error("failed to initialize dropsonde: %v", err)
 	}
