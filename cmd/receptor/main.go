@@ -15,6 +15,7 @@ import (
 	"github.com/cloudfoundry-incubator/receptor/handlers"
 	"github.com/cloudfoundry-incubator/receptor/task_handler"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
+	"github.com/cloudfoundry-incubator/runtime-schema/bbs/lock_bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/cloudfoundry/dropsonde"
 	"github.com/cloudfoundry/gunk/diegonats"
@@ -56,7 +57,7 @@ var taskHandlerAddress = flag.String(
 
 var heartbeatInterval = flag.Duration(
 	"heartbeatInterval",
-	60*time.Second,
+	lock_bbs.HEARTBEAT_INTERVAL,
 	"the interval between heartbeats for maintaining presence",
 )
 
