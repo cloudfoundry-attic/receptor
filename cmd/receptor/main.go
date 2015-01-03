@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	cf_debug_server "github.com/cloudfoundry-incubator/cf-debug-server"
+	"github.com/cloudfoundry-incubator/cf-debug-server"
 	cf_lager "github.com/cloudfoundry-incubator/cf-lager"
 	"github.com/cloudfoundry-incubator/natbeat"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
@@ -108,9 +108,8 @@ const (
 )
 
 func main() {
+	cf_debug_server.AddFlags(flag.CommandLine)
 	flag.Parse()
-
-	cf_debug_server.Run()
 
 	logger := cf_lager.New("receptor")
 	logger.Info("starting")
@@ -143,6 +142,12 @@ func main() {
 			Name:   "background_heartbeat",
 			Runner: natbeat.NewBackgroundHeartbeat(natsClient, *natsAddresses, *natsUsername, *natsPassword, logger, registration),
 		})
+	}
+
+	if dbgAddr := cf_debug_server.DebugAddress(flag.CommandLine); dbgAddr != "" {
+		members = append(grouper.Members{
+			{"debug-server", cf_debug_server.Runner(dbgAddr)},
+		}, members...)
 	}
 
 	group := grouper.NewOrdered(os.Interrupt, members)
