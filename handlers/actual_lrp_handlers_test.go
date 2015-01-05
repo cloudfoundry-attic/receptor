@@ -389,9 +389,9 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 				It("calls the BBS to request stop LRP instances", func() {
 					Ω(fakeBBS.RequestStopLRPInstanceCallCount()).Should(Equal(1))
-					stopLRPInstance := fakeBBS.RequestStopLRPInstanceArgsForCall(0)
-					Ω(stopLRPInstance.ProcessGuid).Should(Equal("process-guid-1"))
-					Ω(stopLRPInstance.Index).Should(Equal(2))
+					key, _ := fakeBBS.RequestStopLRPInstanceArgsForCall(0)
+					Ω(key.ProcessGuid).Should(Equal("process-guid-1"))
+					Ω(key.Index).Should(Equal(2))
 				})
 
 				It("responds with 204 Status NO CONTENT", func() {
