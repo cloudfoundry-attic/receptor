@@ -73,7 +73,7 @@ var _ = Describe("TaskHandler", func() {
 
 			It("calls DesireTask on the BBS with the correct task", func() {
 				Ω(fakeBBS.DesireTaskCallCount()).Should(Equal(1))
-				task := fakeBBS.DesireTaskArgsForCall(0)
+				_, task := fakeBBS.DesireTaskArgsForCall(0)
 				Ω(task).Should(Equal(expectedTask))
 			})
 
@@ -99,7 +99,7 @@ var _ = Describe("TaskHandler", func() {
 
 				It("passes them to the BBS", func() {
 					Ω(fakeBBS.DesireTaskCallCount()).Should(Equal(1))
-					task := fakeBBS.DesireTaskArgsForCall(0)
+					_, task := fakeBBS.DesireTaskArgsForCall(0)
 					Ω(task.EnvironmentVariables).Should(Equal([]models.EnvironmentVariable{
 						{Name: "var1", Value: "val1"},
 						{Name: "var2", Value: "val2"},
@@ -110,7 +110,7 @@ var _ = Describe("TaskHandler", func() {
 			Context("when no env vars are specified", func() {
 				It("passes a nil slice to the BBS", func() {
 					Ω(fakeBBS.DesireTaskCallCount()).Should(Equal(1))
-					task := fakeBBS.DesireTaskArgsForCall(0)
+					_, task := fakeBBS.DesireTaskArgsForCall(0)
 					Ω(task.EnvironmentVariables).Should(BeNil())
 				})
 			})
@@ -124,7 +124,7 @@ var _ = Describe("TaskHandler", func() {
 
 			It("calls DesireTask on the BBS with the correct task", func() {
 				Ω(fakeBBS.DesireTaskCallCount()).Should(Equal(1))
-				task := fakeBBS.DesireTaskArgsForCall(0)
+				_, task := fakeBBS.DesireTaskArgsForCall(0)
 				Ω(task.TaskGuid).Should(Equal("task-guid-1"))
 			})
 
@@ -245,7 +245,8 @@ var _ = Describe("TaskHandler", func() {
 					err = json.Unmarshal(responseRecorder.Body.Bytes(), &tasks)
 					Ω(err).ShouldNot(HaveOccurred())
 
-					Ω(fakeBBS.TasksByDomainArgsForCall(0)).Should(Equal("domain-1"))
+					_, actualDomain := fakeBBS.TasksByDomainArgsForCall(0)
+					Ω(actualDomain).Should(Equal("domain-1"))
 					expectedTasks := []receptor.TaskResponse{
 						{
 							TaskGuid: domain1Task.TaskGuid,

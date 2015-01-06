@@ -7,6 +7,8 @@ import (
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/bbserrors"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
+	"github.com/pivotal-golang/lager"
+	"github.com/pivotal-golang/lager/lagertest"
 	"github.com/tedsuo/ifrit/ginkgomon"
 
 	. "github.com/onsi/ginkgo"
@@ -15,8 +17,12 @@ import (
 )
 
 var _ = Describe("Task API", func() {
+	var (
+		logger lager.Logger
+	)
 
 	BeforeEach(func() {
+		logger = lagertest.NewTestLogger("test")
 		receptorProcess = ginkgomon.Invoke(receptorRunner)
 	})
 
@@ -60,7 +66,9 @@ var _ = Describe("Task API", func() {
 		})
 
 		It("desires the task in the BBS", func() {
-			Eventually(bbs.PendingTasks).Should(HaveLen(1))
+			Eventually(func() ([]models.Task, error) {
+				return bbs.PendingTasks(logger)
+			}).Should(HaveLen(1))
 		})
 
 		Context("when trying to create a task with a GUID that already exists", func() {
@@ -75,7 +83,7 @@ var _ = Describe("Task API", func() {
 
 		Describe("when the task completes", func() {
 			BeforeEach(func() {
-				err = bbs.StartTask("task-guid-1", "the-cell-id")
+				err = bbs.StartTask(logger, "task-guid-1", "the-cell-id")
 				Ω(err).ShouldNot(HaveOccurred())
 			})
 
@@ -100,7 +108,7 @@ var _ = Describe("Task API", func() {
 
 				Ω(testServer.ReceivedRequests()).Should(HaveLen(0))
 
-				err = bbs.CompleteTask("task-guid-1", "the-cell-id", true, "the-failure-reason", "the-result")
+				err = bbs.CompleteTask(logger, "task-guid-1", "the-cell-id", true, "the-failure-reason", "the-result")
 				Ω(err).ShouldNot(HaveOccurred())
 
 				Eventually(testServer.ReceivedRequests).Should(HaveLen(1))
@@ -119,7 +127,7 @@ var _ = Describe("Task API", func() {
 
 		Context("when there are tasks", func() {
 			BeforeEach(func() {
-				err := bbs.DesireTask(models.Task{
+				err := bbs.DesireTask(logger, models.Task{
 					TaskGuid: "task-guid-1",
 					Domain:   "test-domain",
 					Stack:    "some-stack",
@@ -127,7 +135,7 @@ var _ = Describe("Task API", func() {
 				})
 				Ω(err).ShouldNot(HaveOccurred())
 
-				err = bbs.DesireTask(models.Task{
+				err = bbs.DesireTask(logger, models.Task{
 					TaskGuid: "task-guid-2",
 					Domain:   "test-domain",
 					Stack:    "some-stack",
@@ -152,7 +160,7 @@ var _ = Describe("Task API", func() {
 
 	Describe("GET /v1/domains/:domain/tasks", func() {
 		BeforeEach(func() {
-			err := bbs.DesireTask(models.Task{
+			err := bbs.DesireTask(logger, models.Task{
 				TaskGuid: "task-guid-1",
 				Domain:   "test-domain",
 				Stack:    "stack-1",
@@ -160,7 +168,7 @@ var _ = Describe("Task API", func() {
 			})
 			Ω(err).ShouldNot(HaveOccurred())
 
-			err = bbs.DesireTask(models.Task{
+			err = bbs.DesireTask(logger, models.Task{
 				TaskGuid: "task-guid-2",
 				Domain:   "other-domain",
 				Stack:    "stack-2",
@@ -168,7 +176,7 @@ var _ = Describe("Task API", func() {
 			})
 			Ω(err).ShouldNot(HaveOccurred())
 
-			err = bbs.DesireTask(models.Task{
+			err = bbs.DesireTask(logger, models.Task{
 				TaskGuid: "task-guid-3",
 				Domain:   "test-domain",
 				Stack:    "stack-3",
@@ -197,7 +205,7 @@ var _ = Describe("Task API", func() {
 				Stack:    "stack-1",
 				Action:   &models.RunAction{Path: "/bin/true"},
 			}
-			err := bbs.DesireTask(task)
+			err := bbs.DesireTask(logger, task)
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 
@@ -209,9 +217,9 @@ var _ = Describe("Task API", func() {
 		})
 
 		It("includes all of the task's publicly-visible fields", func() {
-			err := bbs.StartTask("task-guid-1", "the-cell-id")
+			err := bbs.StartTask(logger, "task-guid-1", "the-cell-id")
 			Ω(err).ShouldNot(HaveOccurred())
-			err = bbs.CompleteTask("task-guid-1", "the-cell-id", true, "the-failure-reason", "the-task-result")
+			err = bbs.CompleteTask(logger, "task-guid-1", "the-cell-id", true, "the-failure-reason", "the-task-result")
 			Ω(err).ShouldNot(HaveOccurred())
 
 			task, err := client.GetTask("task-guid-1")
@@ -240,16 +248,16 @@ var _ = Describe("Task API", func() {
 				Action:   &models.RunAction{Path: "/bin/true"},
 			}
 
-			err := bbs.DesireTask(task)
+			err := bbs.DesireTask(logger, task)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			err = bbs.StartTask("task-guid-1", "the-cell-id")
+			err = bbs.StartTask(logger, "task-guid-1", "the-cell-id")
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 
 		Context("when the task is in the COMPLETED state", func() {
 			BeforeEach(func() {
-				err := bbs.CompleteTask("task-guid-1", "the-cell-id", false, "", "the-task-result")
+				err := bbs.CompleteTask(logger, "task-guid-1", "the-cell-id", false, "", "the-task-result")
 				Ω(err).ShouldNot(HaveOccurred())
 			})
 
@@ -295,10 +303,10 @@ var _ = Describe("Task API", func() {
 				Action:   &models.RunAction{Path: "/bin/true"},
 			}
 
-			err := bbs.DesireTask(task)
+			err := bbs.DesireTask(logger, task)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			err = bbs.StartTask("task-guid-1", "the-cell-id")
+			err = bbs.StartTask(logger, "task-guid-1", "the-cell-id")
 			Ω(err).ShouldNot(HaveOccurred())
 
 			cancelErr = client.CancelTask("task-guid-1")

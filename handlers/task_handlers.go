@@ -50,7 +50,7 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.bbs.DesireTask(task)
+	err = h.bbs.DesireTask(log, task)
 	if err != nil {
 		if _, ok := err.(models.ValidationError); ok {
 			log.Error("task-request-invalid", err)
@@ -87,9 +87,9 @@ func (h *TaskHandler) GetAll(w http.ResponseWriter, req *http.Request) {
 	var err error
 
 	if domain == "" {
-		tasks, err = h.bbs.Tasks()
+		tasks, err = h.bbs.Tasks(logger)
 	} else {
-		tasks, err = h.bbs.TasksByDomain(domain)
+		tasks, err = h.bbs.TasksByDomain(logger, domain)
 	}
 
 	writeTaskResponse(w, logger, tasks, err)
@@ -133,7 +133,7 @@ func (h *TaskHandler) GetByGuid(w http.ResponseWriter, req *http.Request) {
 func (h *TaskHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	guid := req.FormValue(":task_guid")
 
-	err := h.bbs.ResolvingTask(guid)
+	err := h.bbs.ResolvingTask(h.logger, guid)
 	if err != nil {
 		switch err.(type) {
 		case bbserrors.TaskStateTransitionError:
@@ -155,7 +155,7 @@ func (h *TaskHandler) Delete(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	err = h.bbs.ResolveTask(guid)
+	err = h.bbs.ResolveTask(h.logger, guid)
 	if err != nil {
 		h.logger.Error("failed-to-resolve-task", err)
 		writeUnknownErrorResponse(w, err)
@@ -165,7 +165,7 @@ func (h *TaskHandler) Delete(w http.ResponseWriter, req *http.Request) {
 func (h *TaskHandler) Cancel(w http.ResponseWriter, req *http.Request) {
 	guid := req.FormValue(":task_guid")
 
-	err := h.bbs.CancelTask(guid)
+	err := h.bbs.CancelTask(h.logger, guid)
 
 	switch err {
 	case nil:

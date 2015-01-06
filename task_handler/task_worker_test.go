@@ -26,12 +26,13 @@ var _ = Describe("TaskWorker", func() {
 		process ifrit.Process
 
 		fakeServer *ghttp.Server
+		logger     lager.Logger
 	)
 
 	BeforeEach(func() {
 		fakeServer = ghttp.NewServer()
 
-		logger := lager.NewLogger("task-watcher-test")
+		logger = lager.NewLogger("task-watcher-test")
 		logger.RegisterSink(lager.NewWriterSink(GinkgoWriter, lager.INFO))
 
 		fakeBBS = new(fake_bbs.FakeReceptorBBS)
@@ -111,8 +112,9 @@ var _ = Describe("TaskWorker", func() {
 				simulateTaskCompleting()
 				statusCodes <- 200
 
-				Eventually(fakeBBS.ResolvingTaskCallCount).Should(Equal(1))
-				Ω(fakeBBS.ResolvingTaskArgsForCall(0)).Should(Equal("the-task-guid"))
+				Eventually(fakeBBS.ResolveTaskCallCount).Should(Equal(1))
+				_, actualGuid := fakeBBS.ResolveTaskArgsForCall(0)
+				Ω(actualGuid).Should(Equal("the-task-guid"))
 			})
 
 			It("processes tasks in parallel", func() {
@@ -150,7 +152,8 @@ var _ = Describe("TaskWorker", func() {
 						statusCodes <- 200
 
 						Eventually(fakeBBS.ResolveTaskCallCount).Should(Equal(1))
-						Ω(fakeBBS.ResolveTaskArgsForCall(0)).Should(Equal("the-task-guid"))
+						_, actualGuid := fakeBBS.ResolveTaskArgsForCall(0)
+						Ω(actualGuid).Should(Equal("the-task-guid"))
 					})
 				})
 
@@ -161,7 +164,8 @@ var _ = Describe("TaskWorker", func() {
 						statusCodes <- 403
 
 						Eventually(fakeBBS.ResolveTaskCallCount).Should(Equal(1))
-						Ω(fakeBBS.ResolveTaskArgsForCall(0)).Should(Equal("the-task-guid"))
+						_, actualGuid := fakeBBS.ResolveTaskArgsForCall(0)
+						Ω(actualGuid).Should(Equal("the-task-guid"))
 					})
 				})
 
@@ -172,7 +176,8 @@ var _ = Describe("TaskWorker", func() {
 						statusCodes <- 500
 
 						Eventually(fakeBBS.ResolveTaskCallCount).Should(Equal(1))
-						Ω(fakeBBS.ResolveTaskArgsForCall(0)).Should(Equal("the-task-guid"))
+						_, actualGuid := fakeBBS.ResolveTaskArgsForCall(0)
+						Ω(actualGuid).Should(Equal("the-task-guid"))
 					})
 				})
 
@@ -194,7 +199,8 @@ var _ = Describe("TaskWorker", func() {
 						statusCodes <- 200
 
 						Eventually(fakeBBS.ResolveTaskCallCount, 0.25).Should(Equal(1))
-						Ω(fakeBBS.ResolveTaskArgsForCall(0)).Should(Equal("the-task-guid"))
+						_, actualGuid := fakeBBS.ResolveTaskArgsForCall(0)
+						Ω(actualGuid).Should(Equal("the-task-guid"))
 					})
 
 					Context("when the request fails every time", func() {

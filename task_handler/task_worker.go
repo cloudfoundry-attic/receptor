@@ -68,7 +68,7 @@ func (t *taskWorker) handleCompletedTask(task models.Task) {
 
 	if task.CompletionCallbackURL != nil {
 		logger.Info("resolving-task")
-		err := t.bbs.ResolvingTask(task.TaskGuid)
+		err := t.bbs.ResolvingTask(logger, task.TaskGuid)
 		if err != nil {
 			logger.Error("marking-task-as-resolving-failed", err)
 			return
@@ -101,7 +101,7 @@ func (t *taskWorker) handleCompletedTask(task models.Task) {
 
 			statusCode = response.StatusCode
 			if shouldResolve(statusCode) {
-				err = t.bbs.ResolveTask(task.TaskGuid)
+				err = t.bbs.ResolveTask(logger, task.TaskGuid)
 				if err != nil {
 					logger.Error("resolving-task-failed", err)
 					return
