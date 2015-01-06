@@ -64,7 +64,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 			It("calls DesireLRP on the BBS", func() {
 				Ω(fakeBBS.DesireLRPCallCount()).Should(Equal(1))
-				desired := fakeBBS.DesireLRPArgsForCall(0)
+				_, desired := fakeBBS.DesireLRPArgsForCall(0)
 				Ω(desired).To(Equal(expectedDesiredLRP))
 			})
 
@@ -86,7 +86,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 			It("calls DesireLRP on the BBS", func() {
 				Ω(fakeBBS.DesireLRPCallCount()).Should(Equal(1))
-				desired := fakeBBS.DesireLRPArgsForCall(0)
+				_, desired := fakeBBS.DesireLRPArgsForCall(0)
 				Ω(desired).To(Equal(expectedDesiredLRP))
 			})
 
@@ -284,7 +284,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 			It("calls UpdateDesiredLRP on the BBS", func() {
 				Ω(fakeBBS.UpdateDesiredLRPCallCount()).Should(Equal(1))
-				processGuid, update := fakeBBS.UpdateDesiredLRPArgsForCall(0)
+				_, processGuid, update := fakeBBS.UpdateDesiredLRPArgsForCall(0)
 				Ω(processGuid).Should(Equal(expectedProcessGuid))
 				Ω(update).Should(Equal(expectedUpdate))
 			})
@@ -331,7 +331,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 			It("calls UpdateDesiredLRP on the BBS", func() {
 				Ω(fakeBBS.UpdateDesiredLRPCallCount()).Should(Equal(1))
-				processGuid, update := fakeBBS.UpdateDesiredLRPArgsForCall(0)
+				_, processGuid, update := fakeBBS.UpdateDesiredLRPArgsForCall(0)
 				Ω(processGuid).Should(Equal(expectedProcessGuid))
 				Ω(update).Should(Equal(expectedUpdate))
 			})
@@ -359,7 +359,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 			It("calls UpdateDesiredLRP on the BBS", func() {
 				Ω(fakeBBS.UpdateDesiredLRPCallCount()).Should(Equal(1))
-				processGuid, update := fakeBBS.UpdateDesiredLRPArgsForCall(0)
+				_, processGuid, update := fakeBBS.UpdateDesiredLRPArgsForCall(0)
 				Ω(processGuid).Should(Equal(expectedProcessGuid))
 				Ω(update).Should(Equal(expectedUpdate))
 			})
@@ -426,7 +426,8 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 			It("calls the BBS to remove the desired LRP", func() {
 				Ω(fakeBBS.RemoveDesiredLRPByProcessGuidCallCount()).Should(Equal(1))
-				Ω(fakeBBS.RemoveDesiredLRPByProcessGuidArgsForCall(0)).Should(Equal("process-guid-0"))
+				_, actualProcessGuid := fakeBBS.RemoveDesiredLRPByProcessGuidArgsForCall(0)
+				Ω(actualProcessGuid).Should(Equal("process-guid-0"))
 			})
 
 			It("responds with 204 NO CONTENT", func() {

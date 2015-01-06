@@ -39,7 +39,7 @@ func (h *DesiredLRPHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	desiredLRP := serialization.DesiredLRPFromRequest(desireLRPRequest)
 
-	err = h.bbs.DesireLRP(desiredLRP)
+	err = h.bbs.DesireLRP(log, desiredLRP)
 	if err != nil {
 		if _, ok := err.(models.ValidationError); ok {
 			log.Error("lrp-request-invalid", err)
@@ -112,7 +112,7 @@ func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	update := serialization.DesiredLRPUpdateFromRequest(desireLRPRequest)
 
-	err = h.bbs.UpdateDesiredLRP(processGuid, update)
+	err = h.bbs.UpdateDesiredLRP(log, processGuid, update)
 	if err == bbserrors.ErrStoreResourceNotFound {
 		writeDesiredLRPNotFoundResponse(w, processGuid)
 		return
@@ -140,7 +140,7 @@ func (h *DesiredLRPHandler) Delete(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err := h.bbs.RemoveDesiredLRPByProcessGuid(processGuid)
+	err := h.bbs.RemoveDesiredLRPByProcessGuid(log, processGuid)
 	if err == bbserrors.ErrStoreResourceNotFound {
 		writeDesiredLRPNotFoundResponse(w, processGuid)
 		return
