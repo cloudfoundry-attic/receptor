@@ -83,7 +83,7 @@ var _ = Describe("Task API", func() {
 
 		Describe("when the task completes", func() {
 			BeforeEach(func() {
-				err = bbs.StartTask(logger, "task-guid-1", "the-cell-id")
+				_, err = bbs.StartTask(logger, "task-guid-1", "the-cell-id")
 				Ω(err).ShouldNot(HaveOccurred())
 			})
 
@@ -217,7 +217,7 @@ var _ = Describe("Task API", func() {
 		})
 
 		It("includes all of the task's publicly-visible fields", func() {
-			err := bbs.StartTask(logger, "task-guid-1", "the-cell-id")
+			_, err := bbs.StartTask(logger, "task-guid-1", "the-cell-id")
 			Ω(err).ShouldNot(HaveOccurred())
 			err = bbs.CompleteTask(logger, "task-guid-1", "the-cell-id", true, "the-failure-reason", "the-task-result")
 			Ω(err).ShouldNot(HaveOccurred())
@@ -251,7 +251,7 @@ var _ = Describe("Task API", func() {
 			err := bbs.DesireTask(logger, task)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			err = bbs.StartTask(logger, "task-guid-1", "the-cell-id")
+			_, err = bbs.StartTask(logger, "task-guid-1", "the-cell-id")
 			Ω(err).ShouldNot(HaveOccurred())
 		})
 
@@ -306,7 +306,7 @@ var _ = Describe("Task API", func() {
 			err := bbs.DesireTask(logger, task)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			err = bbs.StartTask(logger, "task-guid-1", "the-cell-id")
+			_, err = bbs.StartTask(logger, "task-guid-1", "the-cell-id")
 			Ω(err).ShouldNot(HaveOccurred())
 
 			cancelErr = client.CancelTask("task-guid-1")
