@@ -69,7 +69,7 @@ var _ = Describe("registrations", func() {
 
 	Context("when a server is sent SIGINT after the hearbeat has started", func() {
 		JustBeforeEach(func() {
-			Eventually(receptorRunner).Should(gbytes.Say("nats-heartbeat.starting"))
+			Eventually(receptorRunner).Should(gbytes.Say("nats-heartbeat.started"))
 			ginkgomon.Interrupt(receptorProcess)
 		})
 
