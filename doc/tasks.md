@@ -22,6 +22,7 @@ When submitting a Task you `POST` a valid `TaskCreateRequest`.  The [API referen
     "cpu_weight": 57,
     "disk_mb": 1024,
     "memory_mb": 128,
+    "privileged": true,
 
     "action":  ACTION (see below),
 
@@ -109,6 +110,10 @@ A memory limit applied to the entire container.  If the aggregate memory consump
 
 - `memory_mb` must be an integer > 0
 - The units are megabytes
+
+#### `privileged` [optional]
+
+TBD
 
 #### Actions
 

@@ -32,6 +32,7 @@ func TaskFromRequest(req receptor.TaskCreateRequest) (models.Task, error) {
 		RootFSPath:            req.RootFSPath,
 		Stack:                 req.Stack,
 		TaskGuid:              req.TaskGuid,
+		Privileged:            req.Privileged,
 	}
 
 	return task, nil
@@ -55,6 +56,7 @@ func TaskToResponse(task models.Task) receptor.TaskResponse {
 		LogGuid:               task.LogGuid,
 		LogSource:             task.LogSource,
 		MemoryMB:              task.MemoryMB,
+		Privileged:            task.Privileged,
 		RootFSPath:            task.RootFSPath,
 		Stack:                 task.Stack,
 		TaskGuid:              task.TaskGuid,

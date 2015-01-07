@@ -49,6 +49,7 @@ var _ = Describe("TaskHandler", func() {
 			LogSource:  "source-name",
 			ResultFile: "result-file",
 			Annotation: "some annotation",
+			Privileged: true,
 		}
 
 		expectedTask := models.Task{
@@ -64,6 +65,7 @@ var _ = Describe("TaskHandler", func() {
 			LogSource:  "source-name",
 			ResultFile: "result-file",
 			Annotation: "some annotation",
+			Privileged: true,
 		}
 
 		Context("when everything succeeds", func() {

@@ -38,6 +38,7 @@ type TaskCreateRequest struct {
 	Stack                 string                `json:"stack"`
 	TaskGuid              string                `json:"task_guid"`
 	RootFSPath            string                `json:"root_fs"`
+	Privileged            bool                  `json:"privileged"`
 	EnvironmentVariables  []EnvironmentVariable `json:"env,omitempty"`
 }
 
@@ -98,6 +99,7 @@ type TaskResponse struct {
 	Stack                 string                `json:"stack"`
 	TaskGuid              string                `json:"task_guid"`
 	RootFSPath            string                `json:"root_fs"`
+	Privileged            bool                  `json:"privileged"`
 	EnvironmentVariables  []EnvironmentVariable `json:"env,omitempty"`
 	CellID                string                `json:"cell_id"`
 	CreatedAt             int64                 `json:"created_at"`
@@ -164,6 +166,7 @@ type DesiredLRPCreateRequest struct {
 	DiskMB               int                   `json:"disk_mb"`
 	MemoryMB             int                   `json:"memory_mb"`
 	CPUWeight            uint                  `json:"cpu_weight"`
+	Privileged           bool                  `json:"privileged"`
 	Ports                []uint32              `json:"ports"`
 	Routes               []string              `json:"routes"`
 	LogGuid              string                `json:"log_guid"`
@@ -283,6 +286,7 @@ type DesiredLRPResponse struct {
 	DiskMB               int                   `json:"disk_mb"`
 	MemoryMB             int                   `json:"memory_mb"`
 	CPUWeight            uint                  `json:"cpu_weight"`
+	Privileged           bool                  `json:"privileged"`
 	Ports                []uint32              `json:"ports"`
 	Routes               []string              `json:"routes"`
 	LogGuid              string                `json:"log_guid"`

@@ -34,6 +34,7 @@ When desiring an LRP you `POST` a valid `DesiredLRPCreateRequest`.  The [API ref
     "cpu_weight": 57,
     "disk_mb": 1024,
     "memory_mb": 128,
+    "privileged": true,
 
     "setup": ACTION,
     "action":  ACTION,
@@ -130,6 +131,10 @@ A memory limit applied to the entire container.  If the aggregate memory consump
 
 - `memory_mb` must be an integer > 0
 - The units are megabytes
+
+#### `privileged` [optional]
+
+TBD
 
 #### Actions
 

@@ -27,6 +27,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 					Path: "the-path",
 				},
 				StartTimeout: 4,
+				Privileged:   true,
 			}
 		})
 		JustBeforeEach(func() {
@@ -43,6 +44,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 			Ω(desiredLRP.Ports).Should(HaveLen(2))
 			Ω(desiredLRP.Ports[0]).Should(Equal(uint32(2345)))
 			Ω(desiredLRP.Ports[1]).Should(Equal(uint32(6789)))
+			Ω(desiredLRP.Privileged).Should(BeTrue())
 		})
 	})
 
@@ -63,6 +65,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				DiskMB:       126,
 				MemoryMB:     1234,
 				CPUWeight:    192,
+				Privileged:   true,
 				Ports: []uint32{
 					456,
 				},
@@ -88,6 +91,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				DiskMB:       126,
 				MemoryMB:     1234,
 				CPUWeight:    192,
+				Privileged:   true,
 				Ports: []uint32{
 					456,
 				},
