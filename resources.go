@@ -410,3 +410,9 @@ type CellResponse struct {
 	CellID string `json:"cell_id"`
 	Stack  string `json:"stack"`
 }
+
+type Event interface {
+	EventType() EventType
+}
+
+type EventType string

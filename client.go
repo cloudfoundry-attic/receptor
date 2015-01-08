@@ -3,6 +3,7 @@ package receptor
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,8 +13,16 @@ import (
 	"github.com/tedsuo/rata"
 )
 
-//go:generate counterfeiter -o fake_receptor/fake_client.go . Client
+var ErrSlowConsumer = errors.New("slow consumer")
+var ErrReadFromClosedSource = errors.New("read from closed source")
 
+//go:generate counterfeiter -o fake_receptor/fake_event_source.go . EventSource
+type EventSource interface {
+	Next() (Event, error)
+	Close()
+}
+
+//go:generate counterfeiter -o fake_receptor/fake_client.go . Client
 type Client interface {
 	CreateTask(TaskCreateRequest) error
 	Tasks() ([]TaskResponse, error)

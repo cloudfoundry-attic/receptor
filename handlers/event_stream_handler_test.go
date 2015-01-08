@@ -6,20 +6,22 @@ import (
 	"net/http"
 	"net/http/httptest"
 
-	"github.com/cloudfoundry-incubator/receptor/event"
+	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/event/eventfakes"
+	"github.com/cloudfoundry-incubator/receptor/fake_receptor"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 	"github.com/pivotal-golang/lager"
 	"github.com/vito/go-sse/sse"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
 type fakeEvent struct {
 	Token string `json:"token"`
 }
 
-func (fakeEvent) EventType() event.EventType {
+func (fakeEvent) EventType() receptor.EventType {
 	return "fake"
 }
 
@@ -50,19 +52,19 @@ var _ = Describe("Event Stream Handlers", func() {
 
 	Describe("EventStream", func() {
 		var (
-			fakeSource *eventfakes.FakeEventSource
+			fakeSource *fake_receptor.FakeEventSource
 
-			eventsToEmit chan<- event.Event
+			eventsToEmit chan<- receptor.Event
 
 			response *http.Response
 		)
 
 		BeforeEach(func() {
-			events := make(chan event.Event, 10)
+			events := make(chan receptor.Event, 10)
 			eventsToEmit = events
 
-			fakeSource = new(eventfakes.FakeEventSource)
-			fakeSource.NextStub = func() (event.Event, error) {
+			fakeSource = new(fake_receptor.FakeEventSource)
+			fakeSource.NextStub = func() (receptor.Event, error) {
 				e, ok := <-events
 				if !ok {
 					return nil, errors.New("event stream ended")

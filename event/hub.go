@@ -1,34 +1,32 @@
 package event
 
 import (
-	"errors"
 	"sync"
+
+	"github.com/cloudfoundry-incubator/receptor"
 )
 
 const MAX_PENDING_SUBSCRIBER_EVENTS = 1024
 
-var ErrSlowConsumer = errors.New("slow consumer")
-var ErrReadFromClosedSource = errors.New("read from closed source")
-
 //go:generate counterfeiter -o eventfakes/fake_hub.go . Hub
 type Hub interface {
-	Emit(Event)
-	Subscribe() EventSource
+	Emit(receptor.Event)
+	Subscribe() receptor.EventSource
 }
 
 type hub struct {
-	subscribers  map[chan Event]*hubSource
+	subscribers  map[chan receptor.Event]*hubSource
 	subscribersL sync.Mutex
 }
 
 func NewHub() Hub {
 	return &hub{
-		subscribers: make(map[chan Event]*hubSource),
+		subscribers: make(map[chan receptor.Event]*hubSource),
 	}
 }
 
-func (hub *hub) Subscribe() EventSource {
-	ch := make(chan Event, MAX_PENDING_SUBSCRIBER_EVENTS)
+func (hub *hub) Subscribe() receptor.EventSource {
+	ch := make(chan receptor.Event, MAX_PENDING_SUBSCRIBER_EVENTS)
 
 	source := &hubSource{
 		events: ch,
@@ -49,14 +47,14 @@ func (hub *hub) Subscribe() EventSource {
 	return source
 }
 
-func (hub *hub) Emit(event Event) {
+func (hub *hub) Emit(event receptor.Event) {
 	hub.subscribersL.Lock()
 
 	for sub, source := range hub.subscribers {
 		select {
 		case sub <- event:
 		default:
-			source.err = ErrSlowConsumer
+			source.err = receptor.ErrSlowConsumer
 			close(sub)
 		}
 	}
@@ -65,7 +63,7 @@ func (hub *hub) Emit(event Event) {
 }
 
 type hubSource struct {
-	events <-chan Event
+	events <-chan receptor.Event
 	err    error
 
 	unsubscribe func()
@@ -73,7 +71,7 @@ type hubSource struct {
 	lock sync.Mutex
 }
 
-func (source *hubSource) Next() (Event, error) {
+func (source *hubSource) Next() (receptor.Event, error) {
 	e, ok := <-source.events
 	if !ok {
 		return nil, source.err
@@ -83,6 +81,6 @@ func (source *hubSource) Next() (Event, error) {
 }
 
 func (source *hubSource) Close() {
-	source.err = ErrReadFromClosedSource
+	source.err = receptor.ErrReadFromClosedSource
 	source.unsubscribe()
 }
