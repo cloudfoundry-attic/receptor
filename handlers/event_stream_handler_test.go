@@ -96,6 +96,7 @@ var _ = Describe("Event Stream Handlers", func() {
 			eventsToEmit <- fakeEvent{"A"}
 
 			Ω(reader.Next()).Should(Equal(sse.Event{
+				ID:   "0",
 				Name: "fake",
 				Data: []byte(`{"token":"A"}`),
 			}))
@@ -103,6 +104,7 @@ var _ = Describe("Event Stream Handlers", func() {
 			eventsToEmit <- fakeEvent{"B"}
 
 			Ω(reader.Next()).Should(Equal(sse.Event{
+				ID:   "1",
 				Name: "fake",
 				Data: []byte(`{"token":"B"}`),
 			}))

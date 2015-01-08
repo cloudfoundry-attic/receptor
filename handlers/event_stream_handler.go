@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/cloudfoundry-incubator/receptor/event"
 	"github.com/pivotal-golang/lager"
@@ -32,6 +33,7 @@ func (h *EventStreamHandler) EventStream(w http.ResponseWriter, req *http.Reques
 
 	flusher.Flush()
 
+	eventID := 0
 	for {
 		e, err := source.Next()
 		if err != nil {
@@ -46,6 +48,7 @@ func (h *EventStreamHandler) EventStream(w http.ResponseWriter, req *http.Reques
 		}
 
 		err = sse.Event{
+			ID:   strconv.Itoa(eventID),
 			Name: string(e.EventType()),
 			Data: payload,
 		}.Write(w)
@@ -54,5 +57,7 @@ func (h *EventStreamHandler) EventStream(w http.ResponseWriter, req *http.Reques
 		}
 
 		flusher.Flush()
+
+		eventID++
 	}
 }
