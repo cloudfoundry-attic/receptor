@@ -1,7 +1,8 @@
 package event_test
 
 import (
-	. "github.com/cloudfoundry-incubator/receptor/event"
+	"github.com/cloudfoundry-incubator/receptor"
+	"github.com/cloudfoundry-incubator/receptor/event"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -11,17 +12,17 @@ type fakeEvent struct {
 	Token int `json:"token"`
 }
 
-func (fakeEvent) EventType() EventType {
+func (fakeEvent) EventType() receptor.EventType {
 	return "fake"
 }
 
 var _ = Describe("Hub", func() {
 	var (
-		hub Hub
+		hub event.Hub
 	)
 
 	BeforeEach(func() {
-		hub = NewHub()
+		hub = event.NewHub()
 	})
 
 	It("fans-out events emitted to it to all subscribers", func() {
@@ -53,7 +54,7 @@ var _ = Describe("Hub", func() {
 		}
 
 		_, err := slowConsumer.Next()
-		Ω(err).Should(Equal(ErrSlowConsumer))
+		Ω(err).Should(Equal(receptor.ErrSlowConsumer))
 
 		Ω(nonSlowConsumer.Next()).Should(Equal(fakeEvent{Token: 1024}))
 	})
@@ -68,7 +69,7 @@ var _ = Describe("Hub", func() {
 			source.Close()
 
 			_, err := source.Next()
-			Ω(err).Should(Equal(ErrReadFromClosedSource))
+			Ω(err).Should(Equal(receptor.ErrReadFromClosedSource))
 		})
 	})
 })

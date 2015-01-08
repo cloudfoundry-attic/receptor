@@ -4,27 +4,28 @@ package eventfakes
 import (
 	"sync"
 
+	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/event"
 )
 
 type FakeHub struct {
-	EmitStub        func(event.Event)
+	EmitStub        func(receptor.Event)
 	emitMutex       sync.RWMutex
 	emitArgsForCall []struct {
-		arg1 event.Event
+		arg1 receptor.Event
 	}
-	SubscribeStub        func() event.EventSource
+	SubscribeStub        func() receptor.EventSource
 	subscribeMutex       sync.RWMutex
 	subscribeArgsForCall []struct{}
 	subscribeReturns struct {
-		result1 event.EventSource
+		result1 receptor.EventSource
 	}
 }
 
-func (fake *FakeHub) Emit(arg1 event.Event) {
+func (fake *FakeHub) Emit(arg1 receptor.Event) {
 	fake.emitMutex.Lock()
 	fake.emitArgsForCall = append(fake.emitArgsForCall, struct {
-		arg1 event.Event
+		arg1 receptor.Event
 	}{arg1})
 	fake.emitMutex.Unlock()
 	if fake.EmitStub != nil {
@@ -38,13 +39,13 @@ func (fake *FakeHub) EmitCallCount() int {
 	return len(fake.emitArgsForCall)
 }
 
-func (fake *FakeHub) EmitArgsForCall(i int) event.Event {
+func (fake *FakeHub) EmitArgsForCall(i int) receptor.Event {
 	fake.emitMutex.RLock()
 	defer fake.emitMutex.RUnlock()
 	return fake.emitArgsForCall[i].arg1
 }
 
-func (fake *FakeHub) Subscribe() event.EventSource {
+func (fake *FakeHub) Subscribe() receptor.EventSource {
 	fake.subscribeMutex.Lock()
 	fake.subscribeArgsForCall = append(fake.subscribeArgsForCall, struct{}{})
 	fake.subscribeMutex.Unlock()
@@ -61,10 +62,10 @@ func (fake *FakeHub) SubscribeCallCount() int {
 	return len(fake.subscribeArgsForCall)
 }
 
-func (fake *FakeHub) SubscribeReturns(result1 event.EventSource) {
+func (fake *FakeHub) SubscribeReturns(result1 receptor.EventSource) {
 	fake.SubscribeStub = nil
 	fake.subscribeReturns = struct {
-		result1 event.EventSource
+		result1 receptor.EventSource
 	}{result1}
 }
 
