@@ -416,3 +416,62 @@ type Event interface {
 }
 
 type EventType string
+
+const (
+	EventTypeInvalid EventType = ""
+
+	EventTypeDesiredLRPChanged EventType = "desired_lrp_changed"
+	EventTypeDesiredLRPRemoved EventType = "desired_lrp_removed"
+	EventTypeActualLRPChanged  EventType = "actual_lrp_changed"
+	EventTypeActualLRPRemoved  EventType = "actual_lrp_removed"
+)
+
+type DesiredLRPChangedEvent struct {
+	DesiredLRPResponse DesiredLRPResponse `json:"desired_lrp"`
+}
+
+func NewDesiredLRPChangedEvent(desiredLRP DesiredLRPResponse) DesiredLRPChangedEvent {
+	return DesiredLRPChangedEvent{
+		DesiredLRPResponse: desiredLRP,
+	}
+}
+
+func (DesiredLRPChangedEvent) EventType() EventType { return EventTypeDesiredLRPChanged }
+
+type DesiredLRPRemovedEvent struct {
+	ProcessGuid string `json:"process_guid"`
+}
+
+func NewDesiredLRPRemovedEvent(guid string) DesiredLRPRemovedEvent {
+	return DesiredLRPRemovedEvent{
+		ProcessGuid: guid,
+	}
+}
+
+func (DesiredLRPRemovedEvent) EventType() EventType { return EventTypeDesiredLRPRemoved }
+
+type ActualLRPChangedEvent struct {
+	ActualLRPResponse ActualLRPResponse `json:"actual_lrp"`
+}
+
+func NewActualLRPChangedEvent(actualLRP ActualLRPResponse) ActualLRPChangedEvent {
+	return ActualLRPChangedEvent{
+		ActualLRPResponse: actualLRP,
+	}
+}
+
+func (ActualLRPChangedEvent) EventType() EventType { return EventTypeActualLRPChanged }
+
+type ActualLRPRemovedEvent struct {
+	ProcessGuid string `json:"process_guid"`
+	Index       int    `json:"index"`
+}
+
+func NewActualLRPRemovedEvent(processGuid string, index int) ActualLRPRemovedEvent {
+	return ActualLRPRemovedEvent{
+		ProcessGuid: processGuid,
+		Index:       index,
+	}
+}
+
+func (ActualLRPRemovedEvent) EventType() EventType { return EventTypeActualLRPRemoved }
