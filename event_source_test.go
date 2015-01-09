@@ -23,134 +23,146 @@ var _ = Describe("EventSource", func() {
 	})
 
 	Describe("Next", func() {
-		Context("when receiving a DesiredLRPChangedEvent", func() {
-			var expectedEvent receptor.DesiredLRPChangedEvent
+		Describe("Desired LRP events", func() {
+			var desiredLRPResponse receptor.DesiredLRPResponse
 
 			BeforeEach(func() {
-				expectedEvent = receptor.NewDesiredLRPChangedEvent(
-					serialization.DesiredLRPToResponse(
-						models.DesiredLRP{
-							ProcessGuid: "some-guid",
-							Domain:      "some-domain",
-							Stack:       "some-stack",
-							Action: &models.RunAction{
-								Path: "true",
-							},
+				desiredLRPResponse = serialization.DesiredLRPToResponse(
+					models.DesiredLRP{
+						ProcessGuid: "some-guid",
+						Domain:      "some-domain",
+						Stack:       "some-stack",
+						Action: &models.RunAction{
+							Path: "true",
 						},
-					),
-				)
-				payload, err := json.Marshal(expectedEvent)
-				Ω(err).ShouldNot(HaveOccurred())
-
-				fakeRawEventSource.NextReturns(
-					sse.Event{
-						ID:   "hi",
-						Name: string(expectedEvent.EventType()),
-						Data: payload,
 					},
-					nil,
 				)
 			})
 
-			It("returns the event", func() {
-				event, err := eventSource.Next()
-				Ω(err).ShouldNot(HaveOccurred())
+			Context("when receiving a DesiredLRPChangedEvent", func() {
+				var expectedEvent receptor.DesiredLRPChangedEvent
 
-				desiredLRPChangeEvent, ok := event.(receptor.DesiredLRPChangedEvent)
-				Ω(ok).Should(BeTrue())
-				Ω(desiredLRPChangeEvent).Should(Equal(expectedEvent))
-			})
-		})
+				BeforeEach(func() {
+					expectedEvent = receptor.NewDesiredLRPChangedEvent(desiredLRPResponse)
+					payload, err := json.Marshal(expectedEvent)
+					Ω(err).ShouldNot(HaveOccurred())
 
-		Context("when receiving a DesiredLRPRemovedEvent", func() {
-			var expectedEvent receptor.DesiredLRPRemovedEvent
-
-			BeforeEach(func() {
-				expectedEvent = receptor.NewDesiredLRPRemovedEvent("some-guid")
-				payload, err := json.Marshal(expectedEvent)
-				Ω(err).ShouldNot(HaveOccurred())
-
-				fakeRawEventSource.NextReturns(
-					sse.Event{
-						ID:   "sup",
-						Name: string(expectedEvent.EventType()),
-						Data: payload,
-					},
-					nil,
-				)
-			})
-
-			It("returns the event", func() {
-				event, err := eventSource.Next()
-				Ω(err).ShouldNot(HaveOccurred())
-
-				desiredLRPRemovedEvent, ok := event.(receptor.DesiredLRPRemovedEvent)
-				Ω(ok).Should(BeTrue())
-				Ω(desiredLRPRemovedEvent).Should(Equal(expectedEvent))
-			})
-		})
-
-		Context("when receiving a ActualLRPChangedEvent", func() {
-			var expectedEvent receptor.ActualLRPChangedEvent
-
-			BeforeEach(func() {
-				expectedEvent = receptor.NewActualLRPChangedEvent(
-					serialization.ActualLRPToResponse(
-						models.ActualLRP{
-							ActualLRPKey: models.NewActualLRPKey("some-guid", 0, "some-domain"),
-							State:        models.ActualLRPStateUnclaimed,
-							Since:        1,
+					fakeRawEventSource.NextReturns(
+						sse.Event{
+							ID:   "hi",
+							Name: string(expectedEvent.EventType()),
+							Data: payload,
 						},
-					),
-				)
-				payload, err := json.Marshal(expectedEvent)
-				Ω(err).ShouldNot(HaveOccurred())
+						nil,
+					)
+				})
 
-				fakeRawEventSource.NextReturns(
-					sse.Event{
-						ID:   "sup",
-						Name: string(expectedEvent.EventType()),
-						Data: payload,
-					},
-					nil,
-				)
+				It("returns the event", func() {
+					event, err := eventSource.Next()
+					Ω(err).ShouldNot(HaveOccurred())
+
+					desiredLRPChangeEvent, ok := event.(receptor.DesiredLRPChangedEvent)
+					Ω(ok).Should(BeTrue())
+					Ω(desiredLRPChangeEvent).Should(Equal(expectedEvent))
+				})
 			})
 
-			It("returns the event", func() {
-				event, err := eventSource.Next()
-				Ω(err).ShouldNot(HaveOccurred())
+			Context("when receiving a DesiredLRPRemovedEvent", func() {
+				var expectedEvent receptor.DesiredLRPRemovedEvent
 
-				actualLRPChangedEvent, ok := event.(receptor.ActualLRPChangedEvent)
-				Ω(ok).Should(BeTrue())
-				Ω(actualLRPChangedEvent).Should(Equal(expectedEvent))
+				BeforeEach(func() {
+					expectedEvent = receptor.NewDesiredLRPRemovedEvent(desiredLRPResponse)
+					payload, err := json.Marshal(expectedEvent)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					fakeRawEventSource.NextReturns(
+						sse.Event{
+							ID:   "sup",
+							Name: string(expectedEvent.EventType()),
+							Data: payload,
+						},
+						nil,
+					)
+				})
+
+				It("returns the event", func() {
+					event, err := eventSource.Next()
+					Ω(err).ShouldNot(HaveOccurred())
+
+					desiredLRPRemovedEvent, ok := event.(receptor.DesiredLRPRemovedEvent)
+					Ω(ok).Should(BeTrue())
+					Ω(desiredLRPRemovedEvent).Should(Equal(expectedEvent))
+				})
 			})
 		})
 
-		Context("when receiving a ActualLRPRemovedEvent", func() {
-			var expectedEvent receptor.ActualLRPRemovedEvent
+		Describe("Actual LRP Events", func() {
+			var actualLRPResponse receptor.ActualLRPResponse
 
 			BeforeEach(func() {
-				expectedEvent = receptor.NewActualLRPRemovedEvent("some-guid", 0)
-				payload, err := json.Marshal(expectedEvent)
-				Ω(err).ShouldNot(HaveOccurred())
-
-				fakeRawEventSource.NextReturns(
-					sse.Event{
-						ID:   "sup",
-						Name: string(expectedEvent.EventType()),
-						Data: payload,
+				actualLRPResponse = serialization.ActualLRPToResponse(
+					models.ActualLRP{
+						ActualLRPKey: models.NewActualLRPKey("some-guid", 0, "some-domain"),
+						State:        models.ActualLRPStateUnclaimed,
+						Since:        1,
 					},
-					nil,
 				)
 			})
 
-			It("returns the event", func() {
-				event, err := eventSource.Next()
-				Ω(err).ShouldNot(HaveOccurred())
+			Context("when receiving a ActualLRPChangedEvent", func() {
+				var expectedEvent receptor.ActualLRPChangedEvent
 
-				actualLRPRemovedEvent, ok := event.(receptor.ActualLRPRemovedEvent)
-				Ω(ok).Should(BeTrue())
-				Ω(actualLRPRemovedEvent).Should(Equal(expectedEvent))
+				BeforeEach(func() {
+					expectedEvent = receptor.NewActualLRPChangedEvent(actualLRPResponse)
+					payload, err := json.Marshal(expectedEvent)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					fakeRawEventSource.NextReturns(
+						sse.Event{
+							ID:   "sup",
+							Name: string(expectedEvent.EventType()),
+							Data: payload,
+						},
+						nil,
+					)
+				})
+
+				It("returns the event", func() {
+					event, err := eventSource.Next()
+					Ω(err).ShouldNot(HaveOccurred())
+
+					actualLRPChangedEvent, ok := event.(receptor.ActualLRPChangedEvent)
+					Ω(ok).Should(BeTrue())
+					Ω(actualLRPChangedEvent).Should(Equal(expectedEvent))
+				})
+			})
+
+			Context("when receiving a ActualLRPRemovedEvent", func() {
+				var expectedEvent receptor.ActualLRPRemovedEvent
+
+				BeforeEach(func() {
+					expectedEvent = receptor.NewActualLRPRemovedEvent(actualLRPResponse)
+					payload, err := json.Marshal(expectedEvent)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					fakeRawEventSource.NextReturns(
+						sse.Event{
+							ID:   "sup",
+							Name: string(expectedEvent.EventType()),
+							Data: payload,
+						},
+						nil,
+					)
+				})
+
+				It("returns the event", func() {
+					event, err := eventSource.Next()
+					Ω(err).ShouldNot(HaveOccurred())
+
+					actualLRPRemovedEvent, ok := event.(receptor.ActualLRPRemovedEvent)
+					Ω(ok).Should(BeTrue())
+					Ω(actualLRPRemovedEvent).Should(Equal(expectedEvent))
+				})
 			})
 		})
 

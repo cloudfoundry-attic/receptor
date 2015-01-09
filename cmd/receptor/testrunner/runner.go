@@ -41,6 +41,6 @@ func New(binPath string, args Args) *ginkgomon.Runner {
 	return ginkgomon.New(ginkgomon.Config{
 		Name:       "receptor",
 		Command:    exec.Command(binPath, args.ArgSlice()...),
-		StartCheck: "started",
+		StartCheck: "heartbeat.started",
 	})
 }

@@ -439,12 +439,12 @@ func NewDesiredLRPChangedEvent(desiredLRP DesiredLRPResponse) DesiredLRPChangedE
 func (DesiredLRPChangedEvent) EventType() EventType { return EventTypeDesiredLRPChanged }
 
 type DesiredLRPRemovedEvent struct {
-	ProcessGuid string `json:"process_guid"`
+	DesiredLRPResponse DesiredLRPResponse `json:"desired_lrp"`
 }
 
-func NewDesiredLRPRemovedEvent(guid string) DesiredLRPRemovedEvent {
+func NewDesiredLRPRemovedEvent(desiredLRP DesiredLRPResponse) DesiredLRPRemovedEvent {
 	return DesiredLRPRemovedEvent{
-		ProcessGuid: guid,
+		DesiredLRPResponse: desiredLRP,
 	}
 }
 
@@ -463,14 +463,12 @@ func NewActualLRPChangedEvent(actualLRP ActualLRPResponse) ActualLRPChangedEvent
 func (ActualLRPChangedEvent) EventType() EventType { return EventTypeActualLRPChanged }
 
 type ActualLRPRemovedEvent struct {
-	ProcessGuid string `json:"process_guid"`
-	Index       int    `json:"index"`
+	ActualLRPResponse ActualLRPResponse `json:"actual_lrp"`
 }
 
-func NewActualLRPRemovedEvent(processGuid string, index int) ActualLRPRemovedEvent {
+func NewActualLRPRemovedEvent(actualLRP ActualLRPResponse) ActualLRPRemovedEvent {
 	return ActualLRPRemovedEvent{
-		ProcessGuid: processGuid,
-		Index:       index,
+		ActualLRPResponse: actualLRP,
 	}
 }
 

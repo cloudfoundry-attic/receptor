@@ -32,11 +32,13 @@ var _ = Describe("Watcher", func() {
 		receptorWatcher watcher.Watcher
 		process         ifrit.Process
 
-		desiredLRPChanges chan models.DesiredLRPChange
-		desiredLRPErrors  chan error
+		desiredLRPCreateOrUpdates chan models.DesiredLRP
+		desiredLRPDeletes         chan models.DesiredLRP
+		desiredLRPErrors          chan error
 
-		actualLRPChanges chan models.ActualLRPChange
-		actualLRPErrors  chan error
+		actualLRPCreateOrUpdates chan models.ActualLRP
+		actualLRPDeletes         chan models.ActualLRP
+		actualLRPErrors          chan error
 	)
 
 	BeforeEach(func() {
@@ -45,14 +47,16 @@ var _ = Describe("Watcher", func() {
 		timeProvider = faketimeprovider.New(time.Now())
 		logger := lagertest.NewTestLogger("test")
 
-		desiredLRPChanges = make(chan models.DesiredLRPChange)
+		desiredLRPCreateOrUpdates = make(chan models.DesiredLRP)
+		desiredLRPDeletes = make(chan models.DesiredLRP)
 		desiredLRPErrors = make(chan error)
 
-		actualLRPChanges = make(chan models.ActualLRPChange)
+		actualLRPCreateOrUpdates = make(chan models.ActualLRP)
+		actualLRPDeletes = make(chan models.ActualLRP)
 		actualLRPErrors = make(chan error)
 
-		bbs.WatchForDesiredLRPChangesReturns(desiredLRPChanges, nil, desiredLRPErrors)
-		bbs.WatchForActualLRPChangesReturns(actualLRPChanges, nil, actualLRPErrors)
+		bbs.WatchForDesiredLRPChangesReturns(desiredLRPCreateOrUpdates, desiredLRPDeletes, desiredLRPErrors)
+		bbs.WatchForActualLRPChangesReturns(actualLRPCreateOrUpdates, actualLRPDeletes, actualLRPErrors)
 
 		receptorWatcher = watcher.NewWatcher(bbs, hub, timeProvider, retryWaitDuration, logger)
 		process = ifrit.Invoke(receptorWatcher)
@@ -78,12 +82,7 @@ var _ = Describe("Watcher", func() {
 
 		Context("when a create/update (includes an after) change arrives", func() {
 			BeforeEach(func() {
-				desiredChange := models.DesiredLRPChange{
-					Before: nil,
-					After:  &desiredLRP,
-				}
-
-				desiredLRPChanges <- desiredChange
+				desiredLRPCreateOrUpdates <- desiredLRP
 			})
 
 			It("emits a DesiredLRPChangedEvent to the hub", func() {
@@ -98,12 +97,7 @@ var _ = Describe("Watcher", func() {
 
 		Context("when the change is a delete (no after)", func() {
 			BeforeEach(func() {
-				desiredChange := models.DesiredLRPChange{
-					Before: &desiredLRP,
-					After:  nil,
-				}
-
-				desiredLRPChanges <- desiredChange
+				desiredLRPDeletes <- desiredLRP
 			})
 
 			It("emits a DesiredLRPRemovedEvent to the hub", func() {
@@ -112,7 +106,7 @@ var _ = Describe("Watcher", func() {
 
 				desiredLRPRemovedEvent, ok := event.(receptor.DesiredLRPRemovedEvent)
 				Ω(ok).Should(BeTrue())
-				Ω(desiredLRPRemovedEvent.ProcessGuid).Should(Equal(desiredLRP.ProcessGuid))
+				Ω(desiredLRPRemovedEvent.DesiredLRPResponse).Should(Equal(serialization.DesiredLRPToResponse(desiredLRP)))
 			})
 		})
 
@@ -120,15 +114,10 @@ var _ = Describe("Watcher", func() {
 			BeforeEach(func() {
 				desiredLRPErrors <- errors.New("bbs watch failed")
 
-				desiredChange := models.DesiredLRPChange{
-					Before: nil,
-					After:  &desiredLRP,
-				}
-
 				// avoid issues with race detector when the next test's
 				// BeforeEach resets the changes channel
-				changeChan := desiredLRPChanges
-				go func() { changeChan <- desiredChange }()
+				changeChan := desiredLRPCreateOrUpdates
+				go func() { changeChan <- desiredLRP }()
 			})
 
 			It("should retry after the wait duration", func() {
@@ -157,12 +146,7 @@ var _ = Describe("Watcher", func() {
 
 		Context("when a create/update (includes an after) change arrives", func() {
 			BeforeEach(func() {
-				actualChange := models.ActualLRPChange{
-					Before: nil,
-					After:  &actualLRP,
-				}
-
-				actualLRPChanges <- actualChange
+				actualLRPCreateOrUpdates <- actualLRP
 			})
 
 			It("emits an ActualLRPChangedEvent to the hub", func() {
@@ -177,12 +161,7 @@ var _ = Describe("Watcher", func() {
 
 		Context("when the change is a delete (no after)", func() {
 			BeforeEach(func() {
-				actualChange := models.ActualLRPChange{
-					Before: &actualLRP,
-					After:  nil,
-				}
-
-				actualLRPChanges <- actualChange
+				actualLRPDeletes <- actualLRP
 			})
 
 			It("emits an ActualLRPRemovedEvent to the hub", func() {
@@ -191,8 +170,7 @@ var _ = Describe("Watcher", func() {
 
 				actualLRPRemovedEvent, ok := event.(receptor.ActualLRPRemovedEvent)
 				Ω(ok).Should(BeTrue())
-				Ω(actualLRPRemovedEvent.ProcessGuid).Should(Equal(actualLRP.ProcessGuid))
-				Ω(actualLRPRemovedEvent.Index).Should(Equal(actualLRP.Index))
+				Ω(actualLRPRemovedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
 			})
 		})
 
@@ -200,15 +178,10 @@ var _ = Describe("Watcher", func() {
 			BeforeEach(func() {
 				actualLRPErrors <- errors.New("bbs watch failed")
 
-				actualChange := models.ActualLRPChange{
-					Before: nil,
-					After:  &actualLRP,
-				}
-
 				// avoid issues with race detector when the next test's
 				// BeforeEach resets the changes channel
-				changeChan := actualLRPChanges
-				go func() { changeChan <- actualChange }()
+				changeChan := actualLRPCreateOrUpdates
+				go func() { changeChan <- actualLRP }()
 			})
 
 			It("should retry after the wait duration", func() {

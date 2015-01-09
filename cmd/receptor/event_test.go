@@ -72,7 +72,7 @@ var _ = Describe("Event", func() {
 
 			desiredLRPRemovedEvent, ok := event.(receptor.DesiredLRPRemovedEvent)
 			Ω(ok).Should(BeTrue())
-			Ω(desiredLRPRemovedEvent.ProcessGuid).Should(Equal(desiredLRP.ProcessGuid))
+			Ω(desiredLRPRemovedEvent.DesiredLRPResponse.ProcessGuid).Should(Equal(desiredLRP.ProcessGuid))
 		})
 	})
 
@@ -127,8 +127,7 @@ var _ = Describe("Event", func() {
 
 			actualLRPRemovedEvent, ok := event.(receptor.ActualLRPRemovedEvent)
 			Ω(ok).Should(BeTrue())
-			Ω(actualLRPRemovedEvent.ProcessGuid).Should(Equal(actualLRP.ProcessGuid))
-			Ω(actualLRPRemovedEvent.Index).Should(Equal(actualLRP.Index))
+			Ω(actualLRPRemovedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
 		})
 	})
 })
