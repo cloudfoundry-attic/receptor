@@ -80,7 +80,8 @@ func (source *hubSource) Next() (receptor.Event, error) {
 	return e, nil
 }
 
-func (source *hubSource) Close() {
+func (source *hubSource) Close() error {
 	source.err = receptor.ErrReadFromClosedSource
 	source.unsubscribe()
+	return nil
 }

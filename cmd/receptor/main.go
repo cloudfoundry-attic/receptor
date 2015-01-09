@@ -15,6 +15,7 @@ import (
 	"github.com/cloudfoundry-incubator/receptor/event"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
 	"github.com/cloudfoundry-incubator/receptor/task_handler"
+	"github.com/cloudfoundry-incubator/receptor/watcher"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/lock_bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
@@ -104,6 +105,12 @@ var natsPassword = flag.String(
 	"Password for nats user.",
 )
 
+var bbsWatchRetryWaitDuration = flag.Duration(
+	"bbsWatchRetryWaitDuration",
+	3*time.Second,
+	"Duration to wait before retrying watching the BBS when watching fails",
+)
+
 const (
 	dropsondeDestination = "localhost:3457"
 	dropsondeOrigin      = "receptor"
@@ -130,11 +137,13 @@ func main() {
 
 	worker, enqueue := task_handler.NewTaskWorkerPool(bbs, logger)
 	taskHandler := task_handler.New(enqueue, logger)
+	lrpChangeWatcher := watcher.NewWatcher(bbs, hub, timeprovider.NewTimeProvider(), *bbsWatchRetryWaitDuration, logger)
 
 	members := grouper.Members{
+		{"lrp-change-watcher", lrpChangeWatcher},
 		{"server", http_server.New(*serverAddress, handler)},
 		{"worker", worker},
-		{"task_complete_handler", http_server.New(*taskHandlerAddress, taskHandler)},
+		{"task-complete-handler", http_server.New(*taskHandlerAddress, taskHandler)},
 		{"heartbeater", initializeReceptorHeartbeat(*taskHandlerAddress, *heartbeatInterval, bbs, logger)},
 	}
 
@@ -142,7 +151,7 @@ func main() {
 		registration := initializeServerRegistration(logger)
 		natsClient := diegonats.NewClient()
 		members = append(members, grouper.Member{
-			Name:   "background_heartbeat",
+			Name:   "background-heartbeat",
 			Runner: natbeat.NewBackgroundHeartbeat(natsClient, *natsAddresses, *natsUsername, *natsPassword, logger, registration),
 		})
 	}

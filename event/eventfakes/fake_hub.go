@@ -17,7 +17,7 @@ type FakeHub struct {
 	SubscribeStub        func() receptor.EventSource
 	subscribeMutex       sync.RWMutex
 	subscribeArgsForCall []struct{}
-	subscribeReturns struct {
+	subscribeReturns     struct {
 		result1 receptor.EventSource
 	}
 }

@@ -11,16 +11,11 @@ import (
 	"time"
 
 	"github.com/tedsuo/rata"
+	"github.com/vito/go-sse/sse"
 )
 
 var ErrSlowConsumer = errors.New("slow consumer")
 var ErrReadFromClosedSource = errors.New("read from closed source")
-
-//go:generate counterfeiter -o fake_receptor/fake_event_source.go . EventSource
-type EventSource interface {
-	Next() (Event, error)
-	Close()
-}
 
 //go:generate counterfeiter -o fake_receptor/fake_client.go . Client
 type Client interface {
@@ -43,6 +38,8 @@ type Client interface {
 	ActualLRPsByProcessGuid(processGuid string) ([]ActualLRPResponse, error)
 	ActualLRPByProcessGuidAndIndex(processGuid string, index int) (ActualLRPResponse, error)
 	KillActualLRPByProcessGuidAndIndex(processGuid string, index int) error
+
+	SubscribeToEvents() (EventSource, error)
 
 	Cells() ([]CellResponse, error)
 
@@ -149,6 +146,27 @@ func (c *client) ActualLRPByProcessGuidAndIndex(processGuid string, index int) (
 func (c *client) KillActualLRPByProcessGuidAndIndex(processGuid string, index int) error {
 	err := c.doRequest(KillActualLRPByProcessGuidAndIndexRoute, rata.Params{"process_guid": processGuid, "index": strconv.Itoa(index)}, nil, nil, nil)
 	return err
+}
+
+func (c *client) SubscribeToEvents() (EventSource, error) {
+	eventSource := &sse.EventSource{
+		Client: c.httpClient,
+		CreateRequest: func() *http.Request {
+			request, err := c.reqGen.CreateRequest(EventStream, nil, nil)
+			if err != nil {
+				panic(err) // totally shouldn't happen
+			}
+
+			return request
+		},
+	}
+
+	err := eventSource.Connect()
+	if err != nil {
+		return nil, err
+	}
+
+	return NewEventSource(eventSource), nil
 }
 
 func (c *client) Cells() ([]CellResponse, error) {

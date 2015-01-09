@@ -66,9 +66,10 @@ var _ = Describe("Hub", func() {
 			hub.Emit(fakeEvent{Token: 1})
 			Ω(source.Next()).Should(Equal(fakeEvent{Token: 1}))
 
-			source.Close()
+			err := source.Close()
+			Ω(err).ShouldNot(HaveOccurred())
 
-			_, err := source.Next()
+			_, err = source.Next()
 			Ω(err).Should(Equal(receptor.ErrReadFromClosedSource))
 		})
 	})

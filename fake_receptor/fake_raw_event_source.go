@@ -5,14 +5,15 @@ import (
 	"sync"
 
 	"github.com/cloudfoundry-incubator/receptor"
+	"github.com/vito/go-sse/sse"
 )
 
-type FakeEventSource struct {
-	NextStub        func() (receptor.Event, error)
+type FakeRawEventSource struct {
+	NextStub        func() (sse.Event, error)
 	nextMutex       sync.RWMutex
 	nextArgsForCall []struct{}
 	nextReturns struct {
-		result1 receptor.Event
+		result1 sse.Event
 		result2 error
 	}
 	CloseStub        func() error
@@ -23,7 +24,7 @@ type FakeEventSource struct {
 	}
 }
 
-func (fake *FakeEventSource) Next() (receptor.Event, error) {
+func (fake *FakeRawEventSource) Next() (sse.Event, error) {
 	fake.nextMutex.Lock()
 	fake.nextArgsForCall = append(fake.nextArgsForCall, struct{}{})
 	fake.nextMutex.Unlock()
@@ -34,21 +35,21 @@ func (fake *FakeEventSource) Next() (receptor.Event, error) {
 	}
 }
 
-func (fake *FakeEventSource) NextCallCount() int {
+func (fake *FakeRawEventSource) NextCallCount() int {
 	fake.nextMutex.RLock()
 	defer fake.nextMutex.RUnlock()
 	return len(fake.nextArgsForCall)
 }
 
-func (fake *FakeEventSource) NextReturns(result1 receptor.Event, result2 error) {
+func (fake *FakeRawEventSource) NextReturns(result1 sse.Event, result2 error) {
 	fake.NextStub = nil
 	fake.nextReturns = struct {
-		result1 receptor.Event
+		result1 sse.Event
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeEventSource) Close() error {
+func (fake *FakeRawEventSource) Close() error {
 	fake.closeMutex.Lock()
 	fake.closeArgsForCall = append(fake.closeArgsForCall, struct{}{})
 	fake.closeMutex.Unlock()
@@ -59,17 +60,17 @@ func (fake *FakeEventSource) Close() error {
 	}
 }
 
-func (fake *FakeEventSource) CloseCallCount() int {
+func (fake *FakeRawEventSource) CloseCallCount() int {
 	fake.closeMutex.RLock()
 	defer fake.closeMutex.RUnlock()
 	return len(fake.closeArgsForCall)
 }
 
-func (fake *FakeEventSource) CloseReturns(result1 error) {
+func (fake *FakeRawEventSource) CloseReturns(result1 error) {
 	fake.CloseStub = nil
 	fake.closeReturns = struct {
 		result1 error
 	}{result1}
 }
 
-var _ receptor.EventSource = new(FakeEventSource)
+var _ receptor.RawEventSource = new(FakeRawEventSource)
