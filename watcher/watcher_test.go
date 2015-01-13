@@ -117,7 +117,8 @@ var _ = Describe("Watcher", func() {
 				// avoid issues with race detector when the next test's
 				// BeforeEach resets the changes channel
 				changeChan := desiredLRPCreateOrUpdates
-				go func() { changeChan <- desiredLRP }()
+				desiredLRPToSend := desiredLRP
+				go func() { changeChan <- desiredLRPToSend }()
 			})
 
 			It("should retry after the wait duration", func() {
@@ -181,7 +182,8 @@ var _ = Describe("Watcher", func() {
 				// avoid issues with race detector when the next test's
 				// BeforeEach resets the changes channel
 				changeChan := actualLRPCreateOrUpdates
-				go func() { changeChan <- actualLRP }()
+				actualLRPToSend := actualLRP
+				go func() { changeChan <- actualLRPToSend }()
 			})
 
 			It("should retry after the wait duration", func() {
