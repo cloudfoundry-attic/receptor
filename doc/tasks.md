@@ -113,7 +113,7 @@ A memory limit applied to the entire container.  If the aggregate memory consump
 
 #### `privileged` [optional]
 
-TBD
+If false, Diego will create a container that is in a user namespace.  Processes that succesfully obtain escalated privileges (i.e. root access) will actually only be root within the user namespace and will not be able to maliciously modify the host VM.  If true, Diego creates a container with no user namespace -- escalating to root gives the user *real* root access.
 
 #### Actions
 
