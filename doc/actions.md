@@ -57,7 +57,7 @@ A set of constraints to apply to the process.  Currently only file descriptor li
 
 #### `privileged` [optional]
 
-If true the process will run with *root* privileged.  This may be disabled by the operator managing Diego.  If it is disabled, the `RunAction` will fail.
+If true the process will run with *root* privileges.  This may be disabled by the operator managing Diego.  If it is disabled, the `RunAction` will fail.  If the associated Task/LRP has the container-level `privileged` flag set to `true` then this will correspond to *real* root, otherwise the process will be run as a user-namespaced root.
 
 #### `log_source` [optional]
 
