@@ -25,21 +25,22 @@ const (
 )
 
 type TaskCreateRequest struct {
-	Action                models.Action         `json:"-"`
-	Annotation            string                `json:"annotation,omitempty"`
-	CompletionCallbackURL string                `json:"completion_callback_url"`
-	CPUWeight             uint                  `json:"cpu_weight"`
-	DiskMB                int                   `json:"disk_mb"`
-	Domain                string                `json:"domain"`
-	LogGuid               string                `json:"log_guid"`
-	LogSource             string                `json:"log_source"`
-	MemoryMB              int                   `json:"memory_mb"`
-	ResultFile            string                `json:"result_file"`
-	Stack                 string                `json:"stack"`
-	TaskGuid              string                `json:"task_guid"`
-	RootFSPath            string                `json:"root_fs"`
-	Privileged            bool                  `json:"privileged"`
-	EnvironmentVariables  []EnvironmentVariable `json:"env,omitempty"`
+	Action                models.Action              `json:"-"`
+	Annotation            string                     `json:"annotation,omitempty"`
+	CompletionCallbackURL string                     `json:"completion_callback_url"`
+	CPUWeight             uint                       `json:"cpu_weight"`
+	DiskMB                int                        `json:"disk_mb"`
+	Domain                string                     `json:"domain"`
+	LogGuid               string                     `json:"log_guid"`
+	LogSource             string                     `json:"log_source"`
+	MemoryMB              int                        `json:"memory_mb"`
+	ResultFile            string                     `json:"result_file"`
+	Stack                 string                     `json:"stack"`
+	TaskGuid              string                     `json:"task_guid"`
+	RootFSPath            string                     `json:"root_fs"`
+	Privileged            bool                       `json:"privileged"`
+	EnvironmentVariables  []EnvironmentVariable      `json:"env,omitempty"`
+	SecurityGroupRules    []models.SecurityGroupRule `json:"security_group_rules,omitempty"`
 }
 
 type InnerTaskCreateRequest TaskCreateRequest
@@ -86,27 +87,28 @@ func (request *TaskCreateRequest) UnmarshalJSON(payload []byte) error {
 }
 
 type TaskResponse struct {
-	Action                models.Action         `json:"-"`
-	Annotation            string                `json:"annotation,omitempty"`
-	CompletionCallbackURL string                `json:"completion_callback_url"`
-	CPUWeight             uint                  `json:"cpu_weight"`
-	DiskMB                int                   `json:"disk_mb"`
-	Domain                string                `json:"domain"`
-	LogGuid               string                `json:"log_guid"`
-	LogSource             string                `json:"log_source"`
-	MemoryMB              int                   `json:"memory_mb"`
-	ResultFile            string                `json:"result_file"`
-	Stack                 string                `json:"stack"`
-	TaskGuid              string                `json:"task_guid"`
-	RootFSPath            string                `json:"root_fs"`
-	Privileged            bool                  `json:"privileged"`
-	EnvironmentVariables  []EnvironmentVariable `json:"env,omitempty"`
-	CellID                string                `json:"cell_id"`
-	CreatedAt             int64                 `json:"created_at"`
-	Failed                bool                  `json:"failed"`
-	FailureReason         string                `json:"failure_reason"`
-	Result                string                `json:"result"`
-	State                 string                `json:"state"`
+	Action                models.Action              `json:"-"`
+	Annotation            string                     `json:"annotation,omitempty"`
+	CompletionCallbackURL string                     `json:"completion_callback_url"`
+	CPUWeight             uint                       `json:"cpu_weight"`
+	DiskMB                int                        `json:"disk_mb"`
+	Domain                string                     `json:"domain"`
+	LogGuid               string                     `json:"log_guid"`
+	LogSource             string                     `json:"log_source"`
+	MemoryMB              int                        `json:"memory_mb"`
+	ResultFile            string                     `json:"result_file"`
+	Stack                 string                     `json:"stack"`
+	TaskGuid              string                     `json:"task_guid"`
+	RootFSPath            string                     `json:"root_fs"`
+	Privileged            bool                       `json:"privileged"`
+	EnvironmentVariables  []EnvironmentVariable      `json:"env,omitempty"`
+	CellID                string                     `json:"cell_id"`
+	CreatedAt             int64                      `json:"created_at"`
+	Failed                bool                       `json:"failed"`
+	FailureReason         string                     `json:"failure_reason"`
+	Result                string                     `json:"result"`
+	State                 string                     `json:"state"`
+	SecurityGroupRules    []models.SecurityGroupRule `json:"security_group_rules,omitempty"`
 }
 
 type InnerTaskResponse TaskResponse
@@ -153,25 +155,26 @@ func (response *TaskResponse) UnmarshalJSON(payload []byte) error {
 }
 
 type DesiredLRPCreateRequest struct {
-	ProcessGuid          string                `json:"process_guid"`
-	Domain               string                `json:"domain"`
-	RootFSPath           string                `json:"root_fs"`
-	Instances            int                   `json:"instances"`
-	Stack                string                `json:"stack"`
-	EnvironmentVariables []EnvironmentVariable `json:"env,omitempty"`
-	Setup                models.Action         `json:"-"`
-	Action               models.Action         `json:"-"`
-	Monitor              models.Action         `json:"-"`
-	StartTimeout         uint                  `json:"start_timeout"`
-	DiskMB               int                   `json:"disk_mb"`
-	MemoryMB             int                   `json:"memory_mb"`
-	CPUWeight            uint                  `json:"cpu_weight"`
-	Privileged           bool                  `json:"privileged"`
-	Ports                []uint32              `json:"ports"`
-	Routes               []string              `json:"routes"`
-	LogGuid              string                `json:"log_guid"`
-	LogSource            string                `json:"log_source"`
-	Annotation           string                `json:"annotation,omitempty"`
+	ProcessGuid          string                     `json:"process_guid"`
+	Domain               string                     `json:"domain"`
+	RootFSPath           string                     `json:"root_fs"`
+	Instances            int                        `json:"instances"`
+	Stack                string                     `json:"stack"`
+	EnvironmentVariables []EnvironmentVariable      `json:"env,omitempty"`
+	Setup                models.Action              `json:"-"`
+	Action               models.Action              `json:"-"`
+	Monitor              models.Action              `json:"-"`
+	StartTimeout         uint                       `json:"start_timeout"`
+	DiskMB               int                        `json:"disk_mb"`
+	MemoryMB             int                        `json:"memory_mb"`
+	CPUWeight            uint                       `json:"cpu_weight"`
+	Privileged           bool                       `json:"privileged"`
+	Ports                []uint32                   `json:"ports"`
+	Routes               []string                   `json:"routes"`
+	LogGuid              string                     `json:"log_guid"`
+	LogSource            string                     `json:"log_source"`
+	Annotation           string                     `json:"annotation,omitempty"`
+	SecurityGroupRules   []models.SecurityGroupRule `json:"security_group_rules,omitempty"`
 }
 
 type InnerDesiredLRPCreateRequest DesiredLRPCreateRequest
@@ -273,25 +276,26 @@ type DesiredLRPUpdateRequest struct {
 }
 
 type DesiredLRPResponse struct {
-	ProcessGuid          string                `json:"process_guid"`
-	Domain               string                `json:"domain"`
-	RootFSPath           string                `json:"root_fs"`
-	Instances            int                   `json:"instances"`
-	Stack                string                `json:"stack"`
-	EnvironmentVariables []EnvironmentVariable `json:"env,omitempty"`
-	Setup                models.Action         `json:"setup"`
-	Action               models.Action         `json:"action"`
-	Monitor              models.Action         `json:"monitor"`
-	StartTimeout         uint                  `json:"start_timeout"`
-	DiskMB               int                   `json:"disk_mb"`
-	MemoryMB             int                   `json:"memory_mb"`
-	CPUWeight            uint                  `json:"cpu_weight"`
-	Privileged           bool                  `json:"privileged"`
-	Ports                []uint32              `json:"ports"`
-	Routes               []string              `json:"routes"`
-	LogGuid              string                `json:"log_guid"`
-	LogSource            string                `json:"log_source"`
-	Annotation           string                `json:"annotation,omitempty"`
+	ProcessGuid          string                     `json:"process_guid"`
+	Domain               string                     `json:"domain"`
+	RootFSPath           string                     `json:"root_fs"`
+	Instances            int                        `json:"instances"`
+	Stack                string                     `json:"stack"`
+	EnvironmentVariables []EnvironmentVariable      `json:"env,omitempty"`
+	Setup                models.Action              `json:"setup"`
+	Action               models.Action              `json:"action"`
+	Monitor              models.Action              `json:"monitor"`
+	StartTimeout         uint                       `json:"start_timeout"`
+	DiskMB               int                        `json:"disk_mb"`
+	MemoryMB             int                        `json:"memory_mb"`
+	CPUWeight            uint                       `json:"cpu_weight"`
+	Privileged           bool                       `json:"privileged"`
+	Ports                []uint32                   `json:"ports"`
+	Routes               []string                   `json:"routes"`
+	LogGuid              string                     `json:"log_guid"`
+	LogSource            string                     `json:"log_source"`
+	Annotation           string                     `json:"annotation,omitempty"`
+	SecurityGroupRules   []models.SecurityGroupRule `json:"security_group_rules,omitempty"`
 }
 
 type InnerDesiredLRPResponse DesiredLRPResponse

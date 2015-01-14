@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/cloudfoundry-incubator/receptor"
+	"github.com/cloudfoundry-incubator/runtime-schema/models"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -48,6 +49,49 @@ var _ = Describe("Resources", func() {
 					})
 				})
 			})
+			Context("with security group rules", func() {
+				var expectedRequest receptor.TaskCreateRequest
+				var payload string
+				BeforeEach(func() {
+					payload = `{
+						"security_group_rules":[
+		          {
+				        "protocol": "tcp",
+				        "port_range": {
+					        "start": 1,
+					        "end": 1024
+				        },
+				        "destination": {
+					        "network_address": "0.0.0.0",
+					        "prefix_length": 0
+				        }
+			        }
+		        ]
+					}`
+					expectedRequest = receptor.TaskCreateRequest{
+						SecurityGroupRules: []models.SecurityGroupRule{
+							{
+								Protocol: "tcp",
+								PortRange: models.PortRange{
+									Start: 1,
+									End:   1024,
+								},
+								Destination: models.CIDR{
+									NetworkAddress: "0.0.0.0",
+									PrefixLength:   0,
+								},
+							},
+						},
+					}
+				})
+
+				It("unmarshals", func() {
+					var actualRequest receptor.TaskCreateRequest
+					err := json.Unmarshal([]byte(payload), &actualRequest)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(actualRequest).Should(Equal(expectedRequest))
+				})
+			})
 		})
 	})
 
@@ -87,6 +131,49 @@ var _ = Describe("Resources", func() {
 						Ω(err).ShouldNot(HaveOccurred())
 						Ω(actualResponse).Should(Equal(expectedResponse))
 					})
+				})
+			})
+			Context("with security group rules", func() {
+				var expectedResponse receptor.TaskResponse
+				var payload string
+				BeforeEach(func() {
+					payload = `{
+						"security_group_rules":[
+		          {
+				        "protocol": "tcp",
+				        "port_range": {
+					        "start": 1,
+					        "end": 1024
+				        },
+				        "destination": {
+					        "network_address": "0.0.0.0",
+					        "prefix_length": 0
+				        }
+			        }
+		        ]
+					}`
+					expectedResponse = receptor.TaskResponse{
+						SecurityGroupRules: []models.SecurityGroupRule{
+							{
+								Protocol: "tcp",
+								PortRange: models.PortRange{
+									Start: 1,
+									End:   1024,
+								},
+								Destination: models.CIDR{
+									NetworkAddress: "0.0.0.0",
+									PrefixLength:   0,
+								},
+							},
+						},
+					}
+				})
+
+				It("unmarshals", func() {
+					var actualRequest receptor.TaskResponse
+					err := json.Unmarshal([]byte(payload), &actualRequest)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(actualRequest).Should(Equal(expectedResponse))
 				})
 			})
 		})
@@ -132,6 +219,50 @@ var _ = Describe("Resources", func() {
 					})
 				})
 			})
+			Context("with security group rules", func() {
+				var expectedRequest receptor.DesiredLRPCreateRequest
+				var payload string
+
+				BeforeEach(func() {
+					payload = `{
+						"security_group_rules":[
+		          {
+				        "protocol": "tcp",
+				        "port_range": {
+					        "start": 1,
+					        "end": 1024
+				        },
+				        "destination": {
+					        "network_address": "0.0.0.0",
+					        "prefix_length": 0
+				        }
+			        }
+		        ]
+					}`
+					expectedRequest = receptor.DesiredLRPCreateRequest{
+						SecurityGroupRules: []models.SecurityGroupRule{
+							{
+								Protocol: "tcp",
+								PortRange: models.PortRange{
+									Start: 1,
+									End:   1024,
+								},
+								Destination: models.CIDR{
+									NetworkAddress: "0.0.0.0",
+									PrefixLength:   0,
+								},
+							},
+						},
+					}
+				})
+
+				It("unmarshals", func() {
+					var actualRequest receptor.DesiredLRPCreateRequest
+					err := json.Unmarshal([]byte(payload), &actualRequest)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(actualRequest).Should(Equal(expectedRequest))
+				})
+			})
 		})
 	})
 
@@ -173,6 +304,50 @@ var _ = Describe("Resources", func() {
 						Ω(err).ShouldNot(HaveOccurred())
 						Ω(actualResponse).Should(Equal(expectedResponse))
 					})
+				})
+			})
+			Context("with security group rules", func() {
+				var expectedResponse receptor.DesiredLRPResponse
+				var payload string
+
+				BeforeEach(func() {
+					payload = `{
+						"security_group_rules":[
+		          {
+				        "protocol": "tcp",
+				        "port_range": {
+					        "start": 1,
+					        "end": 1024
+				        },
+				        "destination": {
+					        "network_address": "0.0.0.0",
+					        "prefix_length": 0
+				        }
+			        }
+		        ]
+					}`
+					expectedResponse = receptor.DesiredLRPResponse{
+						SecurityGroupRules: []models.SecurityGroupRule{
+							{
+								Protocol: "tcp",
+								PortRange: models.PortRange{
+									Start: 1,
+									End:   1024,
+								},
+								Destination: models.CIDR{
+									NetworkAddress: "0.0.0.0",
+									PrefixLength:   0,
+								},
+							},
+						},
+					}
+				})
+
+				It("unmarshals", func() {
+					var actualResponse receptor.DesiredLRPResponse
+					err := json.Unmarshal([]byte(payload), &actualResponse)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(actualResponse).Should(Equal(expectedResponse))
 				})
 			})
 		})
