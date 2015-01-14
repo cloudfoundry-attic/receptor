@@ -43,6 +43,19 @@ var _ = Describe("Task Serialization", func() {
 					{Name: "var1", Value: "val1"},
 					{Name: "var2", Value: "val2"},
 				},
+				SecurityGroupRules: []models.SecurityGroupRule{
+					{
+						Protocol: "tcp",
+						PortRange: models.PortRange{
+							Start: 1,
+							End:   1024,
+						},
+						Destination: models.CIDR{
+							NetworkAddress: "0.0.0.0",
+							PrefixLength:   0,
+						},
+					},
+				},
 			}
 		})
 
@@ -90,6 +103,19 @@ var _ = Describe("Task Serialization", func() {
 				EnvironmentVariables: []receptor.EnvironmentVariable{
 					{Name: "var1", Value: "val1"},
 					{Name: "var2", Value: "val2"},
+				},
+				SecurityGroupRules: []models.SecurityGroupRule{
+					{
+						Protocol: "tcp",
+						PortRange: models.PortRange{
+							Start: 1,
+							End:   1024,
+						},
+						Destination: models.CIDR{
+							NetworkAddress: "0.0.0.0",
+							PrefixLength:   0,
+						},
+					},
 				},
 			}
 
@@ -141,7 +167,21 @@ var _ = Describe("Task Serialization", func() {
 				EnvironmentVariables: []receptor.EnvironmentVariable{
 					{Name: "var1", Value: "val1"},
 					{Name: "var2", Value: "val2"},
-				}}
+				},
+				SecurityGroupRules: []models.SecurityGroupRule{
+					{
+						Protocol: "tcp",
+						PortRange: models.PortRange{
+							Start: 1,
+							End:   1024,
+						},
+						Destination: models.CIDR{
+							NetworkAddress: "0.0.0.0",
+							PrefixLength:   0,
+						},
+					},
+				},
+			}
 
 			expectedTask = models.Task{
 				TaskGuid:   "the-task-guid",
@@ -162,7 +202,21 @@ var _ = Describe("Task Serialization", func() {
 				EnvironmentVariables: []models.EnvironmentVariable{
 					{Name: "var1", Value: "val1"},
 					{Name: "var2", Value: "val2"},
-				}}
+				},
+				SecurityGroupRules: []models.SecurityGroupRule{
+					{
+						Protocol: "tcp",
+						PortRange: models.PortRange{
+							Start: 1,
+							End:   1024,
+						},
+						Destination: models.CIDR{
+							NetworkAddress: "0.0.0.0",
+							PrefixLength:   0,
+						},
+					},
+				},
+			}
 		})
 
 		It("translates the request into a task model, preserving attributes", func() {

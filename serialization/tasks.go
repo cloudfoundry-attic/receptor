@@ -33,6 +33,7 @@ func TaskFromRequest(req receptor.TaskCreateRequest) (models.Task, error) {
 		Stack:                 req.Stack,
 		TaskGuid:              req.TaskGuid,
 		Privileged:            req.Privileged,
+		SecurityGroupRules:    req.SecurityGroupRules,
 	}
 
 	return task, nil
@@ -61,11 +62,12 @@ func TaskToResponse(task models.Task) receptor.TaskResponse {
 		Stack:                 task.Stack,
 		TaskGuid:              task.TaskGuid,
 
-		CreatedAt:     task.CreatedAt,
-		Failed:        task.Failed,
-		FailureReason: task.FailureReason,
-		Result:        task.Result,
-		State:         taskStateToResponseState(task.State),
+		CreatedAt:          task.CreatedAt,
+		Failed:             task.Failed,
+		FailureReason:      task.FailureReason,
+		Result:             task.Result,
+		State:              taskStateToResponseState(task.State),
+		SecurityGroupRules: task.SecurityGroupRules,
 	}
 }
 

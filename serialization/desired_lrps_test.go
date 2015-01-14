@@ -13,8 +13,20 @@ var _ = Describe("DesiredLRP Serialization", func() {
 	Describe("DesiredLRPFromRequest", func() {
 		var request receptor.DesiredLRPCreateRequest
 		var desiredLRP models.DesiredLRP
+		var securityRule models.SecurityGroupRule
 
 		BeforeEach(func() {
+			securityRule = models.SecurityGroupRule{
+				Protocol: "tcp",
+				PortRange: models.PortRange{
+					Start: 1,
+					End:   1024,
+				},
+				Destination: models.CIDR{
+					NetworkAddress: "0.0.0.0",
+					PrefixLength:   0,
+				},
+			}
 			request = receptor.DesiredLRPCreateRequest{
 				ProcessGuid: "the-process-guid",
 				Domain:      "the-domain",
@@ -28,6 +40,9 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				},
 				StartTimeout: 4,
 				Privileged:   true,
+				SecurityGroupRules: []models.SecurityGroupRule{
+					securityRule,
+				},
 			}
 		})
 		JustBeforeEach(func() {
@@ -45,12 +60,30 @@ var _ = Describe("DesiredLRP Serialization", func() {
 			Ω(desiredLRP.Ports[0]).Should(Equal(uint32(2345)))
 			Ω(desiredLRP.Ports[1]).Should(Equal(uint32(6789)))
 			Ω(desiredLRP.Privileged).Should(BeTrue())
+			Ω(desiredLRP.SecurityGroupRules).Should(HaveLen(1))
+			Ω(desiredLRP.SecurityGroupRules[0].Protocol).Should(Equal(securityRule.Protocol))
+			Ω(desiredLRP.SecurityGroupRules[0].PortRange).Should(Equal(securityRule.PortRange))
+			Ω(desiredLRP.SecurityGroupRules[0].Destination).Should(Equal(securityRule.Destination))
 		})
 	})
 
 	Describe("DesiredLRPToResponse", func() {
 		var desiredLRP models.DesiredLRP
+		var securityRule models.SecurityGroupRule
+
 		BeforeEach(func() {
+			securityRule = models.SecurityGroupRule{
+				Protocol: "tcp",
+				PortRange: models.PortRange{
+					Start: 1,
+					End:   1024,
+				},
+				Destination: models.CIDR{
+					NetworkAddress: "0.0.0.0",
+					PrefixLength:   0,
+				},
+			}
+
 			desiredLRP = models.DesiredLRP{
 				ProcessGuid: "process-guid-0",
 				Domain:      "domain-0",
@@ -73,6 +106,9 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				LogGuid:    "log-guid-0",
 				LogSource:  "log-source-name-0",
 				Annotation: "annotation-0",
+				SecurityGroupRules: []models.SecurityGroupRule{
+					securityRule,
+				},
 			}
 		})
 
@@ -99,6 +135,9 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				LogGuid:    "log-guid-0",
 				LogSource:  "log-source-name-0",
 				Annotation: "annotation-0",
+				SecurityGroupRules: []models.SecurityGroupRule{
+					securityRule,
+				},
 			}
 
 			actualResponse := serialization.DesiredLRPToResponse(desiredLRP)
