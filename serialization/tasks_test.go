@@ -45,14 +45,11 @@ var _ = Describe("Task Serialization", func() {
 				},
 				SecurityGroupRules: []models.SecurityGroupRule{
 					{
-						Protocol: "tcp",
+						Protocol:    "tcp",
+						Destination: "0.0.0.0/0",
 						PortRange: models.PortRange{
 							Start: 1,
 							End:   1024,
-						},
-						Destination: models.CIDR{
-							NetworkAddress: "0.0.0.0",
-							PrefixLength:   0,
 						},
 					},
 				},
@@ -106,14 +103,11 @@ var _ = Describe("Task Serialization", func() {
 				},
 				SecurityGroupRules: []models.SecurityGroupRule{
 					{
-						Protocol: "tcp",
+						Protocol:    "tcp",
+						Destination: "0.0.0.0/0",
 						PortRange: models.PortRange{
 							Start: 1,
 							End:   1024,
-						},
-						Destination: models.CIDR{
-							NetworkAddress: "0.0.0.0",
-							PrefixLength:   0,
 						},
 					},
 				},
@@ -170,14 +164,11 @@ var _ = Describe("Task Serialization", func() {
 				},
 				SecurityGroupRules: []models.SecurityGroupRule{
 					{
-						Protocol: "tcp",
+						Protocol:    "tcp",
+						Destination: "0.0.0.0/0",
 						PortRange: models.PortRange{
 							Start: 1,
 							End:   1024,
-						},
-						Destination: models.CIDR{
-							NetworkAddress: "0.0.0.0",
-							PrefixLength:   0,
 						},
 					},
 				},
@@ -205,14 +196,11 @@ var _ = Describe("Task Serialization", func() {
 				},
 				SecurityGroupRules: []models.SecurityGroupRule{
 					{
-						Protocol: "tcp",
+						Protocol:    "tcp",
+						Destination: "0.0.0.0/0",
 						PortRange: models.PortRange{
 							Start: 1,
 							End:   1024,
-						},
-						Destination: models.CIDR{
-							NetworkAddress: "0.0.0.0",
-							PrefixLength:   0,
 						},
 					},
 				},
