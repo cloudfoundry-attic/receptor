@@ -156,7 +156,7 @@ If a `completion_callback_url` is provided Diego will `POST` to the provided URL
 - Diego will eventually (after ~2 minutes) give up on the Task if the callback does not respond succesfully.
 
 #### Networking
-By default network access for any container is limited but some tasks might need specific network access and that can be setup using `security_group_rules` field
+By default network access for any container is limited but some tasks might need specific network access and that can be setup using `security_group_rules` field.
 
 #### `security_group_rules` [optional]
 Security Group is a list of egress firewall rules that are applied to a container running in Diego

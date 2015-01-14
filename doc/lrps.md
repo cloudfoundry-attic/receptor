@@ -175,7 +175,7 @@ Diego can open and expose arbitrary `ports` inside the container.  Currently, if
 
 There are plans to generalize this interface and make it possible to build custom service discovery solutions on top of Diego.  The API is likely to change in backward-incompatible ways as we work these requirements out.
 
-By default network access for any container is limited but some LRPs might need specific network access and that can be setup using `security_group_rules` field
+By default network access for any container is limited but some LRPs might need specific network access and that can be setup using `security_group_rules` field.
 
 #### `ports` [optional]
 
