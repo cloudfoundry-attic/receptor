@@ -4,7 +4,7 @@ Diego can distribute and monitor multiple instances of a Long Running Process (L
 
 LRPs are described by providing Diego with a `DesiredLRP`.  The `DesiredLRP` can be thought of as a manifest that describes how an LRP should be executed and monitored.
 
-The instances that end up running on Diego cells are referred to as `ActualLRP`s.  The `ActualLRP`s contain information about the state of the instance and about the host Cell the instance is running on.  
+The instances that end up running on Diego cells are referred to as `ActualLRP`s.  The `ActualLRP`s contain information about the state of the instance and about the host Cell the instance is running on.
 
 When describing a property common to both `DesiredLRP`s and `ActualLRP`s (e.g. the `process_guid`) we may refer to both notions collectively simply as LRPs.
 
@@ -47,7 +47,18 @@ When desiring an LRP you `POST` a valid `DesiredLRPCreateRequest`.  The [API ref
     "log_guid": "some-log-guid",
     "log_source": "some-log-source",
 
-    "annotation": "arbitrary metadata"
+    "annotation": "arbitrary metadata",
+
+    "security_group_rules": [
+        {
+            "protocol": "tcp",
+            "destination": "0.0.0.0/0",
+            "port_range": {
+                "start": 1,
+                "end": 1024
+            }
+       }
+   ]
 }
 ```
 
@@ -164,6 +175,8 @@ Diego can open and expose arbitrary `ports` inside the container.  Currently, if
 
 There are plans to generalize this interface and make it possible to build custom service discovery solutions on top of Diego.  The API is likely to change in backward-incompatible ways as we work these requirements out.
 
+By default network access for any container is limited but some LRPs might need specific network access and that can be setup using `security_group_rules` field
+
 #### `ports` [optional]
 
 `ports` is a list of ports to open in the container.  Processes running in the container can bind to these ports to receive incoming traffic.  These ports are only valid within the container namespace and an arbitrary host-side port is created when the container is created.  This host-side port is made available on the `ActualLRP`.
@@ -171,6 +184,15 @@ There are plans to generalize this interface and make it possible to build custo
 #### `routes` [optional]
 
 `routes` are a list of fully qualified domain names (e.g. `"foo.example.com"`).  These routes are automatically registered with the router and point to the *first* port in the `ports` list.
+
+#### `security_group_rules` [optional]
+Security Group is a list of egress firewall rules that are applied to a container running in Diego
+
+- `protocol` [required] will be a string and one of `TCP`, `UDP`,`ICMP`, `All`
+- `port_range` [required]
+   - `start` [required] will be integer between 1 and 65535
+   - `end` [optional] will be integer between 1 and 65535
+- `destination` [required] will be CIDR format like 0.0.0.0/0
 
 #### Logging
 
@@ -249,7 +271,7 @@ In all cases, the consumer is given an array of `ActualLRPResponse`:
         "address": "10.10.11.11",
         "ports": [
             {"container_port": 8080, "host_port": 60001},
-            {"container_port": 5000, "host_port": 60002},        
+            {"container_port": 5000, "host_port": 60002},
         ],
     },
     ...

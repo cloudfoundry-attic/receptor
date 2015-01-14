@@ -32,7 +32,18 @@ When submitting a Task you `POST` a valid `TaskCreateRequest`.  The [API referen
     "log_guid": "some-log-guid",
     "log_source": "some-log-source",
 
-    "annotation": "arbitrary metadata"
+    "annotation": "arbitrary metadata",
+
+    "security_group_rules": [
+        {
+            "protocol": "tcp",
+            "destination": "0.0.0.0/0",
+            "port_range": {
+                "start": 1,
+                "end": 1024
+            }
+       }
+   ]
 }
 ```
 
@@ -139,10 +150,22 @@ Consumers of Diego have two options to learn that a Task has `COMPLETED`: they c
 
 If a `completion_callback_url` is provided Diego will `POST` to the provided URL as soon as the Task completes.  The body of the `POST` will include the `TaskResponse` (see [below](#retreiving-tasks)).
 
-- Any response from the callback (be it success or failure) will resolve the Task (removing it from Diego).  
+- Any response from the callback (be it success or failure) will resolve the Task (removing it from Diego).
 - However, if the callback responds with `503` or `504` Diego will immediately retry the callback up to 3 times.  If the `503/504` status persists Diego will try again after a period of time (typically within ~30 seconds).
 - If the callback times out or a connection cannot be established, Diego will try again after a period of time (typically within ~30 seconds).
 - Diego will eventually (after ~2 minutes) give up on the Task if the callback does not respond succesfully.
+
+#### Networking
+By default network access for any container is limited but some tasks might need specific network access and that can be setup using `security_group_rules` field
+
+#### `security_group_rules` [optional]
+Security Group is a list of egress firewall rules that are applied to a container running in Diego
+
+- `protocol` [required] will be a string and one of `TCP`, `UDP`,`ICMP`, `All`
+- `port_range` [required]
+   - `start` [required] will be integer between 1 and 65535
+   - `end` [optional] will be integer between 1 and 65535
+- `destination` [required] will be CIDR format like 0.0.0.0/0
 
 #### Logging
 
@@ -171,7 +194,7 @@ To learn that a Task is completed you must either register a `completion_callbac
     ... all TaskCreateRequest fields...
 
     "state": "RUNNING",
-    
+
     "cell_id": "cell-identifier",
 
     "failed": true/false,
