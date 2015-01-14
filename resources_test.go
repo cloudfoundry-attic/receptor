@@ -57,13 +57,10 @@ var _ = Describe("Resources", func() {
 						"security_group_rules":[
 		          {
 				        "protocol": "tcp",
+								"destination": "0.0.0.0/0",
 				        "port_range": {
 					        "start": 1,
 					        "end": 1024
-				        },
-				        "destination": {
-					        "network_address": "0.0.0.0",
-					        "prefix_length": 0
 				        }
 			        }
 		        ]
@@ -71,14 +68,11 @@ var _ = Describe("Resources", func() {
 					expectedRequest = receptor.TaskCreateRequest{
 						SecurityGroupRules: []models.SecurityGroupRule{
 							{
-								Protocol: "tcp",
+								Protocol:    "tcp",
+								Destination: "0.0.0.0/0",
 								PortRange: models.PortRange{
 									Start: 1,
 									End:   1024,
-								},
-								Destination: models.CIDR{
-									NetworkAddress: "0.0.0.0",
-									PrefixLength:   0,
 								},
 							},
 						},
@@ -141,13 +135,10 @@ var _ = Describe("Resources", func() {
 						"security_group_rules":[
 		          {
 				        "protocol": "tcp",
+								"destination": "0.0.0.0/0",
 				        "port_range": {
 					        "start": 1,
 					        "end": 1024
-				        },
-				        "destination": {
-					        "network_address": "0.0.0.0",
-					        "prefix_length": 0
 				        }
 			        }
 		        ]
@@ -155,14 +146,11 @@ var _ = Describe("Resources", func() {
 					expectedResponse = receptor.TaskResponse{
 						SecurityGroupRules: []models.SecurityGroupRule{
 							{
-								Protocol: "tcp",
+								Protocol:    "tcp",
+								Destination: "0.0.0.0/0",
 								PortRange: models.PortRange{
 									Start: 1,
 									End:   1024,
-								},
-								Destination: models.CIDR{
-									NetworkAddress: "0.0.0.0",
-									PrefixLength:   0,
 								},
 							},
 						},
@@ -228,13 +216,10 @@ var _ = Describe("Resources", func() {
 						"security_group_rules":[
 		          {
 				        "protocol": "tcp",
+								"destination": "0.0.0.0/0",
 				        "port_range": {
 					        "start": 1,
 					        "end": 1024
-				        },
-				        "destination": {
-					        "network_address": "0.0.0.0",
-					        "prefix_length": 0
 				        }
 			        }
 		        ]
@@ -242,14 +227,11 @@ var _ = Describe("Resources", func() {
 					expectedRequest = receptor.DesiredLRPCreateRequest{
 						SecurityGroupRules: []models.SecurityGroupRule{
 							{
-								Protocol: "tcp",
+								Protocol:    "tcp",
+								Destination: "0.0.0.0/0",
 								PortRange: models.PortRange{
 									Start: 1,
 									End:   1024,
-								},
-								Destination: models.CIDR{
-									NetworkAddress: "0.0.0.0",
-									PrefixLength:   0,
 								},
 							},
 						},
@@ -315,13 +297,10 @@ var _ = Describe("Resources", func() {
 						"security_group_rules":[
 		          {
 				        "protocol": "tcp",
+								"destination": "0.0.0.0/0",
 				        "port_range": {
 					        "start": 1,
 					        "end": 1024
-				        },
-				        "destination": {
-					        "network_address": "0.0.0.0",
-					        "prefix_length": 0
 				        }
 			        }
 		        ]
@@ -329,14 +308,11 @@ var _ = Describe("Resources", func() {
 					expectedResponse = receptor.DesiredLRPResponse{
 						SecurityGroupRules: []models.SecurityGroupRule{
 							{
-								Protocol: "tcp",
+								Protocol:    "tcp",
+								Destination: "0.0.0.0/0",
 								PortRange: models.PortRange{
 									Start: 1,
 									End:   1024,
-								},
-								Destination: models.CIDR{
-									NetworkAddress: "0.0.0.0",
-									PrefixLength:   0,
 								},
 							},
 						},

@@ -17,14 +17,11 @@ var _ = Describe("DesiredLRP Serialization", func() {
 
 		BeforeEach(func() {
 			securityRule = models.SecurityGroupRule{
-				Protocol: "tcp",
+				Protocol:    "tcp",
+				Destination: "0.0.0.0/0",
 				PortRange: models.PortRange{
 					Start: 1,
 					End:   1024,
-				},
-				Destination: models.CIDR{
-					NetworkAddress: "0.0.0.0",
-					PrefixLength:   0,
 				},
 			}
 			request = receptor.DesiredLRPCreateRequest{
@@ -73,14 +70,11 @@ var _ = Describe("DesiredLRP Serialization", func() {
 
 		BeforeEach(func() {
 			securityRule = models.SecurityGroupRule{
-				Protocol: "tcp",
+				Protocol:    "tcp",
+				Destination: "0.0.0.0/0",
 				PortRange: models.PortRange{
 					Start: 1,
 					End:   1024,
-				},
-				Destination: models.CIDR{
-					NetworkAddress: "0.0.0.0",
-					PrefixLength:   0,
 				},
 			}
 
