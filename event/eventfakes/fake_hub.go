@@ -9,17 +9,49 @@ import (
 )
 
 type FakeHub struct {
+	SubscribeStub        func() (receptor.EventSource, error)
+	subscribeMutex       sync.RWMutex
+	subscribeArgsForCall []struct{}
+	subscribeReturns struct {
+		result1 receptor.EventSource
+		result2 error
+	}
 	EmitStub        func(receptor.Event)
 	emitMutex       sync.RWMutex
 	emitArgsForCall []struct {
 		arg1 receptor.Event
 	}
-	SubscribeStub        func() receptor.EventSource
-	subscribeMutex       sync.RWMutex
-	subscribeArgsForCall []struct{}
-	subscribeReturns     struct {
-		result1 receptor.EventSource
+	CloseStub        func() error
+	closeMutex       sync.RWMutex
+	closeArgsForCall []struct{}
+	closeReturns struct {
+		result1 error
 	}
+}
+
+func (fake *FakeHub) Subscribe() (receptor.EventSource, error) {
+	fake.subscribeMutex.Lock()
+	fake.subscribeArgsForCall = append(fake.subscribeArgsForCall, struct{}{})
+	fake.subscribeMutex.Unlock()
+	if fake.SubscribeStub != nil {
+		return fake.SubscribeStub()
+	} else {
+		return fake.subscribeReturns.result1, fake.subscribeReturns.result2
+	}
+}
+
+func (fake *FakeHub) SubscribeCallCount() int {
+	fake.subscribeMutex.RLock()
+	defer fake.subscribeMutex.RUnlock()
+	return len(fake.subscribeArgsForCall)
+}
+
+func (fake *FakeHub) SubscribeReturns(result1 receptor.EventSource, result2 error) {
+	fake.SubscribeStub = nil
+	fake.subscribeReturns = struct {
+		result1 receptor.EventSource
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeHub) Emit(arg1 receptor.Event) {
@@ -45,27 +77,27 @@ func (fake *FakeHub) EmitArgsForCall(i int) receptor.Event {
 	return fake.emitArgsForCall[i].arg1
 }
 
-func (fake *FakeHub) Subscribe() receptor.EventSource {
-	fake.subscribeMutex.Lock()
-	fake.subscribeArgsForCall = append(fake.subscribeArgsForCall, struct{}{})
-	fake.subscribeMutex.Unlock()
-	if fake.SubscribeStub != nil {
-		return fake.SubscribeStub()
+func (fake *FakeHub) Close() error {
+	fake.closeMutex.Lock()
+	fake.closeArgsForCall = append(fake.closeArgsForCall, struct{}{})
+	fake.closeMutex.Unlock()
+	if fake.CloseStub != nil {
+		return fake.CloseStub()
 	} else {
-		return fake.subscribeReturns.result1
+		return fake.closeReturns.result1
 	}
 }
 
-func (fake *FakeHub) SubscribeCallCount() int {
-	fake.subscribeMutex.RLock()
-	defer fake.subscribeMutex.RUnlock()
-	return len(fake.subscribeArgsForCall)
+func (fake *FakeHub) CloseCallCount() int {
+	fake.closeMutex.RLock()
+	defer fake.closeMutex.RUnlock()
+	return len(fake.closeArgsForCall)
 }
 
-func (fake *FakeHub) SubscribeReturns(result1 receptor.EventSource) {
-	fake.SubscribeStub = nil
-	fake.subscribeReturns = struct {
-		result1 receptor.EventSource
+func (fake *FakeHub) CloseReturns(result1 error) {
+	fake.CloseStub = nil
+	fake.closeReturns = struct {
+		result1 error
 	}{result1}
 }
 

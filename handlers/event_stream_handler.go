@@ -27,7 +27,12 @@ func (h *EventStreamHandler) EventStream(w http.ResponseWriter, req *http.Reques
 
 	flusher := w.(http.Flusher)
 
-	source := h.hub.Subscribe()
+	source, err := h.hub.Subscribe()
+	if err != nil {
+		logger.Error("failed-to-subscribe-to-event-hub", err)
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
 
 	w.WriteHeader(http.StatusOK)
 

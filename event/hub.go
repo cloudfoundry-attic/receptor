@@ -10,78 +10,113 @@ const MAX_PENDING_SUBSCRIBER_EVENTS = 1024
 
 //go:generate counterfeiter -o eventfakes/fake_hub.go . Hub
 type Hub interface {
+	Subscribe() (receptor.EventSource, error)
 	Emit(receptor.Event)
-	Subscribe() receptor.EventSource
+	Close() error
 }
 
 type hub struct {
-	subscribers  map[chan receptor.Event]*hubSource
-	subscribersL sync.Mutex
+	subscribers []*hubSource
+	closed      bool
+	lock        sync.Mutex
 }
 
 func NewHub() Hub {
-	return &hub{
-		subscribers: make(map[chan receptor.Event]*hubSource),
-	}
+	return &hub{}
 }
 
-func (hub *hub) Subscribe() receptor.EventSource {
-	ch := make(chan receptor.Event, MAX_PENDING_SUBSCRIBER_EVENTS)
+func (hub *hub) Subscribe() (receptor.EventSource, error) {
+	hub.lock.Lock()
+	defer hub.lock.Unlock()
 
-	source := &hubSource{
-		events: ch,
-
-		unsubscribe: func() {
-			hub.subscribersL.Lock()
-			delete(hub.subscribers, ch)
-			hub.subscribersL.Unlock()
-
-			close(ch)
-		},
+	if hub.closed {
+		return nil, receptor.ErrSubscribedToClosedHub
 	}
 
-	hub.subscribersL.Lock()
-	hub.subscribers[ch] = source
-	hub.subscribersL.Unlock()
-
-	return source
+	sub := newSource(MAX_PENDING_SUBSCRIBER_EVENTS)
+	hub.subscribers = append(hub.subscribers, sub)
+	return sub, nil
 }
 
 func (hub *hub) Emit(event receptor.Event) {
-	hub.subscribersL.Lock()
+	hub.lock.Lock()
+	defer hub.lock.Unlock()
 
-	for sub, source := range hub.subscribers {
-		select {
-		case sub <- event:
-		default:
-			source.err = receptor.ErrSlowConsumer
-			close(sub)
+	remainingSubscribers := make([]*hubSource, 0, len(hub.subscribers))
+
+	for _, sub := range hub.subscribers {
+		err := sub.send(event)
+		if err == nil {
+			remainingSubscribers = append(remainingSubscribers, sub)
 		}
 	}
 
-	hub.subscribersL.Unlock()
+	hub.subscribers = remainingSubscribers
+}
+
+func (hub *hub) Close() error {
+	hub.lock.Lock()
+	defer hub.lock.Unlock()
+
+	if hub.closed {
+		return receptor.ErrHubAlreadyClosed
+	}
+
+	hub.closeSubscribers()
+	hub.closed = true
+	return nil
+}
+
+func (hub *hub) closeSubscribers() {
+	for _, sub := range hub.subscribers {
+		_ = sub.Close()
+	}
+	hub.subscribers = nil
 }
 
 type hubSource struct {
-	events <-chan receptor.Event
-	err    error
+	events    chan receptor.Event
+	closed    bool
+	closeLock sync.Mutex
+}
 
-	unsubscribe func()
-
-	lock sync.Mutex
+func newSource(maxPendingEvents int) *hubSource {
+	return &hubSource{
+		events: make(chan receptor.Event, maxPendingEvents),
+	}
 }
 
 func (source *hubSource) Next() (receptor.Event, error) {
-	e, ok := <-source.events
+	event, ok := <-source.events
 	if !ok {
-		return nil, source.err
+		return nil, receptor.ErrReadFromClosedSource
 	}
-
-	return e, nil
+	return event, nil
 }
 
 func (source *hubSource) Close() error {
-	source.err = receptor.ErrReadFromClosedSource
-	source.unsubscribe()
+	source.closeLock.Lock()
+	defer source.closeLock.Unlock()
+
+	if source.closed {
+		return receptor.ErrSourceAlreadyClosed
+	}
+	close(source.events)
+	source.closed = true
 	return nil
+}
+
+func (source *hubSource) send(event receptor.Event) error {
+	select {
+	case source.events <- event:
+		return nil
+
+	default:
+		err := source.Close()
+		if err != nil {
+			return err
+		}
+
+		return receptor.ErrSlowConsumer
+	}
 }

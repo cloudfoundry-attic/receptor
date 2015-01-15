@@ -146,6 +146,7 @@ func main() {
 		{"worker", worker},
 		{"task-complete-handler", http_server.New(*taskHandlerAddress, taskHandler)},
 		{"heartbeater", initializeReceptorHeartbeat(*taskHandlerAddress, *heartbeatInterval, bbs, logger)},
+		{"hub-closer", closeHub(hub)},
 	}
 
 	if *registerWithRouter {
@@ -186,6 +187,15 @@ func validateNatsArguments() error {
 		}
 	}
 	return nil
+}
+
+func closeHub(hub event.Hub) ifrit.Runner {
+	return ifrit.RunFunc(func(signals <-chan os.Signal, ready chan<- struct{}) error {
+		close(ready)
+		<-signals
+		hub.Close()
+		return nil
+	})
 }
 
 func initializeDropsonde(logger lager.Logger) {

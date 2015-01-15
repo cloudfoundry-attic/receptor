@@ -16,6 +16,9 @@ import (
 
 var ErrSlowConsumer = errors.New("slow consumer")
 var ErrReadFromClosedSource = errors.New("read from closed source")
+var ErrSubscribedToClosedHub = errors.New("subscribed to closed hub")
+var ErrHubAlreadyClosed = errors.New("hub already closed")
+var ErrSourceAlreadyClosed = errors.New("source already closed")
 
 //go:generate counterfeiter -o fake_receptor/fake_client.go . Client
 type Client interface {
