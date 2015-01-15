@@ -19,6 +19,16 @@ func ActualLRPToResponse(actualLRP models.ActualLRP) receptor.ActualLRPResponse 
 	}
 }
 
+func ActualLRPFromResponse(resp receptor.ActualLRPResponse) models.ActualLRP {
+	return models.ActualLRP{
+		ActualLRPKey:          models.NewActualLRPKey(resp.ProcessGuid, resp.Index, resp.Domain),
+		ActualLRPContainerKey: models.NewActualLRPContainerKey(resp.InstanceGuid, resp.CellID),
+		ActualLRPNetInfo:      models.NewActualLRPNetInfo(resp.Address, PortMappingToModel(resp.Ports)),
+		State:                 actualLRPStateFromResponseState(resp.State),
+		Since:                 resp.Since,
+	}
+}
+
 func actualLRPStateToResponseState(state models.ActualLRPState) receptor.ActualLRPState {
 	switch state {
 	case models.ActualLRPStateUnclaimed:
@@ -30,6 +40,17 @@ func actualLRPStateToResponseState(state models.ActualLRPState) receptor.ActualL
 	default:
 		return receptor.ActualLRPStateInvalid
 	}
+}
 
-	return ""
+func actualLRPStateFromResponseState(state receptor.ActualLRPState) models.ActualLRPState {
+	switch state {
+	case receptor.ActualLRPStateUnclaimed:
+		return models.ActualLRPStateUnclaimed
+	case receptor.ActualLRPStateClaimed:
+		return models.ActualLRPStateClaimed
+	case receptor.ActualLRPStateRunning:
+		return models.ActualLRPStateRunning
+	default:
+		return ""
+	}
 }
