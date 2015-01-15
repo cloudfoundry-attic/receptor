@@ -164,7 +164,7 @@ Security Group is a list of egress firewall rules that are applied to a containe
 - `protocol` [required] will be a string and one of `TCP`, `UDP`,`ICMP`, `All`
 - `port_range` [required]
    - `start` [required] will be integer between 1 and 65535
-   - `end` [optional] will be integer between 1 and 65535
+   - `end` [required] will be integer between 1 and 65535
 - `destination` [required] will be CIDR format like 0.0.0.0/0
 
 #### Logging
