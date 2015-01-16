@@ -129,6 +129,27 @@ var _ = Describe("Desired LRP Handlers", func() {
 			})
 		})
 
+		Context("when the desired LRP already exists", func() {
+			BeforeEach(func(done Done) {
+				fakeBBS.DesireLRPReturns(bbserrors.ErrStoreResourceExists)
+
+				defer close(done)
+				handler.Create(responseRecorder, newTestRequest(validCreateLRPRequest))
+			})
+
+			It("responds with 409 CONFLICT", func() {
+				Ω(responseRecorder.Code).Should(Equal(http.StatusConflict))
+			})
+
+			It("responds with a relevant error message", func() {
+				expectedBody, _ := json.Marshal(receptor.Error{
+					Type:    receptor.DesiredLRPAlreadyExists,
+					Message: "Desired LRP with guid 'the-process-guid' already exists",
+				})
+				Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
+			})
+		})
+
 		Context("when the request does not contain a DesiredLRPCreateRequest", func() {
 			var garbageRequest = []byte(`farewell`)
 
