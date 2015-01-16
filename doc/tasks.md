@@ -34,7 +34,7 @@ When submitting a Task you `POST` a valid `TaskCreateRequest`.  The [API referen
 
     "annotation": "arbitrary metadata",
 
-    "security_group_rules": [
+    "egress_rules": [
         {
             "protocol": "tcp",
             "destination": "0.0.0.0/0",
@@ -158,16 +158,22 @@ If a `completion_callback_url` is provided Diego will `POST` to the provided URL
 - Diego will eventually (after ~2 minutes) give up on the Task if the callback does not respond succesfully.
 
 #### Networking
-By default network access for any container is limited but some tasks might need specific network access and that can be setup using `security_group_rules` field.
+By default network access for any container is limited but some tasks might need specific network access and that can be setup using `egress_rules` field.
 
-#### `security_group_rules` [optional]
+#### `egress_rules` [optional]
 Security Group is a list of egress firewall rules that are applied to a container running in Diego
 
-- `protocol` [required] will be a string and one of `TCP`, `UDP`,`ICMP`, `All`
-- `port_range` [required]
+- `protocol` [required] will be a string and one of `tcp`, `udp`,`icmp`, `all`
+- `destination` [required] will be CIDR format like 0.0.0.0/0
+- `port_range` [optional]
    - `start` [required] will be integer between 1 and 65535
    - `end` [required] will be integer between 1 and 65535
-- `destination` [required] will be CIDR format like 0.0.0.0/0
+- `icmp_info` [optional]
+   - `type` [required] will be an integer between 0 and 255
+   - `code` [required] will be an integer
+
+`port_range` is required for `tcp` and `udp`.
+`icmp_info` is required for `icmp`.
 
 #### Logging
 

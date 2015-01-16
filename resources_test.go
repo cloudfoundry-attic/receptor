@@ -54,7 +54,7 @@ var _ = Describe("Resources", func() {
 				var payload string
 				BeforeEach(func() {
 					payload = `{
-						"security_group_rules":[
+						"egress_rules":[
 		          {
 				        "protocol": "tcp",
 								"destination": "0.0.0.0/0",
@@ -66,7 +66,7 @@ var _ = Describe("Resources", func() {
 		        ]
 					}`
 					expectedRequest = receptor.TaskCreateRequest{
-						SecurityGroupRules: []models.SecurityGroupRule{
+						EgressRules: []models.SecurityGroupRule{
 							{
 								Protocol:    "tcp",
 								Destination: "0.0.0.0/0",
@@ -132,7 +132,7 @@ var _ = Describe("Resources", func() {
 				var payload string
 				BeforeEach(func() {
 					payload = `{
-						"security_group_rules":[
+						"egress_rules":[
 		          {
 				        "protocol": "tcp",
 								"destination": "0.0.0.0/0",
@@ -144,7 +144,7 @@ var _ = Describe("Resources", func() {
 		        ]
 					}`
 					expectedResponse = receptor.TaskResponse{
-						SecurityGroupRules: []models.SecurityGroupRule{
+						EgressRules: []models.SecurityGroupRule{
 							{
 								Protocol:    "tcp",
 								Destination: "0.0.0.0/0",
@@ -213,7 +213,7 @@ var _ = Describe("Resources", func() {
 
 				BeforeEach(func() {
 					payload = `{
-						"security_group_rules":[
+						"egress_rules":[
 		          {
 				        "protocol": "tcp",
 								"destination": "0.0.0.0/0",
@@ -225,7 +225,7 @@ var _ = Describe("Resources", func() {
 		        ]
 					}`
 					expectedRequest = receptor.DesiredLRPCreateRequest{
-						SecurityGroupRules: []models.SecurityGroupRule{
+						EgressRules: []models.SecurityGroupRule{
 							{
 								Protocol:    "tcp",
 								Destination: "0.0.0.0/0",
@@ -294,7 +294,7 @@ var _ = Describe("Resources", func() {
 
 				BeforeEach(func() {
 					payload = `{
-						"security_group_rules":[
+						"egress_rules":[
 		          {
 				        "protocol": "tcp",
 								"destination": "0.0.0.0/0",
@@ -306,7 +306,7 @@ var _ = Describe("Resources", func() {
 		        ]
 					}`
 					expectedResponse = receptor.DesiredLRPResponse{
-						SecurityGroupRules: []models.SecurityGroupRule{
+						EgressRules: []models.SecurityGroupRule{
 							{
 								Protocol:    "tcp",
 								Destination: "0.0.0.0/0",

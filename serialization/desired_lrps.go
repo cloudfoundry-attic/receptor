@@ -26,7 +26,7 @@ func DesiredLRPFromRequest(req receptor.DesiredLRPCreateRequest) models.DesiredL
 		LogGuid:              req.LogGuid,
 		LogSource:            req.LogSource,
 		Annotation:           req.Annotation,
-		SecurityGroupRules:   req.SecurityGroupRules,
+		EgressRules:          req.EgressRules,
 	}
 }
 
@@ -51,7 +51,7 @@ func DesiredLRPToResponse(lrp models.DesiredLRP) receptor.DesiredLRPResponse {
 		LogGuid:              lrp.LogGuid,
 		LogSource:            lrp.LogSource,
 		Annotation:           lrp.Annotation,
-		SecurityGroupRules:   lrp.SecurityGroupRules,
+		EgressRules:          lrp.EgressRules,
 	}
 }
 

@@ -37,7 +37,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				},
 				StartTimeout: 4,
 				Privileged:   true,
-				SecurityGroupRules: []models.SecurityGroupRule{
+				EgressRules: []models.SecurityGroupRule{
 					securityRule,
 				},
 			}
@@ -57,10 +57,10 @@ var _ = Describe("DesiredLRP Serialization", func() {
 			Ω(desiredLRP.Ports[0]).Should(Equal(uint32(2345)))
 			Ω(desiredLRP.Ports[1]).Should(Equal(uint32(6789)))
 			Ω(desiredLRP.Privileged).Should(BeTrue())
-			Ω(desiredLRP.SecurityGroupRules).Should(HaveLen(1))
-			Ω(desiredLRP.SecurityGroupRules[0].Protocol).Should(Equal(securityRule.Protocol))
-			Ω(desiredLRP.SecurityGroupRules[0].PortRange).Should(Equal(securityRule.PortRange))
-			Ω(desiredLRP.SecurityGroupRules[0].Destination).Should(Equal(securityRule.Destination))
+			Ω(desiredLRP.EgressRules).Should(HaveLen(1))
+			Ω(desiredLRP.EgressRules[0].Protocol).Should(Equal(securityRule.Protocol))
+			Ω(desiredLRP.EgressRules[0].PortRange).Should(Equal(securityRule.PortRange))
+			Ω(desiredLRP.EgressRules[0].Destination).Should(Equal(securityRule.Destination))
 		})
 	})
 
@@ -100,7 +100,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				LogGuid:    "log-guid-0",
 				LogSource:  "log-source-name-0",
 				Annotation: "annotation-0",
-				SecurityGroupRules: []models.SecurityGroupRule{
+				EgressRules: []models.SecurityGroupRule{
 					securityRule,
 				},
 			}
@@ -129,7 +129,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				LogGuid:    "log-guid-0",
 				LogSource:  "log-source-name-0",
 				Annotation: "annotation-0",
-				SecurityGroupRules: []models.SecurityGroupRule{
+				EgressRules: []models.SecurityGroupRule{
 					securityRule,
 				},
 			}

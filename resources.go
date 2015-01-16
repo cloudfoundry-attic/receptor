@@ -40,7 +40,7 @@ type TaskCreateRequest struct {
 	RootFSPath            string                     `json:"root_fs"`
 	Privileged            bool                       `json:"privileged"`
 	EnvironmentVariables  []EnvironmentVariable      `json:"env,omitempty"`
-	SecurityGroupRules    []models.SecurityGroupRule `json:"security_group_rules,omitempty"`
+	EgressRules           []models.SecurityGroupRule `json:"egress_rules,omitempty"`
 }
 
 type InnerTaskCreateRequest TaskCreateRequest
@@ -108,7 +108,7 @@ type TaskResponse struct {
 	FailureReason         string                     `json:"failure_reason"`
 	Result                string                     `json:"result"`
 	State                 string                     `json:"state"`
-	SecurityGroupRules    []models.SecurityGroupRule `json:"security_group_rules,omitempty"`
+	EgressRules           []models.SecurityGroupRule `json:"egress_rules,omitempty"`
 }
 
 type InnerTaskResponse TaskResponse
@@ -174,7 +174,7 @@ type DesiredLRPCreateRequest struct {
 	LogGuid              string                     `json:"log_guid"`
 	LogSource            string                     `json:"log_source"`
 	Annotation           string                     `json:"annotation,omitempty"`
-	SecurityGroupRules   []models.SecurityGroupRule `json:"security_group_rules,omitempty"`
+	EgressRules          []models.SecurityGroupRule `json:"egress_rules,omitempty"`
 }
 
 type InnerDesiredLRPCreateRequest DesiredLRPCreateRequest
@@ -295,7 +295,7 @@ type DesiredLRPResponse struct {
 	LogGuid              string                     `json:"log_guid"`
 	LogSource            string                     `json:"log_source"`
 	Annotation           string                     `json:"annotation,omitempty"`
-	SecurityGroupRules   []models.SecurityGroupRule `json:"security_group_rules,omitempty"`
+	EgressRules          []models.SecurityGroupRule `json:"egress_rules,omitempty"`
 }
 
 type InnerDesiredLRPResponse DesiredLRPResponse

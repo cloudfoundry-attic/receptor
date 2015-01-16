@@ -43,7 +43,7 @@ var _ = Describe("Task Serialization", func() {
 					{Name: "var1", Value: "val1"},
 					{Name: "var2", Value: "val2"},
 				},
-				SecurityGroupRules: []models.SecurityGroupRule{
+				EgressRules: []models.SecurityGroupRule{
 					{
 						Protocol:    "tcp",
 						Destination: "0.0.0.0/0",
@@ -101,7 +101,7 @@ var _ = Describe("Task Serialization", func() {
 					{Name: "var1", Value: "val1"},
 					{Name: "var2", Value: "val2"},
 				},
-				SecurityGroupRules: []models.SecurityGroupRule{
+				EgressRules: []models.SecurityGroupRule{
 					{
 						Protocol:    "tcp",
 						Destination: "0.0.0.0/0",
@@ -162,7 +162,7 @@ var _ = Describe("Task Serialization", func() {
 					{Name: "var1", Value: "val1"},
 					{Name: "var2", Value: "val2"},
 				},
-				SecurityGroupRules: []models.SecurityGroupRule{
+				EgressRules: []models.SecurityGroupRule{
 					{
 						Protocol:    "tcp",
 						Destination: "0.0.0.0/0",
@@ -194,7 +194,7 @@ var _ = Describe("Task Serialization", func() {
 					{Name: "var1", Value: "val1"},
 					{Name: "var2", Value: "val2"},
 				},
-				SecurityGroupRules: []models.SecurityGroupRule{
+				EgressRules: []models.SecurityGroupRule{
 					{
 						Protocol:    "tcp",
 						Destination: "0.0.0.0/0",
