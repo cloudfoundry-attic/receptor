@@ -75,11 +75,6 @@ func (h *DesiredLRPHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err != nil {
-		if err == bbserrors.ErrStoreResourceNotFound {
-			writeDesiredLRPNotFoundResponse(w, processGuid)
-			return
-		}
-
 		log.Error("unknown-error", err)
 		writeUnknownErrorResponse(w, err)
 		return
