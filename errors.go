@@ -15,8 +15,9 @@ const (
 	TaskNotFound          = "TaskNotFound"
 	InvalidTask           = "InvalidTask"
 
-	DesiredLRPNotFound = "DesiredLRPNotFound"
-	InvalidLRP         = "InvalidLRP"
+	DesiredLRPAlreadyExists = "DesiredLRPAlreadyExists"
+	DesiredLRPNotFound      = "DesiredLRPNotFound"
+	InvalidLRP              = "InvalidLRP"
 
 	InvalidDomain = "InvalidDomain"
 

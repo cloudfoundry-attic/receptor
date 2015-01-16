@@ -47,6 +47,11 @@ func (h *DesiredLRPHandler) Create(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if err == bbserrors.ErrStoreResourceExists {
+			writeDesiredLRPAlreadyExistsResponse(w, desiredLRP.ProcessGuid)
+			return
+		}
+
 		log.Error("desire-lrp-failed", err)
 		writeUnknownErrorResponse(w, err)
 		return
@@ -187,5 +192,12 @@ func writeDesiredLRPNotFoundResponse(w http.ResponseWriter, processGuid string) 
 	writeJSONResponse(w, http.StatusNotFound, receptor.Error{
 		Type:    receptor.DesiredLRPNotFound,
 		Message: fmt.Sprintf("Desired LRP with guid '%s' not found", processGuid),
+	})
+}
+
+func writeDesiredLRPAlreadyExistsResponse(w http.ResponseWriter, processGuid string) {
+	writeJSONResponse(w, http.StatusConflict, receptor.Error{
+		Type:    receptor.DesiredLRPAlreadyExists,
+		Message: fmt.Sprintf("Desired LRP with guid '%s' already exists", processGuid),
 	})
 }

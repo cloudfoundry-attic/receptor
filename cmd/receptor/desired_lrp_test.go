@@ -43,9 +43,12 @@ var _ = Describe("Desired LRP API", func() {
 			Ω(desiredLRPs[0].ProcessGuid).To(Equal(lrpToCreate.ProcessGuid))
 		})
 
-		It("is idempotent", func() {
-			err := client.CreateDesiredLRP(lrpToCreate)
-			Ω(err).ShouldNot(HaveOccurred())
+		Context("when the desired LRP already exists", func() {
+			It("fails the request with an appropriate error", func() {
+				err := client.CreateDesiredLRP(lrpToCreate)
+				Ω(err).Should(BeAssignableToTypeOf(receptor.Error{}))
+				Ω(err.(receptor.Error).Type).Should(Equal(receptor.DesiredLRPAlreadyExists))
+			})
 		})
 	})
 
