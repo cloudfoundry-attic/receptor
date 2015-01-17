@@ -22,7 +22,7 @@ These are:
 
 These environment variables are *only* provided if the operator deploying Diego has enabled `--exportNetworkEnvVars` on the Cell executor.
 
-- `INSTANCE_IP` provides the IP of the host running the container.  This is the IP used to address the container from the outside.
-- `INSTANCE_PORT` the host-side port corresponding to the *first* desired port in the `DesiredLRP` [`ports`](lrps.md#ports) array.
-- `INSTANCE_ADDR` identical to `$INSTANCE_IP:$INSTANCE_PORT`
-- `INSTANCE_PORTS` a list of the form `61012:8080,61013:5000`.  The comma delimited entries are pairs of `host-side-port:container-side-port`.  The container-side ports map onto the `DesiredLRP` [`ports`](lrps.md#ports) array.
+- `CF_INSTANCE_IP` provides the IP of the host running the container.  This is the IP used to address the container from the outside.
+- `CF_INSTANCE_PORT` the host-side port corresponding to the *first* desired port in the `DesiredLRP` [`ports`](lrps.md#ports) array.
+- `CF_INSTANCE_ADDR` identical to `$CF_INSTANCE_IP:$CF_INSTANCE_PORT`
+- `CF_INSTANCE_PORTS` a list of the form `61012:8080,61013:5000`.  The comma delimited entries are pairs of `host-side-port:container-side-port`.  The container-side ports map onto the `DesiredLRP` [`ports`](lrps.md#ports) array.
