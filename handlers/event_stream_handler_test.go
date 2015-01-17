@@ -56,7 +56,8 @@ var _ = Describe("Event Stream Handlers", func() {
 
 			eventsToEmit chan<- receptor.Event
 
-			response *http.Response
+			response        *http.Response
+			eventStreamDone chan struct{}
 		)
 
 		BeforeEach(func() {
@@ -73,7 +74,11 @@ var _ = Describe("Event Stream Handlers", func() {
 				return e, nil
 			}
 
-			server = httptest.NewServer(http.HandlerFunc(handler.EventStream))
+			eventStreamDone = make(chan struct{})
+			server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				handler.EventStream(w, r)
+				close(eventStreamDone)
+			}))
 		})
 
 		JustBeforeEach(func() {
@@ -104,7 +109,7 @@ var _ = Describe("Event Stream Handlers", func() {
 			})
 
 			It("emits events from the hub to the connection", func() {
-				reader := sse.NewReader(response.Body)
+				reader := sse.NewReadCloser(response.Body)
 
 				eventsToEmit <- fakeEvent{"A"}
 
@@ -126,6 +131,24 @@ var _ = Describe("Event Stream Handlers", func() {
 
 				_, err := reader.Next()
 				Ω(err).Should(Equal(io.EOF))
+			})
+
+			Context("when the client closes the response body", func() {
+				It("closes its connection to the hub", func() {
+					reader := sse.NewReadCloser(response.Body)
+					eventsToEmit <- fakeEvent{"A"}
+					err := reader.Close()
+					Ω(err).ShouldNot(HaveOccurred())
+					Eventually(fakeSource.CloseCallCount).Should(Equal(1))
+				})
+
+				It("returns early", func() {
+					reader := sse.NewReadCloser(response.Body)
+					eventsToEmit <- fakeEvent{"A"}
+					err := reader.Close()
+					Ω(err).ShouldNot(HaveOccurred())
+					Eventually(eventStreamDone).Should(BeClosed())
+				})
 			})
 		})
 	})
