@@ -63,8 +63,6 @@ func New(bbs Bbs.ReceptorBBS, hub event.Hub, logger lager.Logger, username, pass
 		handler = CORSWrapper(handler)
 	}
 
-	handler = LogWrap(handler, logger)
-
 	return handler
 }
 
