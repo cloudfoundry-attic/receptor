@@ -177,7 +177,6 @@ func main() {
 	}
 
 	logger.Info("exited")
-	os.Exit(0) // FIXME: why am I needed?
 }
 
 func validateNatsArguments() error {
