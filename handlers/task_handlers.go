@@ -42,7 +42,7 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	task, err := serialization.TaskFromRequest(taskRequest)
 	if err != nil {
-		log.Error("task-request-invalid", err)
+		log.Error("task-request-invalid", err, lager.Data{"task": task})
 		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
 			Type:    receptor.InvalidTask,
 			Message: err.Error(),
@@ -52,8 +52,9 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	err = h.bbs.DesireTask(log, task)
 	if err != nil {
+		log.Error("failed-to-desire-task", err, lager.Data{"task": task})
+
 		if _, ok := err.(models.ValidationError); ok {
-			log.Error("task-request-invalid", err)
 			writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
 				Type:    receptor.InvalidTask,
 				Message: err.Error(),
@@ -61,7 +62,6 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		log.Error("desire-task-failed", err)
 		if err == bbserrors.ErrStoreResourceExists {
 			writeJSONResponse(w, http.StatusConflict, receptor.Error{
 				Type:    receptor.TaskGuidAlreadyExists,
