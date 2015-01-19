@@ -396,18 +396,25 @@ const (
 	ActualLRPStateUnclaimed ActualLRPState = "UNCLAIMED"
 	ActualLRPStateClaimed   ActualLRPState = "CLAIMED"
 	ActualLRPStateRunning   ActualLRPState = "RUNNING"
+	ActualLRPStateCrashed   ActualLRPState = "CRASHED"
 )
 
 type ActualLRPResponse struct {
-	ProcessGuid  string         `json:"process_guid"`
-	InstanceGuid string         `json:"instance_guid"`
-	CellID       string         `json:"cell_id"`
-	Domain       string         `json:"domain"`
-	Index        int            `json:"index"`
-	Address      string         `json:"address"`
-	Ports        []PortMapping  `json:"ports"`
-	State        ActualLRPState `json:"state"`
-	Since        int64          `json:"since"`
+	ProcessGuid  string             `json:"process_guid"`
+	InstanceGuid string             `json:"instance_guid"`
+	CellID       string             `json:"cell_id"`
+	Domain       string             `json:"domain"`
+	Index        int                `json:"index"`
+	Address      string             `json:"address"`
+	Ports        []PortMapping      `json:"ports"`
+	State        ActualLRPState     `json:"state"`
+	CrashInfo    ActualLRPCrashInfo `json:"crash_info"`
+	Since        int64              `json:"since"`
+}
+
+type ActualLRPCrashInfo struct {
+	CrashCount    int   `json:"crash_count"`
+	LastCrashedAt int64 `json:"last_crashed_at"`
 }
 
 type CellResponse struct {

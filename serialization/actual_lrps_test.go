@@ -33,6 +33,10 @@ var _ = Describe("ActualLRP Serialization", func() {
 					},
 				),
 				State: models.ActualLRPStateRunning,
+				ActualLRPCrashInfo: models.ActualLRPCrashInfo{
+					CrashCount:    42,
+					LastCrashedAt: 123456789,
+				},
 				Since: 99999999999,
 			}
 		})
@@ -52,6 +56,10 @@ var _ = Describe("ActualLRP Serialization", func() {
 					},
 				},
 				State: receptor.ActualLRPStateRunning,
+				CrashInfo: receptor.ActualLRPCrashInfo{
+					CrashCount:    42,
+					LastCrashedAt: 123456789,
+				},
 				Since: 99999999999,
 			}
 
@@ -64,6 +72,7 @@ var _ = Describe("ActualLRP Serialization", func() {
 				models.ActualLRPStateUnclaimed: receptor.ActualLRPStateUnclaimed,
 				models.ActualLRPStateClaimed:   receptor.ActualLRPStateClaimed,
 				models.ActualLRPStateRunning:   receptor.ActualLRPStateRunning,
+				models.ActualLRPStateCrashed:   receptor.ActualLRPStateCrashed,
 			}
 
 			for modelState, jsonState := range expectedStateMap {

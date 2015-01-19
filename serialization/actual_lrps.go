@@ -16,6 +16,7 @@ func ActualLRPToResponse(actualLRP models.ActualLRP) receptor.ActualLRPResponse 
 		Ports:        PortMappingFromModel(actualLRP.Ports),
 		State:        actualLRPStateToResponseState(actualLRP.State),
 		Since:        actualLRP.Since,
+		CrashInfo:    actualLRPCrashInfo(actualLRP.ActualLRPCrashInfo),
 	}
 }
 
@@ -37,6 +38,8 @@ func actualLRPStateToResponseState(state models.ActualLRPState) receptor.ActualL
 		return receptor.ActualLRPStateClaimed
 	case models.ActualLRPStateRunning:
 		return receptor.ActualLRPStateRunning
+	case models.ActualLRPStateCrashed:
+		return receptor.ActualLRPStateCrashed
 	default:
 		return receptor.ActualLRPStateInvalid
 	}
@@ -53,4 +56,8 @@ func actualLRPStateFromResponseState(state receptor.ActualLRPState) models.Actua
 	default:
 		return ""
 	}
+}
+
+func actualLRPCrashInfo(crashInfo models.ActualLRPCrashInfo) receptor.ActualLRPCrashInfo {
+	return receptor.ActualLRPCrashInfo(crashInfo)
 }
