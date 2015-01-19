@@ -14,11 +14,13 @@ import (
 	"github.com/vito/go-sse/sse"
 )
 
-var ErrSlowConsumer = errors.New("slow consumer")
 var ErrReadFromClosedSource = errors.New("read from closed source")
+var ErrSendToClosedSource = errors.New("send to closed source")
+var ErrSourceAlreadyClosed = errors.New("source already closed")
+var ErrSlowConsumer = errors.New("slow consumer")
+
 var ErrSubscribedToClosedHub = errors.New("subscribed to closed hub")
 var ErrHubAlreadyClosed = errors.New("hub already closed")
-var ErrSourceAlreadyClosed = errors.New("source already closed")
 
 //go:generate counterfeiter -o fake_receptor/fake_client.go . Client
 type Client interface {

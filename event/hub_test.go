@@ -76,7 +76,7 @@ var _ = Describe("Hub", func() {
 	})
 
 	Describe("closing an event source", func() {
-		It("prevents future events from propagating to the source", func() {
+		It("prevents current events from propagating to the source", func() {
 			source, err := hub.Subscribe()
 			Ω(err).ShouldNot(HaveOccurred())
 
@@ -85,6 +85,19 @@ var _ = Describe("Hub", func() {
 
 			err = source.Close()
 			Ω(err).ShouldNot(HaveOccurred())
+
+			_, err = source.Next()
+			Ω(err).Should(Equal(receptor.ErrReadFromClosedSource))
+		})
+
+		It("prevents future events from propagating to the source", func() {
+			source, err := hub.Subscribe()
+			Ω(err).ShouldNot(HaveOccurred())
+
+			err = source.Close()
+			Ω(err).ShouldNot(HaveOccurred())
+
+			hub.Emit(fakeEvent{Token: 1})
 
 			_, err = source.Next()
 			Ω(err).Should(Equal(receptor.ErrReadFromClosedSource))

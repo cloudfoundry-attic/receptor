@@ -75,9 +75,9 @@ func (hub *hub) closeSubscribers() {
 }
 
 type hubSource struct {
-	events    chan receptor.Event
-	closed    bool
-	closeLock sync.Mutex
+	events chan receptor.Event
+	closed bool
+	lock   sync.Mutex
 }
 
 func newSource(maxPendingEvents int) *hubSource {
@@ -95,8 +95,8 @@ func (source *hubSource) Next() (receptor.Event, error) {
 }
 
 func (source *hubSource) Close() error {
-	source.closeLock.Lock()
-	defer source.closeLock.Unlock()
+	source.lock.Lock()
+	defer source.lock.Unlock()
 
 	if source.closed {
 		return receptor.ErrSourceAlreadyClosed
@@ -107,11 +107,20 @@ func (source *hubSource) Close() error {
 }
 
 func (source *hubSource) send(event receptor.Event) error {
+	source.lock.Lock()
+
+	if source.closed {
+		source.lock.Unlock()
+		return receptor.ErrSendToClosedSource
+	}
+
 	select {
 	case source.events <- event:
+		source.lock.Unlock()
 		return nil
 
 	default:
+		source.lock.Unlock()
 		err := source.Close()
 		if err != nil {
 			return err
