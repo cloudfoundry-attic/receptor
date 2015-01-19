@@ -133,14 +133,16 @@ To control the CPU shares provided to a container, set `cpu_weight`.  This must 
 
 A disk quota applied to the entire container.  Any data written on top of the RootFS counts against the Disk Quota.  Processes that attempt to exceed this limit will not be allowed to write to disk.
 
-- `disk_mb` must be an integer > 0
+- `disk_mb` must be an integer >= 0
+- If set to 0 no disk constraints are applied to the container
 - The units are megabytes
 
 #### `memory_mb` [optional]
 
 A memory limit applied to the entire container.  If the aggregate memory consumption by all processs running in the container exceeds this value, the container will be destroyed.
 
-- `memory_mb` must be an integer > 0
+- `memory_mb` must be an integer >= 0
+- If set to 0 no memory constraints are applied to the container
 - The units are megabytes
 
 #### `privileged` [optional]
