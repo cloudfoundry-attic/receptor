@@ -47,10 +47,8 @@ var _ = Describe("Task Serialization", func() {
 					{
 						Protocol:    "tcp",
 						Destination: "0.0.0.0/0",
-						PortRange: &models.PortRange{
-							Start: 1,
-							End:   1024,
-						},
+						Ports:       []uint16{80, 443},
+						Log:         true,
 					},
 				},
 			}
@@ -105,10 +103,8 @@ var _ = Describe("Task Serialization", func() {
 					{
 						Protocol:    "tcp",
 						Destination: "0.0.0.0/0",
-						PortRange: &models.PortRange{
-							Start: 1,
-							End:   1024,
-						},
+						Ports:       []uint16{80, 443},
+						Log:         true,
 					},
 				},
 			}

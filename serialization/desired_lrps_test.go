@@ -72,10 +72,8 @@ var _ = Describe("DesiredLRP Serialization", func() {
 			securityRule = models.SecurityGroupRule{
 				Protocol:    "tcp",
 				Destination: "0.0.0.0/0",
-				PortRange: &models.PortRange{
-					Start: 1,
-					End:   1024,
-				},
+				Ports:       []uint16{80, 443},
+				Log:         true,
 			}
 
 			desiredLRP = models.DesiredLRP{

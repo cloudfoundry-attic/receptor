@@ -217,10 +217,8 @@ var _ = Describe("Resources", func() {
 		          {
 				        "protocol": "tcp",
 								"destination": "0.0.0.0/0",
-				        "port_range": {
-					        "start": 1,
-					        "end": 1024
-				        }
+				        "ports": [80, 443],
+				        "log": true
 			        }
 		        ]
 					}`
@@ -229,10 +227,8 @@ var _ = Describe("Resources", func() {
 							{
 								Protocol:    "tcp",
 								Destination: "0.0.0.0/0",
-								PortRange: &models.PortRange{
-									Start: 1,
-									End:   1024,
-								},
+								Ports:       []uint16{80, 443},
+								Log:         true,
 							},
 						},
 					}
