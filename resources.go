@@ -424,19 +424,35 @@ type EventType string
 const (
 	EventTypeInvalid EventType = ""
 
+	EventTypeDesiredLRPCreated EventType = "desired_lrp_created"
 	EventTypeDesiredLRPChanged EventType = "desired_lrp_changed"
 	EventTypeDesiredLRPRemoved EventType = "desired_lrp_removed"
+	EventTypeActualLRPCreated  EventType = "actual_lrp_created"
 	EventTypeActualLRPChanged  EventType = "actual_lrp_changed"
 	EventTypeActualLRPRemoved  EventType = "actual_lrp_removed"
 )
 
-type DesiredLRPChangedEvent struct {
+type DesiredLRPCreatedEvent struct {
 	DesiredLRPResponse DesiredLRPResponse `json:"desired_lrp"`
 }
 
-func NewDesiredLRPChangedEvent(desiredLRP DesiredLRPResponse) DesiredLRPChangedEvent {
-	return DesiredLRPChangedEvent{
+func NewDesiredLRPCreatedEvent(desiredLRP DesiredLRPResponse) DesiredLRPCreatedEvent {
+	return DesiredLRPCreatedEvent{
 		DesiredLRPResponse: desiredLRP,
+	}
+}
+
+func (DesiredLRPCreatedEvent) EventType() EventType { return EventTypeDesiredLRPCreated }
+
+type DesiredLRPChangedEvent struct {
+	Before DesiredLRPResponse `json:"desired_lrp_before"`
+	After  DesiredLRPResponse `json:"desired_lrp_after"`
+}
+
+func NewDesiredLRPChangedEvent(before, after DesiredLRPResponse) DesiredLRPChangedEvent {
+	return DesiredLRPChangedEvent{
+		Before: before,
+		After:  after,
 	}
 }
 
@@ -454,13 +470,27 @@ func NewDesiredLRPRemovedEvent(desiredLRP DesiredLRPResponse) DesiredLRPRemovedE
 
 func (DesiredLRPRemovedEvent) EventType() EventType { return EventTypeDesiredLRPRemoved }
 
-type ActualLRPChangedEvent struct {
+type ActualLRPCreatedEvent struct {
 	ActualLRPResponse ActualLRPResponse `json:"actual_lrp"`
 }
 
-func NewActualLRPChangedEvent(actualLRP ActualLRPResponse) ActualLRPChangedEvent {
-	return ActualLRPChangedEvent{
+func NewActualLRPCreatedEvent(actualLRP ActualLRPResponse) ActualLRPCreatedEvent {
+	return ActualLRPCreatedEvent{
 		ActualLRPResponse: actualLRP,
+	}
+}
+
+func (ActualLRPCreatedEvent) EventType() EventType { return EventTypeActualLRPCreated }
+
+type ActualLRPChangedEvent struct {
+	Before ActualLRPResponse `json:"actual_lrp_before"`
+	After  ActualLRPResponse `json:"actual_lrp_after"`
+}
+
+func NewActualLRPChangedEvent(before, after ActualLRPResponse) ActualLRPChangedEvent {
+	return ActualLRPChangedEvent{
+		Before: before,
+		After:  after,
 	}
 }
 

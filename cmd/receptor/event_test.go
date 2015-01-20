@@ -47,9 +47,9 @@ var _ = Describe("Event", func() {
 			event, err := eventSource.Next()
 			Ω(err).ShouldNot(HaveOccurred())
 
-			desiredLRPChangedEvent, ok := event.(receptor.DesiredLRPChangedEvent)
+			desiredLRPCreatedEvent, ok := event.(receptor.DesiredLRPCreatedEvent)
 			Ω(ok).Should(BeTrue())
-			Ω(desiredLRPChangedEvent.DesiredLRPResponse).Should(Equal(serialization.DesiredLRPToResponse(desiredLRP)))
+			Ω(desiredLRPCreatedEvent.DesiredLRPResponse).Should(Equal(serialization.DesiredLRPToResponse(desiredLRP)))
 
 			By("updating an existing DesiredLRP")
 			newRoutes := []string{"new-route"}
@@ -59,9 +59,9 @@ var _ = Describe("Event", func() {
 			event, err = eventSource.Next()
 			Ω(err).ShouldNot(HaveOccurred())
 
-			desiredLRPChangedEvent, ok = event.(receptor.DesiredLRPChangedEvent)
+			desiredLRPChangedEvent, ok := event.(receptor.DesiredLRPChangedEvent)
 			Ω(ok).Should(BeTrue())
-			Ω(desiredLRPChangedEvent.DesiredLRPResponse.Routes).Should(Equal(newRoutes))
+			Ω(desiredLRPChangedEvent.After.Routes).Should(Equal(newRoutes))
 
 			By("removing the DesiredLRP")
 			err = bbs.RemoveDesiredLRPByProcessGuid(logger, desiredLRP.ProcessGuid)
@@ -100,9 +100,9 @@ var _ = Describe("Event", func() {
 			event, err := eventSource.Next()
 			Ω(err).ShouldNot(HaveOccurred())
 
-			actualLRPChangedEvent, ok := event.(receptor.ActualLRPChangedEvent)
+			actualLRPCreatedEvent, ok := event.(receptor.ActualLRPCreatedEvent)
 			Ω(ok).Should(BeTrue())
-			Ω(actualLRPChangedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
+			Ω(actualLRPCreatedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
 
 			By("updating an existing ActualLRP")
 			err = bbs.ClaimActualLRP(actualLRP.ActualLRPKey, models.NewActualLRPContainerKey("some-instance-guid", "some-cell-id"), logger)
@@ -114,9 +114,9 @@ var _ = Describe("Event", func() {
 			event, err = eventSource.Next()
 			Ω(err).ShouldNot(HaveOccurred())
 
-			actualLRPChangedEvent, ok = event.(receptor.ActualLRPChangedEvent)
+			actualLRPChangedEvent, ok := event.(receptor.ActualLRPChangedEvent)
 			Ω(ok).Should(BeTrue())
-			Ω(actualLRPChangedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
+			Ω(actualLRPChangedEvent.After).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
 
 			By("removing the ActualLRP")
 			err = bbs.RemoveActualLRP(actualLRP.ActualLRPKey, actualLRP.ActualLRPContainerKey, logger)

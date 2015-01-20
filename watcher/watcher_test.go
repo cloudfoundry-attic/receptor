@@ -32,13 +32,15 @@ var _ = Describe("Watcher", func() {
 		receptorWatcher watcher.Watcher
 		process         ifrit.Process
 
-		desiredLRPCreateOrUpdates chan models.DesiredLRP
-		desiredLRPDeletes         chan models.DesiredLRP
-		desiredLRPErrors          chan error
+		desiredLRPCreates chan models.DesiredLRP
+		desiredLRPUpdates chan models.DesiredLRPChange
+		desiredLRPDeletes chan models.DesiredLRP
+		desiredLRPErrors  chan error
 
-		actualLRPCreateOrUpdates chan models.ActualLRP
-		actualLRPDeletes         chan models.ActualLRP
-		actualLRPErrors          chan error
+		actualLRPCreates chan models.ActualLRP
+		actualLRPUpdates chan models.ActualLRPChange
+		actualLRPDeletes chan models.ActualLRP
+		actualLRPErrors  chan error
 	)
 
 	BeforeEach(func() {
@@ -47,16 +49,18 @@ var _ = Describe("Watcher", func() {
 		timeProvider = faketimeprovider.New(time.Now())
 		logger := lagertest.NewTestLogger("test")
 
-		desiredLRPCreateOrUpdates = make(chan models.DesiredLRP)
+		desiredLRPCreates = make(chan models.DesiredLRP)
+		desiredLRPUpdates = make(chan models.DesiredLRPChange)
 		desiredLRPDeletes = make(chan models.DesiredLRP)
 		desiredLRPErrors = make(chan error)
 
-		actualLRPCreateOrUpdates = make(chan models.ActualLRP)
+		actualLRPCreates = make(chan models.ActualLRP)
+		actualLRPUpdates = make(chan models.ActualLRPChange)
 		actualLRPDeletes = make(chan models.ActualLRP)
 		actualLRPErrors = make(chan error)
 
-		bbs.WatchForDesiredLRPChangesReturns(desiredLRPCreateOrUpdates, desiredLRPDeletes, desiredLRPErrors)
-		bbs.WatchForActualLRPChangesReturns(actualLRPCreateOrUpdates, actualLRPDeletes, actualLRPErrors)
+		bbs.WatchForDesiredLRPChangesReturns(desiredLRPCreates, desiredLRPUpdates, desiredLRPDeletes, desiredLRPErrors)
+		bbs.WatchForActualLRPChangesReturns(actualLRPCreates, actualLRPUpdates, actualLRPDeletes, actualLRPErrors)
 
 		receptorWatcher = watcher.NewWatcher(bbs, hub, timeProvider, retryWaitDuration, logger)
 		process = ifrit.Invoke(receptorWatcher)
@@ -80,9 +84,24 @@ var _ = Describe("Watcher", func() {
 			}
 		})
 
-		Context("when a create/update (includes an after) change arrives", func() {
+		Context("when a create arrives", func() {
 			BeforeEach(func() {
-				desiredLRPCreateOrUpdates <- desiredLRP
+				desiredLRPCreates <- desiredLRP
+			})
+
+			It("emits a DesiredLRPCreatedEvent to the hub", func() {
+				Eventually(hub.EmitCallCount).Should(Equal(1))
+				event := hub.EmitArgsForCall(0)
+
+				desiredLRPCreatedEvent, ok := event.(receptor.DesiredLRPCreatedEvent)
+				Ω(ok).Should(BeTrue())
+				Ω(desiredLRPCreatedEvent.DesiredLRPResponse).Should(Equal(serialization.DesiredLRPToResponse(desiredLRP)))
+			})
+		})
+
+		Context("when a change arrives", func() {
+			BeforeEach(func() {
+				desiredLRPUpdates <- models.DesiredLRPChange{Before: desiredLRP, After: desiredLRP}
 			})
 
 			It("emits a DesiredLRPChangedEvent to the hub", func() {
@@ -91,11 +110,12 @@ var _ = Describe("Watcher", func() {
 
 				desiredLRPChangedEvent, ok := event.(receptor.DesiredLRPChangedEvent)
 				Ω(ok).Should(BeTrue())
-				Ω(desiredLRPChangedEvent.DesiredLRPResponse).Should(Equal(serialization.DesiredLRPToResponse(desiredLRP)))
+				Ω(desiredLRPChangedEvent.Before).Should(Equal(serialization.DesiredLRPToResponse(desiredLRP)))
+				Ω(desiredLRPChangedEvent.After).Should(Equal(serialization.DesiredLRPToResponse(desiredLRP)))
 			})
 		})
 
-		Context("when the change is a delete (no after)", func() {
+		Context("when a delete arrives", func() {
 			BeforeEach(func() {
 				desiredLRPDeletes <- desiredLRP
 			})
@@ -116,7 +136,7 @@ var _ = Describe("Watcher", func() {
 
 				// avoid issues with race detector when the next test's
 				// BeforeEach resets the changes channel
-				changeChan := desiredLRPCreateOrUpdates
+				changeChan := desiredLRPCreates
 				desiredLRPToSend := desiredLRP
 				go func() { changeChan <- desiredLRPToSend }()
 			})
@@ -145,9 +165,24 @@ var _ = Describe("Watcher", func() {
 			}
 		})
 
-		Context("when a create/update (includes an after) change arrives", func() {
+		Context("when a create arrives", func() {
 			BeforeEach(func() {
-				actualLRPCreateOrUpdates <- actualLRP
+				actualLRPCreates <- actualLRP
+			})
+
+			It("emits an ActualLRPCreatedEvent to the hub", func() {
+				Eventually(hub.EmitCallCount).Should(Equal(1))
+				event := hub.EmitArgsForCall(0)
+
+				actualLRPCreatedEvent, ok := event.(receptor.ActualLRPCreatedEvent)
+				Ω(ok).Should(BeTrue())
+				Ω(actualLRPCreatedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
+			})
+		})
+
+		Context("when a change arrives", func() {
+			BeforeEach(func() {
+				actualLRPUpdates <- models.ActualLRPChange{Before: actualLRP, After: actualLRP}
 			})
 
 			It("emits an ActualLRPChangedEvent to the hub", func() {
@@ -156,11 +191,12 @@ var _ = Describe("Watcher", func() {
 
 				actualLRPChangedEvent, ok := event.(receptor.ActualLRPChangedEvent)
 				Ω(ok).Should(BeTrue())
-				Ω(actualLRPChangedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
+				Ω(actualLRPChangedEvent.Before).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
+				Ω(actualLRPChangedEvent.After).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
 			})
 		})
 
-		Context("when the change is a delete (no after)", func() {
+		Context("when a delete arrives", func() {
 			BeforeEach(func() {
 				actualLRPDeletes <- actualLRP
 			})
@@ -181,7 +217,7 @@ var _ = Describe("Watcher", func() {
 
 				// avoid issues with race detector when the next test's
 				// BeforeEach resets the changes channel
-				changeChan := actualLRPCreateOrUpdates
+				changeChan := actualLRPCreates
 				actualLRPToSend := actualLRP
 				go func() { changeChan <- actualLRPToSend }()
 			})

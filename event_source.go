@@ -88,6 +88,15 @@ func (e *eventSource) Close() error {
 
 func parseRawEvent(rawEvent sse.Event) (Event, error) {
 	switch EventType(rawEvent.Name) {
+	case EventTypeDesiredLRPCreated:
+		var event DesiredLRPCreatedEvent
+		err := json.Unmarshal(rawEvent.Data, &event)
+		if err != nil {
+			return nil, NewInvalidPayloadError(err)
+		}
+
+		return event, nil
+
 	case EventTypeDesiredLRPChanged:
 		var event DesiredLRPChangedEvent
 		err := json.Unmarshal(rawEvent.Data, &event)
@@ -99,6 +108,15 @@ func parseRawEvent(rawEvent sse.Event) (Event, error) {
 
 	case EventTypeDesiredLRPRemoved:
 		var event DesiredLRPRemovedEvent
+		err := json.Unmarshal(rawEvent.Data, &event)
+		if err != nil {
+			return nil, NewInvalidPayloadError(err)
+		}
+
+		return event, nil
+
+	case EventTypeActualLRPCreated:
+		var event ActualLRPCreatedEvent
 		err := json.Unmarshal(rawEvent.Data, &event)
 		if err != nil {
 			return nil, NewInvalidPayloadError(err)
