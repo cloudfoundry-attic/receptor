@@ -57,7 +57,7 @@ var _ = Describe("Resources", func() {
 						"egress_rules":[
 		          {
 				        "protocol": "tcp",
-								"destination": "0.0.0.0/0",
+								"destinations": ["0.0.0.0/0"],
 				        "port_range": {
 					        "start": 1,
 					        "end": 1024
@@ -68,8 +68,8 @@ var _ = Describe("Resources", func() {
 					expectedRequest = receptor.TaskCreateRequest{
 						EgressRules: []models.SecurityGroupRule{
 							{
-								Protocol:    "tcp",
-								Destination: "0.0.0.0/0",
+								Protocol:     "tcp",
+								Destinations: []string{"0.0.0.0/0"},
 								PortRange: &models.PortRange{
 									Start: 1,
 									End:   1024,
@@ -135,7 +135,7 @@ var _ = Describe("Resources", func() {
 						"egress_rules":[
 		          {
 				        "protocol": "tcp",
-								"destination": "0.0.0.0/0",
+								"destinations": ["0.0.0.0/0"],
 				        "port_range": {
 					        "start": 1,
 					        "end": 1024
@@ -146,8 +146,8 @@ var _ = Describe("Resources", func() {
 					expectedResponse = receptor.TaskResponse{
 						EgressRules: []models.SecurityGroupRule{
 							{
-								Protocol:    "tcp",
-								Destination: "0.0.0.0/0",
+								Protocol:     "tcp",
+								Destinations: []string{"0.0.0.0/0"},
 								PortRange: &models.PortRange{
 									Start: 1,
 									End:   1024,
@@ -216,7 +216,7 @@ var _ = Describe("Resources", func() {
 						"egress_rules":[
 		          {
 				        "protocol": "tcp",
-								"destination": "0.0.0.0/0",
+								"destinations": ["0.0.0.0/0"],
 				        "ports": [80, 443],
 				        "log": true
 			        }
@@ -225,10 +225,10 @@ var _ = Describe("Resources", func() {
 					expectedRequest = receptor.DesiredLRPCreateRequest{
 						EgressRules: []models.SecurityGroupRule{
 							{
-								Protocol:    "tcp",
-								Destination: "0.0.0.0/0",
-								Ports:       []uint16{80, 443},
-								Log:         true,
+								Protocol:     "tcp",
+								Destinations: []string{"0.0.0.0/0"},
+								Ports:        []uint16{80, 443},
+								Log:          true,
 							},
 						},
 					}
@@ -293,7 +293,7 @@ var _ = Describe("Resources", func() {
 						"egress_rules":[
 		          {
 				        "protocol": "tcp",
-								"destination": "0.0.0.0/0",
+								"destinations": ["0.0.0.0/0"],
 				        "port_range": {
 					        "start": 1,
 					        "end": 1024
@@ -304,8 +304,8 @@ var _ = Describe("Resources", func() {
 					expectedResponse = receptor.DesiredLRPResponse{
 						EgressRules: []models.SecurityGroupRule{
 							{
-								Protocol:    "tcp",
-								Destination: "0.0.0.0/0",
+								Protocol:     "tcp",
+								Destinations: []string{"0.0.0.0/0"},
 								PortRange: &models.PortRange{
 									Start: 1,
 									End:   1024,

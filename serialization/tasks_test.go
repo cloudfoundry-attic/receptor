@@ -45,10 +45,10 @@ var _ = Describe("Task Serialization", func() {
 				},
 				EgressRules: []models.SecurityGroupRule{
 					{
-						Protocol:    "tcp",
-						Destination: "0.0.0.0/0",
-						Ports:       []uint16{80, 443},
-						Log:         true,
+						Protocol:     "tcp",
+						Destinations: []string{"0.0.0.0/0"},
+						Ports:        []uint16{80, 443},
+						Log:          true,
 					},
 				},
 			}
@@ -101,10 +101,10 @@ var _ = Describe("Task Serialization", func() {
 				},
 				EgressRules: []models.SecurityGroupRule{
 					{
-						Protocol:    "tcp",
-						Destination: "0.0.0.0/0",
-						Ports:       []uint16{80, 443},
-						Log:         true,
+						Protocol:     "tcp",
+						Destinations: []string{"0.0.0.0/0"},
+						Ports:        []uint16{80, 443},
+						Log:          true,
 					},
 				},
 			}
@@ -160,8 +160,8 @@ var _ = Describe("Task Serialization", func() {
 				},
 				EgressRules: []models.SecurityGroupRule{
 					{
-						Protocol:    "tcp",
-						Destination: "0.0.0.0/0",
+						Protocol:     "tcp",
+						Destinations: []string{"0.0.0.0/0"},
 						PortRange: &models.PortRange{
 							Start: 1,
 							End:   1024,
@@ -192,8 +192,8 @@ var _ = Describe("Task Serialization", func() {
 				},
 				EgressRules: []models.SecurityGroupRule{
 					{
-						Protocol:    "tcp",
-						Destination: "0.0.0.0/0",
+						Protocol:     "tcp",
+						Destinations: []string{"0.0.0.0/0"},
 						PortRange: &models.PortRange{
 							Start: 1,
 							End:   1024,

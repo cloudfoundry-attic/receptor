@@ -17,8 +17,8 @@ var _ = Describe("DesiredLRP Serialization", func() {
 
 		BeforeEach(func() {
 			securityRule = models.SecurityGroupRule{
-				Protocol:    "tcp",
-				Destination: "0.0.0.0/0",
+				Protocol:     "tcp",
+				Destinations: []string{"0.0.0.0/0"},
 				PortRange: &models.PortRange{
 					Start: 1,
 					End:   1024,
@@ -60,7 +60,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 			Ω(desiredLRP.EgressRules).Should(HaveLen(1))
 			Ω(desiredLRP.EgressRules[0].Protocol).Should(Equal(securityRule.Protocol))
 			Ω(desiredLRP.EgressRules[0].PortRange).Should(Equal(securityRule.PortRange))
-			Ω(desiredLRP.EgressRules[0].Destination).Should(Equal(securityRule.Destination))
+			Ω(desiredLRP.EgressRules[0].Destinations).Should(Equal(securityRule.Destinations))
 		})
 	})
 
@@ -70,10 +70,10 @@ var _ = Describe("DesiredLRP Serialization", func() {
 
 		BeforeEach(func() {
 			securityRule = models.SecurityGroupRule{
-				Protocol:    "tcp",
-				Destination: "0.0.0.0/0",
-				Ports:       []uint16{80, 443},
-				Log:         true,
+				Protocol:     "tcp",
+				Destinations: []string{"0.0.0.0/0"},
+				Ports:        []uint16{80, 443},
+				Log:          true,
 			}
 
 			desiredLRP = models.DesiredLRP{

@@ -52,7 +52,7 @@ When desiring an LRP you `POST` a valid `DesiredLRPCreateRequest`.  The [API ref
     "egress_rules": [
         {
             "protocol": "tcp",
-            "destination": "0.0.0.0/0",
+            "destinations": ["0.0.0.0/0"],
             "port_range": {
                 "start": 1,
                 "end": 1024
@@ -193,8 +193,8 @@ Security Group is a list of egress firewall rules that are applied to a containe
 ##### `protocol` [required]
 The protocol of the rule that can be one of the following `tcp`, `udp`,`icmp`, `all`.
 
-##### `destination` [required]
-The destination of the rule that will is either an IP Address (1.2.3.4) or an IP range (1.2.3.4-2.3.4.5) or a CIDR (1.2.3.4/5)
+##### `destinations` [required]
+The destinations of the rule that is a list of either an IP Address (1.2.3.4) or an IP range (1.2.3.4-2.3.4.5) or a CIDR (1.2.3.4/5)
 
 ##### `ports` [optional]
 A list of destination ports that are integers between 1 and 65535.
@@ -226,7 +226,7 @@ Enable logging of the rule
 ```
 {
 "protocol": "all",
-"destination": "1.2.3.4",
+"destinations": ["1.2.3.4"],
 "log": true
 }
 ```
@@ -235,7 +235,7 @@ Enable logging of the rule
 ```
 {
 "protocol": "tcp",
-"destination": "1.2.3.4-2.3.4.5",
+"destinations": ["1.2.3.4-2.3.4.5"],
 "ports": [80, 443],
 "log": true
 }
@@ -245,7 +245,7 @@ Enable logging of the rule
 ```
 {
 "protocol": "udp",
-"destination": "1.2.3.4/4",
+"destinations": ["1.2.3.4/4"],
 "port_range": {
     "start": 8000,
     "end": 8085
@@ -257,7 +257,7 @@ Enable logging of the rule
 ```
 {
 "protocol": "icmp",
-"destination": "1.2.3.4",
+"destinations": ["1.2.3.4", "2.3.4.5/6"],
 "icmp_info": {
     "type": 1,
     "code": 40
