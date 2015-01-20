@@ -91,7 +91,7 @@ Currently, only the public docker hub is supported.
 
 > You *must* specify the dockerimage `root_fs` uri as specified, including the leading `docker:///`!
 
-> [Diego-Edge](http://github.com/cloudfoundry-incubator/diego-lite) does not ship with a default rootfs.  You must specify a docker-image when using Diego-Edge.  You can mount the filesystem provided by diego-release by specifying `"root_fs": "docker:///cloudfoundry/lucid64"` or `"root_fs": "docker:///cloudfoundry/trusty64"`.
+> [Lattice](https://github.com/pivotal-cf-experimental/lattice) does not ship with a default rootfs. You must specify a docker-image when using Lattice. You can mount the filesystem provided by diego-release by specifying `"root_fs": "docker:///cloudfoundry/lucid64"` or `"root_fs": "docker:///cloudfoundry/trusty64"`.
 
 #### `env` [optional]
 
