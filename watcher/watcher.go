@@ -17,11 +17,12 @@ import (
 type Watcher ifrit.Runner
 
 type watcher struct {
-	bbs               bbs.ReceptorBBS
-	hub               event.Hub
-	timeProvider      timeprovider.TimeProvider
-	retryWaitDuration time.Duration
-	logger            lager.Logger
+	bbs                     bbs.ReceptorBBS
+	hub                     event.Hub
+	timeProvider            timeprovider.TimeProvider
+	retryWaitDuration       time.Duration
+	subscriberCheckDuration time.Duration
+	logger                  lager.Logger
 }
 
 func NewWatcher(
@@ -29,20 +30,23 @@ func NewWatcher(
 	hub event.Hub,
 	timeProvider timeprovider.TimeProvider,
 	retryWaitDuration time.Duration,
+	subscriberCheckDuration time.Duration,
 	logger lager.Logger,
 ) Watcher {
 	return &watcher{
-		bbs:               bbs,
-		hub:               hub,
-		timeProvider:      timeProvider,
-		retryWaitDuration: retryWaitDuration,
-		logger:            logger,
+		bbs:                     bbs,
+		hub:                     hub,
+		timeProvider:            timeProvider,
+		retryWaitDuration:       retryWaitDuration,
+		subscriberCheckDuration: subscriberCheckDuration,
+		logger:                  logger,
 	}
 }
 
 func (w *watcher) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 	logger := w.logger.Session("running-watcher")
 	logger.Info("starting")
+
 	desiredLRPCreates, desiredLRPUpdates, desiredLRPDeletes, desiredErrors := w.bbs.WatchForDesiredLRPChanges(logger)
 	actualLRPCreates, actualLRPUpdates, actualLRPDeletes, actualErrors := w.bbs.WatchForActualLRPChanges(logger)
 
@@ -52,6 +56,7 @@ func (w *watcher) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 
 	var reWatchActual <-chan time.Time
 	var reWatchDesired <-chan time.Time
+	subscriberCheckTicker := w.timeProvider.NewTicker(w.subscriberCheckDuration)
 
 	for {
 		select {
@@ -147,8 +152,24 @@ func (w *watcher) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 			actualLRPCreates, actualLRPUpdates, actualLRPDeletes, actualErrors = w.bbs.WatchForActualLRPChanges(logger)
 			reWatchActual = nil
 
+		case <-subscriberCheckTicker.C():
+			if w.hub.HasSubscribers() {
+				desiredLRPCreates, desiredLRPUpdates, desiredLRPDeletes, desiredErrors = w.bbs.WatchForDesiredLRPChanges(logger)
+				actualLRPCreates, actualLRPUpdates, actualLRPDeletes, actualErrors = w.bbs.WatchForActualLRPChanges(logger)
+			} else {
+				desiredLRPCreates = nil
+				desiredLRPUpdates = nil
+				desiredLRPDeletes = nil
+				desiredErrors = nil
+				actualLRPCreates = nil
+				actualLRPUpdates = nil
+				actualLRPDeletes = nil
+				actualErrors = nil
+			}
+
 		case <-signals:
 			logger.Info("stopping")
+			subscriberCheckTicker.Stop()
 			return nil
 		}
 	}

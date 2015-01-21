@@ -117,6 +117,7 @@ const (
 	dropsondeOrigin      = "receptor"
 
 	bbsWatchRetryWaitDuration = 3 * time.Second
+	subscriberCheckDuration   = 3 * time.Second
 )
 
 func main() {
@@ -143,7 +144,14 @@ func main() {
 
 	worker, enqueue := task_handler.NewTaskWorkerPool(bbs, logger)
 	taskHandler := task_handler.New(enqueue, logger)
-	lrpChangeWatcher := watcher.NewWatcher(bbs, hub, timeprovider.NewTimeProvider(), bbsWatchRetryWaitDuration, logger)
+	lrpChangeWatcher := watcher.NewWatcher(
+		bbs,
+		hub,
+		timeprovider.NewTimeProvider(),
+		bbsWatchRetryWaitDuration,
+		subscriberCheckDuration,
+		logger,
+	)
 
 	members := grouper.Members{
 		{"lrp-change-watcher", lrpChangeWatcher},

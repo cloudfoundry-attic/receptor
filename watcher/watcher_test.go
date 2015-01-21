@@ -20,9 +20,10 @@ import (
 
 var _ = Describe("Watcher", func() {
 	const (
-		expectedProcessGuid  = "some-process-guid"
-		expectedInstanceGuid = "some-instance-guid"
-		retryWaitDuration    = 50 * time.Millisecond
+		expectedProcessGuid     = "some-process-guid"
+		expectedInstanceGuid    = "some-instance-guid"
+		retryWaitDuration       = 50 * time.Millisecond
+		subscriberCheckDuration = 50 * time.Millisecond
 	)
 
 	var (
@@ -49,7 +50,7 @@ var _ = Describe("Watcher", func() {
 		timeProvider = faketimeprovider.New(time.Now())
 		logger := lagertest.NewTestLogger("test")
 
-		desiredLRPCreates = make(chan models.DesiredLRP)
+		desiredLRPCreates = make(chan models.DesiredLRP, 1) // this channel is used to test ignoring changes when there are no subscribers
 		desiredLRPUpdates = make(chan models.DesiredLRPChange)
 		desiredLRPDeletes = make(chan models.DesiredLRP)
 		desiredLRPErrors = make(chan error)
@@ -62,8 +63,7 @@ var _ = Describe("Watcher", func() {
 		bbs.WatchForDesiredLRPChangesReturns(desiredLRPCreates, desiredLRPUpdates, desiredLRPDeletes, desiredLRPErrors)
 		bbs.WatchForActualLRPChangesReturns(actualLRPCreates, actualLRPUpdates, actualLRPDeletes, actualLRPErrors)
 
-		receptorWatcher = watcher.NewWatcher(bbs, hub, timeProvider, retryWaitDuration, logger)
-		process = ifrit.Invoke(receptorWatcher)
+		receptorWatcher = watcher.NewWatcher(bbs, hub, timeProvider, retryWaitDuration, subscriberCheckDuration, logger)
 	})
 
 	AfterEach(func() {
@@ -71,10 +71,16 @@ var _ = Describe("Watcher", func() {
 		Eventually(process.Wait()).Should(Receive())
 	})
 
-	Describe("Desired LRP changes", func() {
+	Describe("starting", func() {
+		var hasSubscribersCh chan bool
 		var desiredLRP models.DesiredLRP
 
 		BeforeEach(func() {
+			hasSubscribersCh = make(chan bool)
+			hub.HasSubscribersStub = func() bool {
+				return <-hasSubscribersCh
+			}
+
 			desiredLRP = models.DesiredLRP{
 				Action: &models.RunAction{
 					Path: "ls",
@@ -82,156 +88,205 @@ var _ = Describe("Watcher", func() {
 				Domain:      "tests",
 				ProcessGuid: expectedProcessGuid,
 			}
+
+			process = ifrit.Invoke(receptorWatcher)
 		})
 
-		Context("when a create arrives", func() {
-			BeforeEach(func() {
-				desiredLRPCreates <- desiredLRP
-			})
+		It("continues watching when the hub reports having subscribers", func() {
+			desiredLRPCreates <- desiredLRP
 
-			It("emits a DesiredLRPCreatedEvent to the hub", func() {
-				Eventually(hub.EmitCallCount).Should(Equal(1))
-				event := hub.EmitArgsForCall(0)
+			Eventually(hub.EmitCallCount).Should(Equal(1))
 
-				desiredLRPCreatedEvent, ok := event.(receptor.DesiredLRPCreatedEvent)
-				Ω(ok).Should(BeTrue())
-				Ω(desiredLRPCreatedEvent.DesiredLRPResponse).Should(Equal(serialization.DesiredLRPToResponse(desiredLRP)))
-			})
+			timeProvider.Increment(subscriberCheckDuration)
+			hasSubscribersCh <- true
+
+			desiredLRPCreates <- desiredLRP
+
+			Eventually(hub.EmitCallCount).Should(Equal(2))
 		})
 
-		Context("when a change arrives", func() {
-			BeforeEach(func() {
-				desiredLRPUpdates <- models.DesiredLRPChange{Before: desiredLRP, After: desiredLRP}
-			})
+		It("stops watching when the hub reports not having subscribers", func() {
+			desiredLRPCreates <- desiredLRP
 
-			It("emits a DesiredLRPChangedEvent to the hub", func() {
-				Eventually(hub.EmitCallCount).Should(Equal(1))
-				event := hub.EmitArgsForCall(0)
+			Eventually(hub.EmitCallCount).Should(Equal(1))
 
-				desiredLRPChangedEvent, ok := event.(receptor.DesiredLRPChangedEvent)
-				Ω(ok).Should(BeTrue())
-				Ω(desiredLRPChangedEvent.Before).Should(Equal(serialization.DesiredLRPToResponse(desiredLRP)))
-				Ω(desiredLRPChangedEvent.After).Should(Equal(serialization.DesiredLRPToResponse(desiredLRP)))
-			})
-		})
+			timeProvider.Increment(subscriberCheckDuration)
+			hasSubscribersCh <- false
 
-		Context("when a delete arrives", func() {
-			BeforeEach(func() {
-				desiredLRPDeletes <- desiredLRP
-			})
+			desiredLRPCreates <- desiredLRP
 
-			It("emits a DesiredLRPRemovedEvent to the hub", func() {
-				Eventually(hub.EmitCallCount).Should(Equal(1))
-				event := hub.EmitArgsForCall(0)
-
-				desiredLRPRemovedEvent, ok := event.(receptor.DesiredLRPRemovedEvent)
-				Ω(ok).Should(BeTrue())
-				Ω(desiredLRPRemovedEvent.DesiredLRPResponse).Should(Equal(serialization.DesiredLRPToResponse(desiredLRP)))
-			})
-		})
-
-		Context("when watching for change fails", func() {
-			BeforeEach(func() {
-				desiredLRPErrors <- errors.New("bbs watch failed")
-
-				// avoid issues with race detector when the next test's
-				// BeforeEach resets the changes channel
-				changeChan := desiredLRPCreates
-				desiredLRPToSend := desiredLRP
-				go func() { changeChan <- desiredLRPToSend }()
-			})
-
-			It("should retry after the wait duration", func() {
-				timeProvider.Increment(retryWaitDuration / 2)
-				Consistently(hub.EmitCallCount).Should(BeZero())
-				timeProvider.Increment(retryWaitDuration * 2)
-				Eventually(hub.EmitCallCount).Should(Equal(1))
-			})
-
-			It("should be possible to SIGINT the route emitter", func() {
-				process.Signal(os.Interrupt)
-				Eventually(process.Wait()).Should(Receive())
-			})
+			Consistently(hub.EmitCallCount).Should(Equal(1))
 		})
 	})
 
-	Describe("Actual LRP changes", func() {
-		var actualLRP models.ActualLRP
-
+	Describe("when watching the bbs", func() {
 		BeforeEach(func() {
-			actualLRP = models.ActualLRP{
-				ActualLRPKey:          models.NewActualLRPKey(expectedProcessGuid, 1, "domain"),
-				ActualLRPContainerKey: models.NewActualLRPContainerKey(expectedInstanceGuid, "cell-id"),
-			}
+			hub.HasSubscribersReturns(true)
+			process = ifrit.Invoke(receptorWatcher)
 		})
 
-		Context("when a create arrives", func() {
+		Describe("Desired LRP changes", func() {
+			var desiredLRP models.DesiredLRP
+
 			BeforeEach(func() {
-				actualLRPCreates <- actualLRP
+				desiredLRP = models.DesiredLRP{
+					Action: &models.RunAction{
+						Path: "ls",
+					},
+					Domain:      "tests",
+					ProcessGuid: expectedProcessGuid,
+				}
 			})
 
-			It("emits an ActualLRPCreatedEvent to the hub", func() {
-				Eventually(hub.EmitCallCount).Should(Equal(1))
-				event := hub.EmitArgsForCall(0)
+			Context("when a create arrives", func() {
+				BeforeEach(func() {
+					desiredLRPCreates <- desiredLRP
+				})
 
-				actualLRPCreatedEvent, ok := event.(receptor.ActualLRPCreatedEvent)
-				Ω(ok).Should(BeTrue())
-				Ω(actualLRPCreatedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
+				It("emits a DesiredLRPCreatedEvent to the hub", func() {
+					Eventually(hub.EmitCallCount).Should(Equal(1))
+					event := hub.EmitArgsForCall(0)
+
+					desiredLRPCreatedEvent, ok := event.(receptor.DesiredLRPCreatedEvent)
+					Ω(ok).Should(BeTrue())
+					Ω(desiredLRPCreatedEvent.DesiredLRPResponse).Should(Equal(serialization.DesiredLRPToResponse(desiredLRP)))
+				})
+			})
+
+			Context("when a change arrives", func() {
+				BeforeEach(func() {
+					desiredLRPUpdates <- models.DesiredLRPChange{Before: desiredLRP, After: desiredLRP}
+				})
+
+				It("emits a DesiredLRPChangedEvent to the hub", func() {
+					Eventually(hub.EmitCallCount).Should(Equal(1))
+					event := hub.EmitArgsForCall(0)
+
+					desiredLRPChangedEvent, ok := event.(receptor.DesiredLRPChangedEvent)
+					Ω(ok).Should(BeTrue())
+					Ω(desiredLRPChangedEvent.Before).Should(Equal(serialization.DesiredLRPToResponse(desiredLRP)))
+					Ω(desiredLRPChangedEvent.After).Should(Equal(serialization.DesiredLRPToResponse(desiredLRP)))
+				})
+			})
+
+			Context("when a delete arrives", func() {
+				BeforeEach(func() {
+					desiredLRPDeletes <- desiredLRP
+				})
+
+				It("emits a DesiredLRPRemovedEvent to the hub", func() {
+					Eventually(hub.EmitCallCount).Should(Equal(1))
+					event := hub.EmitArgsForCall(0)
+
+					desiredLRPRemovedEvent, ok := event.(receptor.DesiredLRPRemovedEvent)
+					Ω(ok).Should(BeTrue())
+					Ω(desiredLRPRemovedEvent.DesiredLRPResponse).Should(Equal(serialization.DesiredLRPToResponse(desiredLRP)))
+				})
+			})
+
+			Context("when watching for change fails", func() {
+				BeforeEach(func() {
+					desiredLRPErrors <- errors.New("bbs watch failed")
+
+					// avoid issues with race detector when the next test's
+					// BeforeEach resets the changes channel
+					changeChan := desiredLRPCreates
+					desiredLRPToSend := desiredLRP
+					go func() { changeChan <- desiredLRPToSend }()
+				})
+
+				It("should retry after the wait duration", func() {
+					timeProvider.Increment(retryWaitDuration / 2)
+					Consistently(hub.EmitCallCount).Should(BeZero())
+					timeProvider.Increment(retryWaitDuration * 2)
+					Eventually(hub.EmitCallCount).Should(Equal(1))
+				})
+
+				It("should be possible to SIGINT the route emitter", func() {
+					process.Signal(os.Interrupt)
+					Eventually(process.Wait()).Should(Receive())
+				})
 			})
 		})
 
-		Context("when a change arrives", func() {
+		Describe("Actual LRP changes", func() {
+			var actualLRP models.ActualLRP
+
 			BeforeEach(func() {
-				actualLRPUpdates <- models.ActualLRPChange{Before: actualLRP, After: actualLRP}
+				actualLRP = models.ActualLRP{
+					ActualLRPKey:          models.NewActualLRPKey(expectedProcessGuid, 1, "domain"),
+					ActualLRPContainerKey: models.NewActualLRPContainerKey(expectedInstanceGuid, "cell-id"),
+				}
 			})
 
-			It("emits an ActualLRPChangedEvent to the hub", func() {
-				Eventually(hub.EmitCallCount).Should(Equal(1))
-				event := hub.EmitArgsForCall(0)
+			Context("when a create arrives", func() {
+				BeforeEach(func() {
+					actualLRPCreates <- actualLRP
+				})
 
-				actualLRPChangedEvent, ok := event.(receptor.ActualLRPChangedEvent)
-				Ω(ok).Should(BeTrue())
-				Ω(actualLRPChangedEvent.Before).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
-				Ω(actualLRPChangedEvent.After).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
-			})
-		})
+				It("emits an ActualLRPCreatedEvent to the hub", func() {
+					Eventually(hub.EmitCallCount).Should(Equal(1))
+					event := hub.EmitArgsForCall(0)
 
-		Context("when a delete arrives", func() {
-			BeforeEach(func() {
-				actualLRPDeletes <- actualLRP
-			})
-
-			It("emits an ActualLRPRemovedEvent to the hub", func() {
-				Eventually(hub.EmitCallCount).Should(Equal(1))
-				event := hub.EmitArgsForCall(0)
-
-				actualLRPRemovedEvent, ok := event.(receptor.ActualLRPRemovedEvent)
-				Ω(ok).Should(BeTrue())
-				Ω(actualLRPRemovedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
-			})
-		})
-
-		Context("when watching for change fails", func() {
-			BeforeEach(func() {
-				actualLRPErrors <- errors.New("bbs watch failed")
-
-				// avoid issues with race detector when the next test's
-				// BeforeEach resets the changes channel
-				changeChan := actualLRPCreates
-				actualLRPToSend := actualLRP
-				go func() { changeChan <- actualLRPToSend }()
+					actualLRPCreatedEvent, ok := event.(receptor.ActualLRPCreatedEvent)
+					Ω(ok).Should(BeTrue())
+					Ω(actualLRPCreatedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
+				})
 			})
 
-			It("should retry after the wait duration", func() {
-				timeProvider.Increment(retryWaitDuration / 2)
-				Consistently(hub.EmitCallCount).Should(BeZero())
-				timeProvider.Increment(retryWaitDuration * 2)
-				Eventually(hub.EmitCallCount).Should(Equal(1))
+			Context("when a change arrives", func() {
+				BeforeEach(func() {
+					actualLRPUpdates <- models.ActualLRPChange{Before: actualLRP, After: actualLRP}
+				})
+
+				It("emits an ActualLRPChangedEvent to the hub", func() {
+					Eventually(hub.EmitCallCount).Should(Equal(1))
+					event := hub.EmitArgsForCall(0)
+
+					actualLRPChangedEvent, ok := event.(receptor.ActualLRPChangedEvent)
+					Ω(ok).Should(BeTrue())
+					Ω(actualLRPChangedEvent.Before).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
+					Ω(actualLRPChangedEvent.After).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
+				})
 			})
 
-			It("should be possible to SIGINT the route emitter", func() {
-				process.Signal(os.Interrupt)
-				Eventually(process.Wait()).Should(Receive())
+			Context("when a delete arrives", func() {
+				BeforeEach(func() {
+					actualLRPDeletes <- actualLRP
+				})
+
+				It("emits an ActualLRPRemovedEvent to the hub", func() {
+					Eventually(hub.EmitCallCount).Should(Equal(1))
+					event := hub.EmitArgsForCall(0)
+
+					actualLRPRemovedEvent, ok := event.(receptor.ActualLRPRemovedEvent)
+					Ω(ok).Should(BeTrue())
+					Ω(actualLRPRemovedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
+				})
+			})
+
+			Context("when watching for change fails", func() {
+				BeforeEach(func() {
+					actualLRPErrors <- errors.New("bbs watch failed")
+
+					// avoid issues with race detector when the next test's
+					// BeforeEach resets the changes channel
+					changeChan := actualLRPCreates
+					actualLRPToSend := actualLRP
+					go func() { changeChan <- actualLRPToSend }()
+				})
+
+				It("should retry after the wait duration", func() {
+					timeProvider.Increment(retryWaitDuration / 2)
+					Consistently(hub.EmitCallCount).Should(BeZero())
+					timeProvider.Increment(retryWaitDuration * 2)
+					Eventually(hub.EmitCallCount).Should(Equal(1))
+				})
+
+				It("should be possible to SIGINT the route emitter", func() {
+					process.Signal(os.Interrupt)
+					Eventually(process.Wait()).Should(Receive())
+				})
 			})
 		})
 	})

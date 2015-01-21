@@ -12,7 +12,7 @@ type FakeHub struct {
 	SubscribeStub        func() (receptor.EventSource, error)
 	subscribeMutex       sync.RWMutex
 	subscribeArgsForCall []struct{}
-	subscribeReturns struct {
+	subscribeReturns     struct {
 		result1 receptor.EventSource
 		result2 error
 	}
@@ -24,8 +24,14 @@ type FakeHub struct {
 	CloseStub        func() error
 	closeMutex       sync.RWMutex
 	closeArgsForCall []struct{}
-	closeReturns struct {
+	closeReturns     struct {
 		result1 error
+	}
+	HasSubscribersStub        func() bool
+	hasSubscribersMutex       sync.RWMutex
+	hasSubscribersArgsForCall []struct{}
+	hasSubscribersReturns     struct {
+		result1 bool
 	}
 }
 
@@ -98,6 +104,30 @@ func (fake *FakeHub) CloseReturns(result1 error) {
 	fake.CloseStub = nil
 	fake.closeReturns = struct {
 		result1 error
+	}{result1}
+}
+
+func (fake *FakeHub) HasSubscribers() bool {
+	fake.hasSubscribersMutex.Lock()
+	fake.hasSubscribersArgsForCall = append(fake.hasSubscribersArgsForCall, struct{}{})
+	fake.hasSubscribersMutex.Unlock()
+	if fake.HasSubscribersStub != nil {
+		return fake.HasSubscribersStub()
+	} else {
+		return fake.hasSubscribersReturns.result1
+	}
+}
+
+func (fake *FakeHub) HasSubscribersCallCount() int {
+	fake.hasSubscribersMutex.RLock()
+	defer fake.hasSubscribersMutex.RUnlock()
+	return len(fake.hasSubscribersArgsForCall)
+}
+
+func (fake *FakeHub) HasSubscribersReturns(result1 bool) {
+	fake.HasSubscribersStub = nil
+	fake.hasSubscribersReturns = struct {
+		result1 bool
 	}{result1}
 }
 

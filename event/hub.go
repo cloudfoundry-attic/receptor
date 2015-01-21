@@ -13,6 +13,7 @@ type Hub interface {
 	Subscribe() (receptor.EventSource, error)
 	Emit(receptor.Event)
 	Close() error
+	HasSubscribers() bool
 }
 
 type hub struct {
@@ -65,6 +66,13 @@ func (hub *hub) Close() error {
 	hub.closeSubscribers()
 	hub.closed = true
 	return nil
+}
+
+func (hub *hub) HasSubscribers() bool {
+	hub.lock.Lock()
+	defer hub.lock.Unlock()
+
+	return len(hub.subscribers) != 0
 }
 
 func (hub *hub) closeSubscribers() {

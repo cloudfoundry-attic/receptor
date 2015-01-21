@@ -25,6 +25,40 @@ var _ = Describe("Hub", func() {
 		hub = event.NewHub()
 	})
 
+	Describe("HasSubscribers", func() {
+		It("returns false", func() {
+			Ω(hub.HasSubscribers()).Should(BeFalse())
+		})
+
+		Context("when there is a subscriber", func() {
+			var eventSource receptor.EventSource
+
+			BeforeEach(func() {
+				var err error
+				eventSource, err = hub.Subscribe()
+				Ω(err).ShouldNot(HaveOccurred())
+			})
+
+			It("returns true", func() {
+				Ω(hub.HasSubscribers()).Should(BeTrue())
+			})
+
+			Context("when all subscribers are dropped", func() {
+				BeforeEach(func() {
+					err := eventSource.Close()
+					Ω(err).ShouldNot(HaveOccurred())
+
+					// emit event so hub sees closed source and drops subscription
+					hub.Emit(fakeEvent{})
+				})
+
+				It("returns false", func() {
+					Ω(hub.HasSubscribers()).Should(BeFalse())
+				})
+			})
+		})
+	})
+
 	It("fans-out events emitted to it to all subscribers", func() {
 		source1, err := hub.Subscribe()
 		Ω(err).ShouldNot(HaveOccurred())
