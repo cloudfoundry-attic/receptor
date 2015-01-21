@@ -106,12 +106,6 @@ var natsPassword = flag.String(
 	"Password for nats user.",
 )
 
-var bbsWatchRetryWaitDuration = flag.Duration(
-	"bbsWatchRetryWaitDuration",
-	3*time.Second,
-	"Duration to wait before retrying watching the BBS when watching fails",
-)
-
 var communicationTimeout = flag.Duration(
 	"communicationTimeout",
 	10*time.Second,
@@ -121,6 +115,8 @@ var communicationTimeout = flag.Duration(
 const (
 	dropsondeDestination = "localhost:3457"
 	dropsondeOrigin      = "receptor"
+
+	bbsWatchRetryWaitDuration = 3 * time.Second
 )
 
 func main() {
@@ -147,7 +143,7 @@ func main() {
 
 	worker, enqueue := task_handler.NewTaskWorkerPool(bbs, logger)
 	taskHandler := task_handler.New(enqueue, logger)
-	lrpChangeWatcher := watcher.NewWatcher(bbs, hub, timeprovider.NewTimeProvider(), *bbsWatchRetryWaitDuration, logger)
+	lrpChangeWatcher := watcher.NewWatcher(bbs, hub, timeprovider.NewTimeProvider(), bbsWatchRetryWaitDuration, logger)
 
 	members := grouper.Members{
 		{"lrp-change-watcher", lrpChangeWatcher},
