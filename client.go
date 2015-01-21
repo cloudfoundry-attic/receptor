@@ -55,14 +55,18 @@ type Client interface {
 
 func NewClient(url string) Client {
 	return &client{
-		httpClient: cf_http.NewClient(),
-		reqGen:     rata.NewRequestGenerator(url, Routes),
+		httpClient:          cf_http.NewClient(),
+		streamingHTTPClient: cf_http.NewStreamingClient(),
+
+		reqGen: rata.NewRequestGenerator(url, Routes),
 	}
 }
 
 type client struct {
-	httpClient *http.Client
-	reqGen     *rata.RequestGenerator
+	httpClient          *http.Client
+	streamingHTTPClient *http.Client
+
+	reqGen *rata.RequestGenerator
 }
 
 func (c *client) CreateTask(request TaskCreateRequest) error {
@@ -156,7 +160,7 @@ func (c *client) KillActualLRPByProcessGuidAndIndex(processGuid string, index in
 
 func (c *client) SubscribeToEvents() (EventSource, error) {
 	eventSource := &sse.EventSource{
-		Client: c.httpClient,
+		Client: c.streamingHTTPClient,
 		CreateRequest: func() *http.Request {
 			request, err := c.reqGen.CreateRequest(EventStream, nil, nil)
 			if err != nil {
