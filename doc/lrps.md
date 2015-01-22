@@ -323,9 +323,9 @@ The fact that a DesiredLRP is present in Diego does not mean that the correspond
 
 ## Fetching ActualLRPs
 
-As outlined above, DesiredLRPs represent the consumer's intent for Diego to run instances.  To fetch running instances consumers must [fetch ActualLRPs](api_lrps.md#fetching-actuallrps).
+As outlined above, DesiredLRPs represent the consumer's intent for Diego to run instances.  To fetch instances, consumers must [fetch ActualLRPs](api_lrps.md#fetching-actuallrps).
 
-When fetching ActualLRPs one can fetch *all* ActualLRPs in Diego, all ActualLRPs of a given `domain`, all ActualLRPs for a given DesiredLRP by `process_guid`, and all ActualLRPs at a given *index* for a given `process_guid`.
+When fetching ActualLRPs, one can fetch *all* ActualLRPs in Diego, all ActualLRPs of a given `domain`, all ActualLRPs for a given DesiredLRP by `process_guid`, and all ActualLRPs at a given *index* for a given `process_guid`.
 
 In all cases, the consumer is given an array of `ActualLRPResponse`:
 
@@ -337,13 +337,17 @@ In all cases, the consumer is given an array of `ActualLRPResponse`:
         "cell_id": "some-cell-id",
         "domain": "some-domain",
         "index": 15,
-        "state": "CLAIMED" or "RUNNING"
+        "state": "UNCLAIMED", "CLAIMED", "RUNNING" or "CRASHED"
 
         "address": "10.10.11.11",
         "ports": [
             {"container_port": 8080, "host_port": 60001},
             {"container_port": 5000, "host_port": 60002},
         ],
+
+        "placement_error": "insufficient resources",
+
+        "since": 1234567
     },
     ...
 ]
@@ -375,9 +379,23 @@ The `index` of the ActualLRP - an integer between `0` and `N-1` where `N` is the
 
 #### `state`
 
-The state of the ActualLRP.  When an ActualLRP is first scheduled onto a Cell it enters the `CLAIMED` state.  During this time a container is being created and the various processes inside the container are being spun up.
+The state of the ActualLRP.
 
-Once the `action` action begins running, Diego begins periodically running the `monitor` action.  As soon as the `monitor` action reports that the processes are healthy the ActualLRP will transition into the `RUNNING` state.
+When an ActualLRP is first created, it enters the `UNCLAIMED` state.
+
+Once the ActualLRP is placed onto a Cell it enters the `CLAIMED` state.  During this time a container is being created and the various processes inside the container are being spun up.
+
+When the `action` action begins running, Diego begins periodically running the `monitor` action.  As soon as the `monitor` action reports that the processes are healthy the ActualLRP will transition into the `RUNNING` state.
+
+#### `placement_error`
+
+When an ActualLRP cannot be placed because there are no resources to place it, the `placement_error` is populated with the reason.
+
+> `placement_error` is only populated when the ActualLRP is in the `UNCLAIMED` state.
+
+#### `since`
+
+The last modified time of the ActualLRP represented as the number of nanoseconds elapsed since January 1, 1970 UTC.
 
 #### Networking
 #### `address`
