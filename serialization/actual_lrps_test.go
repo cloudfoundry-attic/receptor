@@ -32,12 +32,9 @@ var _ = Describe("ActualLRP Serialization", func() {
 						},
 					},
 				),
-				State: models.ActualLRPStateRunning,
-				ActualLRPCrashInfo: models.ActualLRPCrashInfo{
-					CrashCount:    42,
-					LastCrashedAt: 123456789,
-				},
-				Since: 99999999999,
+				State:      models.ActualLRPStateRunning,
+				CrashCount: 42,
+				Since:      99999999999,
 			}
 		})
 
@@ -55,12 +52,9 @@ var _ = Describe("ActualLRP Serialization", func() {
 						HostPort:      9876,
 					},
 				},
-				State: receptor.ActualLRPStateRunning,
-				CrashInfo: receptor.ActualLRPCrashInfo{
-					CrashCount:    42,
-					LastCrashedAt: 123456789,
-				},
-				Since: 99999999999,
+				State:      receptor.ActualLRPStateRunning,
+				CrashCount: 42,
+				Since:      99999999999,
 			}
 
 			actualResponse := serialization.ActualLRPToResponse(actualLRP)
