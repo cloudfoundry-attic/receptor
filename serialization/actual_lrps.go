@@ -7,16 +7,17 @@ import (
 
 func ActualLRPToResponse(actualLRP models.ActualLRP) receptor.ActualLRPResponse {
 	return receptor.ActualLRPResponse{
-		ProcessGuid:  actualLRP.ProcessGuid,
-		InstanceGuid: actualLRP.InstanceGuid,
-		CellID:       actualLRP.CellID,
-		Domain:       actualLRP.Domain,
-		Index:        actualLRP.Index,
-		Address:      actualLRP.Address,
-		Ports:        PortMappingFromModel(actualLRP.Ports),
-		State:        actualLRPStateToResponseState(actualLRP.State),
-		Since:        actualLRP.Since,
-		CrashCount:   actualLRP.CrashCount,
+		ProcessGuid:    actualLRP.ProcessGuid,
+		InstanceGuid:   actualLRP.InstanceGuid,
+		CellID:         actualLRP.CellID,
+		Domain:         actualLRP.Domain,
+		Index:          actualLRP.Index,
+		Address:        actualLRP.Address,
+		Ports:          PortMappingFromModel(actualLRP.Ports),
+		State:          actualLRPStateToResponseState(actualLRP.State),
+		PlacementError: actualLRP.PlacementError,
+		Since:          actualLRP.Since,
+		CrashCount:     actualLRP.CrashCount,
 	}
 }
 
@@ -26,6 +27,7 @@ func ActualLRPFromResponse(resp receptor.ActualLRPResponse) models.ActualLRP {
 		ActualLRPContainerKey: models.NewActualLRPContainerKey(resp.InstanceGuid, resp.CellID),
 		ActualLRPNetInfo:      models.NewActualLRPNetInfo(resp.Address, PortMappingToModel(resp.Ports)),
 		State:                 actualLRPStateFromResponseState(resp.State),
+		PlacementError:        resp.PlacementError,
 		Since:                 resp.Since,
 	}
 }
