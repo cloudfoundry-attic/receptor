@@ -192,6 +192,42 @@ var _ = Describe("Watcher", func() {
 					Eventually(process.Wait()).Should(Receive())
 				})
 			})
+
+			Context("when the watcher receives several desired watch errors in a retry interval", func() {
+				It("uses only one active timer", func() {
+					Ω(hub.RegisterCallbackCallCount()).Should(Equal(1))
+					callback := hub.RegisterCallbackArgsForCall(0)
+
+					Eventually(bbs.WatchForDesiredLRPChangesCallCount).Should(Equal(1))
+
+					desiredLRPErrors <- errors.New("first error")
+
+					callback(1)
+
+					Eventually(bbs.WatchForDesiredLRPChangesCallCount).Should(Equal(2))
+					desiredLRPErrors <- errors.New("second error")
+
+					Consistently(timeProvider.WatcherCount).Should(Equal(1))
+				})
+			})
+
+			Context("when the watcher receives several actual watch errors in a retry interval", func() {
+				It("uses only one active timer", func() {
+					Ω(hub.RegisterCallbackCallCount()).Should(Equal(1))
+					callback := hub.RegisterCallbackArgsForCall(0)
+
+					Eventually(bbs.WatchForActualLRPChangesCallCount).Should(Equal(1))
+
+					actualLRPErrors <- errors.New("first error")
+
+					callback(1)
+
+					Eventually(bbs.WatchForActualLRPChangesCallCount).Should(Equal(2))
+					actualLRPErrors <- errors.New("second error")
+
+					Consistently(timeProvider.WatcherCount).Should(Equal(1))
+				})
+			})
 		})
 	})
 

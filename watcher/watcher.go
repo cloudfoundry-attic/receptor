@@ -61,6 +61,14 @@ func (w *watcher) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 	var desiredStop, actualStop chan<- bool
 	var desiredErrors, actualErrors <-chan error
 
+	reWatchTimerDesired := w.timeProvider.NewTimer(w.retryWaitDuration)
+	defer reWatchTimerDesired.Stop()
+	reWatchTimerDesired.Stop()
+
+	reWatchTimerActual := w.timeProvider.NewTimer(w.retryWaitDuration)
+	defer reWatchTimerActual.Stop()
+	reWatchTimerActual.Stop()
+
 	var reWatchActual <-chan time.Time
 	var reWatchDesired <-chan time.Time
 
@@ -110,7 +118,8 @@ func (w *watcher) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 
 		case err, ok := <-desiredErrors:
 			if ok {
-				reWatchDesired = w.timeProvider.NewTimer(w.retryWaitDuration).C()
+				reWatchTimerDesired.Reset(w.retryWaitDuration)
+				reWatchDesired = reWatchTimerDesired.C()
 			}
 			if err != nil {
 				logger.Error("desired-watch-failed", err)
@@ -120,7 +129,8 @@ func (w *watcher) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 
 		case err, ok := <-actualErrors:
 			if ok {
-				reWatchActual = w.timeProvider.NewTimer(w.retryWaitDuration).C()
+				reWatchTimerActual.Reset(w.retryWaitDuration)
+				reWatchActual = reWatchTimerActual.C()
 			}
 			if err != nil {
 				logger.Error("actual-watch-failed", err)
