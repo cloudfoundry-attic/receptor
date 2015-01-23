@@ -36,8 +36,9 @@ var _ = Describe("Hub", func() {
 				Ω(err).ShouldNot(HaveOccurred())
 
 				counts = make(chan int, 1)
+				cbCounts := counts
 				hub.RegisterCallback(func(count int) {
-					counts <- count
+					cbCounts <- count
 				})
 			})
 
@@ -165,6 +166,25 @@ var _ = Describe("Hub", func() {
 
 			_, err = source.Next()
 			Ω(err).Should(Equal(receptor.ErrReadFromClosedSource))
+		})
+
+		It("immediately removes the closed event source from its subscribers", func() {
+			source, err := hub.Subscribe()
+			Ω(err).ShouldNot(HaveOccurred())
+
+			counts := make(chan int, 1)
+
+			hub.RegisterCallback(func(count int) {
+				counts <- count
+			})
+
+			Eventually(counts).Should(Receive(Equal(1)))
+
+			err = source.Close()
+			Ω(err).ShouldNot(HaveOccurred())
+
+			Eventually(counts).Should(Receive(BeZero()))
+
 		})
 
 		Context("when the source is already closed", func() {

@@ -49,7 +49,7 @@ func (hub *hub) Subscribe() (receptor.EventSource, error) {
 		return nil, receptor.ErrSubscribedToClosedHub
 	}
 
-	sub := newSource(MAX_PENDING_SUBSCRIBER_EVENTS)
+	sub := newSource(MAX_PENDING_SUBSCRIBER_EVENTS, hub.subscriberClosed)
 	hub.subscribers[sub] = struct{}{}
 	cb := hub.cb
 	size := len(hub.subscribers)
@@ -108,15 +108,29 @@ func (hub *hub) closeSubscribers() {
 	hub.subscribers = nil
 }
 
-type hubSource struct {
-	events chan receptor.Event
-	closed bool
-	lock   sync.Mutex
+func (hub *hub) subscriberClosed(source *hubSource) {
+	hub.lock.Lock()
+	delete(hub.subscribers, source)
+	cb := hub.cb
+	count := len(hub.subscribers)
+	hub.lock.Unlock()
+
+	if cb != nil {
+		cb(count)
+	}
 }
 
-func newSource(maxPendingEvents int) *hubSource {
+type hubSource struct {
+	events        chan receptor.Event
+	closeCallback func(*hubSource)
+	closed        bool
+	lock          sync.Mutex
+}
+
+func newSource(maxPendingEvents int, closeCallback func(*hubSource)) *hubSource {
 	return &hubSource{
-		events: make(chan receptor.Event, maxPendingEvents),
+		events:        make(chan receptor.Event, maxPendingEvents),
+		closeCallback: closeCallback,
 	}
 }
 
@@ -137,6 +151,7 @@ func (source *hubSource) Close() error {
 	}
 	close(source.events)
 	source.closed = true
+	go source.closeCallback(source)
 	return nil
 }
 
