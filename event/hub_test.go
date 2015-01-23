@@ -25,26 +25,43 @@ var _ = Describe("Hub", func() {
 		hub = event.NewHub()
 	})
 
-	Describe("HasSubscribers", func() {
-		It("returns false", func() {
-			Ω(hub.HasSubscribers()).Should(BeFalse())
-		})
-
-		Context("when there is a subscriber", func() {
+	Describe("RegisterCallback", func() {
+		Context("when registering the callback", func() {
 			var eventSource receptor.EventSource
+			var counts chan int
 
 			BeforeEach(func() {
 				var err error
 				eventSource, err = hub.Subscribe()
 				Ω(err).ShouldNot(HaveOccurred())
+
+				counts = make(chan int, 1)
+				hub.RegisterCallback(func(count int) {
+					counts <- count
+				})
 			})
 
-			It("returns true", func() {
-				Ω(hub.HasSubscribers()).Should(BeTrue())
+			It("calls the callback immediately with the current subscriber count", func() {
+				Eventually(counts).Should(Receive(Equal(1)))
+			})
+
+			Context("when adding another subscriber", func() {
+				BeforeEach(func() {
+					Eventually(counts).Should(Receive())
+
+					_, err := hub.Subscribe()
+					Ω(err).ShouldNot(HaveOccurred())
+				})
+
+				It("calls the callback with the new subscriber count", func() {
+					Eventually(counts).Should(Receive(Equal(2)))
+				})
 			})
 
 			Context("when all subscribers are dropped", func() {
 				BeforeEach(func() {
+					Eventually(counts).Should(Receive())
+
 					err := eventSource.Close()
 					Ω(err).ShouldNot(HaveOccurred())
 
@@ -52,8 +69,21 @@ var _ = Describe("Hub", func() {
 					hub.Emit(fakeEvent{})
 				})
 
-				It("returns false", func() {
-					Ω(hub.HasSubscribers()).Should(BeFalse())
+				It("calls the callback with a zero count", func() {
+					Eventually(counts).Should(Receive(BeZero()))
+				})
+			})
+
+			Context("when the hub is closed", func() {
+				BeforeEach(func() {
+					Eventually(counts).Should(Receive())
+
+					err := hub.Close()
+					Ω(err).ShouldNot(HaveOccurred())
+				})
+
+				It("calls the callback with a zero count", func() {
+					Eventually(counts).Should(Receive(BeZero()))
 				})
 			})
 		})

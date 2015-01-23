@@ -12,7 +12,7 @@ type FakeHub struct {
 	SubscribeStub        func() (receptor.EventSource, error)
 	subscribeMutex       sync.RWMutex
 	subscribeArgsForCall []struct{}
-	subscribeReturns     struct {
+	subscribeReturns struct {
 		result1 receptor.EventSource
 		result2 error
 	}
@@ -24,14 +24,13 @@ type FakeHub struct {
 	CloseStub        func() error
 	closeMutex       sync.RWMutex
 	closeArgsForCall []struct{}
-	closeReturns     struct {
+	closeReturns struct {
 		result1 error
 	}
-	HasSubscribersStub        func() bool
-	hasSubscribersMutex       sync.RWMutex
-	hasSubscribersArgsForCall []struct{}
-	hasSubscribersReturns     struct {
-		result1 bool
+	RegisterCallbackStub        func(func(count int))
+	registerCallbackMutex       sync.RWMutex
+	registerCallbackArgsForCall []struct {
+		arg1 func(count int)
 	}
 }
 
@@ -107,28 +106,27 @@ func (fake *FakeHub) CloseReturns(result1 error) {
 	}{result1}
 }
 
-func (fake *FakeHub) HasSubscribers() bool {
-	fake.hasSubscribersMutex.Lock()
-	fake.hasSubscribersArgsForCall = append(fake.hasSubscribersArgsForCall, struct{}{})
-	fake.hasSubscribersMutex.Unlock()
-	if fake.HasSubscribersStub != nil {
-		return fake.HasSubscribersStub()
-	} else {
-		return fake.hasSubscribersReturns.result1
+func (fake *FakeHub) RegisterCallback(arg1 func(count int)) {
+	fake.registerCallbackMutex.Lock()
+	fake.registerCallbackArgsForCall = append(fake.registerCallbackArgsForCall, struct {
+		arg1 func(count int)
+	}{arg1})
+	fake.registerCallbackMutex.Unlock()
+	if fake.RegisterCallbackStub != nil {
+		fake.RegisterCallbackStub(arg1)
 	}
 }
 
-func (fake *FakeHub) HasSubscribersCallCount() int {
-	fake.hasSubscribersMutex.RLock()
-	defer fake.hasSubscribersMutex.RUnlock()
-	return len(fake.hasSubscribersArgsForCall)
+func (fake *FakeHub) RegisterCallbackCallCount() int {
+	fake.registerCallbackMutex.RLock()
+	defer fake.registerCallbackMutex.RUnlock()
+	return len(fake.registerCallbackArgsForCall)
 }
 
-func (fake *FakeHub) HasSubscribersReturns(result1 bool) {
-	fake.HasSubscribersStub = nil
-	fake.hasSubscribersReturns = struct {
-		result1 bool
-	}{result1}
+func (fake *FakeHub) RegisterCallbackArgsForCall(i int) func(count int) {
+	fake.registerCallbackMutex.RLock()
+	defer fake.registerCallbackMutex.RUnlock()
+	return fake.registerCallbackArgsForCall[i].arg1
 }
 
 var _ event.Hub = new(FakeHub)

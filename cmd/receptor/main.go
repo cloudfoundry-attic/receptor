@@ -117,7 +117,6 @@ const (
 	dropsondeOrigin      = "receptor"
 
 	bbsWatchRetryWaitDuration = 3 * time.Second
-	subscriberCheckDuration   = 3 * time.Second
 )
 
 func main() {
@@ -149,7 +148,6 @@ func main() {
 		hub,
 		timeprovider.NewTimeProvider(),
 		bbsWatchRetryWaitDuration,
-		subscriberCheckDuration,
 		logger,
 	)
 

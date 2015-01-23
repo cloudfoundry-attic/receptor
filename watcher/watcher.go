@@ -2,12 +2,14 @@ package watcher
 
 import (
 	"os"
+	"sync"
 	"time"
 
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/event"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs"
+	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/cloudfoundry/gunk/timeprovider"
 	"github.com/pivotal-golang/lager"
 	"github.com/tedsuo/ifrit"
@@ -16,12 +18,11 @@ import (
 type Watcher ifrit.Runner
 
 type watcher struct {
-	bbs                     bbs.ReceptorBBS
-	hub                     event.Hub
-	timeProvider            timeprovider.TimeProvider
-	retryWaitDuration       time.Duration
-	subscriberCheckDuration time.Duration
-	logger                  lager.Logger
+	bbs               bbs.ReceptorBBS
+	hub               event.Hub
+	timeProvider      timeprovider.TimeProvider
+	retryWaitDuration time.Duration
+	logger            lager.Logger
 }
 
 func NewWatcher(
@@ -29,16 +30,14 @@ func NewWatcher(
 	hub event.Hub,
 	timeProvider timeprovider.TimeProvider,
 	retryWaitDuration time.Duration,
-	subscriberCheckDuration time.Duration,
 	logger lager.Logger,
 ) Watcher {
 	return &watcher{
-		bbs:                     bbs,
-		hub:                     hub,
-		timeProvider:            timeProvider,
-		retryWaitDuration:       retryWaitDuration,
-		subscriberCheckDuration: subscriberCheckDuration,
-		logger:                  logger,
+		bbs:               bbs,
+		hub:               hub,
+		timeProvider:      timeProvider,
+		retryWaitDuration: retryWaitDuration,
+		logger:            logger,
 	}
 }
 
@@ -46,148 +45,155 @@ func (w *watcher) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 	logger := w.logger.Session("running-watcher")
 	logger.Info("starting")
 
-	desiredLRPCreates, desiredLRPUpdates, desiredLRPDeletes, desiredErrors := w.bbs.WatchForDesiredLRPChanges(logger)
-	actualLRPCreates, actualLRPUpdates, actualLRPDeletes, actualErrors := w.bbs.WatchForActualLRPChanges(logger)
+	hubNotification := make(chan int, 1)
+	hubSize := 0
+
+	logger.Info("registering-callback-with-hub")
+	w.hub.RegisterCallback(func(size int) {
+		hubNotification <- size
+	})
+	logger.Info("registered-callback-with-hub")
 
 	close(ready)
 	logger.Info("started")
 	defer logger.Info("finished")
 
+	var desiredStop, actualStop chan<- bool
+	var desiredErrors, actualErrors <-chan error
+
 	var reWatchActual <-chan time.Time
 	var reWatchDesired <-chan time.Time
-	subscriberCheckTicker := w.timeProvider.NewTicker(w.subscriberCheckDuration)
 
 	for {
 		select {
-		case desiredCreate, ok := <-desiredLRPCreates:
-			if !ok {
-				logger.Info("desired-lrp-create-channel-closed")
-				desiredLRPCreates = nil
-				desiredLRPUpdates = nil
-				desiredLRPDeletes = nil
-				break
+		case hubSize = <-hubNotification:
+			if hubSize == 0 {
+				if desiredStop != nil {
+					logger.Info("stopping-desired-watch-from-hub-notification")
+					desiredStop <- true
+					desiredStop = nil
+					desiredErrors = nil
+				}
+				if actualStop != nil {
+					logger.Info("stopping-actual-watch-from-hub-notification")
+					actualStop <- true
+					actualStop = nil
+					actualErrors = nil
+				}
+			} else {
+				wg := sync.WaitGroup{}
+
+				if desiredStop == nil {
+					logger.Info("rewatching-desired-from-hub-notification")
+
+					wg.Add(1)
+					go func() {
+						defer wg.Done()
+						desiredStop, desiredErrors = w.watchDesired(logger)
+						logger.Debug("finished-rewatching-desired-from-hub-notification")
+					}()
+				}
+
+				if actualStop == nil {
+					logger.Info("rewatching-actual-from-hub-notification")
+
+					wg.Add(1)
+					go func() {
+						defer wg.Done()
+						actualStop, actualErrors = w.watchActual(logger)
+						logger.Debug("finished-rewatching-actual-from-hub-notification")
+					}()
+				}
+
+				wg.Wait()
 			}
 
-			logger.Debug("received-desired-lrp-create-event")
-			w.hub.Emit(receptor.NewDesiredLRPCreatedEvent(serialization.DesiredLRPToResponse(desiredCreate)))
-
-		case desiredUpdate, ok := <-desiredLRPUpdates:
-			if !ok {
-				logger.Info("desired-lrp-update-channel-closed")
-				desiredLRPCreates = nil
-				desiredLRPUpdates = nil
-				desiredLRPDeletes = nil
-				break
+		case err, ok := <-desiredErrors:
+			if ok {
+				reWatchDesired = w.timeProvider.NewTimer(w.retryWaitDuration).C()
 			}
-
-			logger.Debug("received-desired-lrp-update-event")
-
-			before, after := desiredUpdate.Before, desiredUpdate.After
-			w.hub.Emit(receptor.NewDesiredLRPChangedEvent(
-				serialization.DesiredLRPToResponse(before),
-				serialization.DesiredLRPToResponse(after),
-			))
-
-		case desiredDelete, ok := <-desiredLRPDeletes:
-			if !ok {
-				logger.Info("desired-lrp-delete-channel-closed")
-				desiredLRPCreates = nil
-				desiredLRPUpdates = nil
-				desiredLRPDeletes = nil
-				break
+			if err != nil {
+				logger.Error("desired-watch-failed", err)
 			}
-
-			logger.Debug("received-desired-lrp-delete-event")
-			w.hub.Emit(receptor.NewDesiredLRPRemovedEvent(serialization.DesiredLRPToResponse(desiredDelete)))
-
-		case actualCreate, ok := <-actualLRPCreates:
-			if !ok {
-				logger.Info("actual-lrp-create-channel-closed")
-				actualLRPCreates = nil
-				actualLRPUpdates = nil
-				actualLRPDeletes = nil
-				break
-			}
-
-			logger.Debug("received-actual-lrp-create-event")
-			w.hub.Emit(receptor.NewActualLRPCreatedEvent(serialization.ActualLRPToResponse(actualCreate)))
-
-		case actualUpdate, ok := <-actualLRPUpdates:
-			if !ok {
-				logger.Info("actual-lrp-update-channel-closed")
-				actualLRPCreates = nil
-				actualLRPUpdates = nil
-				actualLRPDeletes = nil
-				break
-			}
-
-			logger.Debug("received-actual-lrp-update-event")
-
-			before, after := actualUpdate.Before, actualUpdate.After
-			w.hub.Emit(receptor.NewActualLRPChangedEvent(
-				serialization.ActualLRPToResponse(before),
-				serialization.ActualLRPToResponse(after),
-			))
-
-		case actualDelete, ok := <-actualLRPDeletes:
-			if !ok {
-				logger.Info("actual-lrp-delete-channel-closed")
-				actualLRPCreates = nil
-				actualLRPUpdates = nil
-				actualLRPDeletes = nil
-				break
-			}
-
-			logger.Debug("received-actual-lrp-delete-event")
-			w.hub.Emit(receptor.NewActualLRPRemovedEvent(serialization.ActualLRPToResponse(actualDelete)))
-
-		case err := <-desiredErrors:
-			logger.Error("desired-watch-failed", err)
-
-			reWatchDesired = w.timeProvider.NewTimer(w.retryWaitDuration).C()
-			desiredLRPCreates = nil
-			desiredLRPUpdates = nil
-			desiredLRPDeletes = nil
 			desiredErrors = nil
+			desiredStop = nil
 
-		case err := <-actualErrors:
-			logger.Error("actual-watch-failed", err)
-
-			reWatchActual = w.timeProvider.NewTimer(w.retryWaitDuration).C()
-			actualLRPCreates = nil
-			actualLRPUpdates = nil
-			actualLRPDeletes = nil
+		case err, ok := <-actualErrors:
+			if ok {
+				reWatchActual = w.timeProvider.NewTimer(w.retryWaitDuration).C()
+			}
+			if err != nil {
+				logger.Error("actual-watch-failed", err)
+			}
 			actualErrors = nil
+			actualStop = nil
 
 		case <-reWatchDesired:
-			desiredLRPCreates, desiredLRPUpdates, desiredLRPDeletes, desiredErrors = w.bbs.WatchForDesiredLRPChanges(logger)
 			reWatchDesired = nil
 
-		case <-reWatchActual:
-			actualLRPCreates, actualLRPUpdates, actualLRPDeletes, actualErrors = w.bbs.WatchForActualLRPChanges(logger)
-			reWatchActual = nil
+			if desiredStop == nil && hubSize > 0 {
+				logger.Info("rewatching-desired")
+				desiredStop, desiredErrors = w.watchDesired(logger)
+			}
 
-		case <-subscriberCheckTicker.C():
-			if w.hub.HasSubscribers() {
-				desiredLRPCreates, desiredLRPUpdates, desiredLRPDeletes, desiredErrors = w.bbs.WatchForDesiredLRPChanges(logger)
-				actualLRPCreates, actualLRPUpdates, actualLRPDeletes, actualErrors = w.bbs.WatchForActualLRPChanges(logger)
-			} else {
-				desiredLRPCreates = nil
-				desiredLRPUpdates = nil
-				desiredLRPDeletes = nil
-				desiredErrors = nil
-				actualLRPCreates = nil
-				actualLRPUpdates = nil
-				actualLRPDeletes = nil
-				actualErrors = nil
+		case <-reWatchActual:
+			reWatchActual = nil
+			if actualStop == nil && hubSize > 0 {
+				logger.Info("rewatching-actual")
+				actualStop, actualErrors = w.watchActual(logger)
 			}
 
 		case <-signals:
 			logger.Info("stopping")
-			subscriberCheckTicker.Stop()
+			if desiredStop != nil {
+				desiredStop <- true
+				desiredStop = nil
+			}
+			if actualStop != nil {
+				actualStop <- true
+				actualStop = nil
+			}
 			return nil
 		}
 	}
 
 	return nil
+}
+
+func (w *watcher) watchDesired(logger lager.Logger) (chan<- bool, <-chan error) {
+	return w.bbs.WatchForDesiredLRPChanges(logger,
+		func(created models.DesiredLRP) {
+			logger.Debug("handling-desired-create")
+			w.hub.Emit(receptor.NewDesiredLRPCreatedEvent(serialization.DesiredLRPToResponse(created)))
+		},
+		func(changed models.DesiredLRPChange) {
+			logger.Debug("handling-desired-change")
+			w.hub.Emit(receptor.NewDesiredLRPChangedEvent(
+				serialization.DesiredLRPToResponse(changed.Before),
+				serialization.DesiredLRPToResponse(changed.After),
+			))
+		},
+		func(deleted models.DesiredLRP) {
+			logger.Debug("handling-desired-delete")
+			w.hub.Emit(receptor.NewDesiredLRPRemovedEvent(serialization.DesiredLRPToResponse(deleted)))
+		})
+}
+
+func (w *watcher) watchActual(logger lager.Logger) (chan<- bool, <-chan error) {
+	return w.bbs.WatchForActualLRPChanges(logger,
+		func(created models.ActualLRP) {
+			logger.Debug("handling-actual-create")
+			w.hub.Emit(receptor.NewActualLRPCreatedEvent(serialization.ActualLRPToResponse(created)))
+		},
+		func(changed models.ActualLRPChange) {
+			logger.Debug("handling-actual-change")
+			w.hub.Emit(receptor.NewActualLRPChangedEvent(
+				serialization.ActualLRPToResponse(changed.Before),
+				serialization.ActualLRPToResponse(changed.After),
+			))
+		},
+		func(deleted models.ActualLRP) {
+			logger.Debug("handling-actual-delete")
+			w.hub.Emit(receptor.NewActualLRPRemovedEvent(serialization.ActualLRPToResponse(deleted)))
+		})
 }

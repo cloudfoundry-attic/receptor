@@ -1,6 +1,8 @@
 package main_test
 
 import (
+	"time"
+
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
@@ -12,6 +14,8 @@ import (
 
 var _ = Describe("Event", func() {
 	var eventSource receptor.EventSource
+	var events chan receptor.Event
+	var done chan struct{}
 	var desiredLRP models.DesiredLRP
 
 	JustBeforeEach(func() {
@@ -20,10 +24,63 @@ var _ = Describe("Event", func() {
 		var err error
 		eventSource, err = client.SubscribeToEvents()
 		Ω(err).ShouldNot(HaveOccurred())
+
+		events = make(chan receptor.Event)
+		done = make(chan struct{})
+
+		go func() {
+			defer close(done)
+			for {
+				event, err := eventSource.Next()
+				if err != nil {
+					close(events)
+					return
+				}
+				events <- event
+			}
+		}()
+
+		primerLRP := models.DesiredLRP{
+			ProcessGuid: "primer-guid",
+			Domain:      "primer-domain",
+			Stack:       "primer-stack",
+			Routes:      []string{"primer-route"},
+			Action: &models.RunAction{
+				Path: "true",
+			},
+		}
+
+		err = bbs.DesireLRP(logger, primerLRP)
+		Ω(err).ShouldNot(HaveOccurred())
+
+	PRIMING:
+		for {
+			select {
+			case <-events:
+				break PRIMING
+			case <-time.After(50 * time.Millisecond):
+				err = bbs.UpdateDesiredLRP(logger, primerLRP.ProcessGuid, models.DesiredLRPUpdate{Routes: []string{"garbage-route"}})
+				Ω(err).ShouldNot(HaveOccurred())
+			}
+		}
+
+		err = bbs.RemoveDesiredLRPByProcessGuid(logger, primerLRP.ProcessGuid)
+		Ω(err).ShouldNot(HaveOccurred())
+
+		var event receptor.Event
+		for {
+			Eventually(events).Should(Receive(&event))
+			if event.EventType() == receptor.EventTypeDesiredLRPRemoved {
+				break
+			}
+		}
 	})
 
 	AfterEach(func() {
 		ginkgomon.Kill(receptorProcess)
+		err := eventSource.Close()
+		Ω(err).ShouldNot(HaveOccurred())
+		Eventually(done).Should(BeClosed())
 	})
 
 	Describe("Desired LRPs", func() {
@@ -44,8 +101,8 @@ var _ = Describe("Event", func() {
 			err := bbs.DesireLRP(logger, desiredLRP)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			event, err := eventSource.Next()
-			Ω(err).ShouldNot(HaveOccurred())
+			var event receptor.Event
+			Eventually(events).Should(Receive(&event))
 
 			desiredLRPCreatedEvent, ok := event.(receptor.DesiredLRPCreatedEvent)
 			Ω(ok).Should(BeTrue())
@@ -56,8 +113,7 @@ var _ = Describe("Event", func() {
 			err = bbs.UpdateDesiredLRP(logger, desiredLRP.ProcessGuid, models.DesiredLRPUpdate{Routes: newRoutes})
 			Ω(err).ShouldNot(HaveOccurred())
 
-			event, err = eventSource.Next()
-			Ω(err).ShouldNot(HaveOccurred())
+			Eventually(events).Should(Receive(&event))
 
 			desiredLRPChangedEvent, ok := event.(receptor.DesiredLRPChangedEvent)
 			Ω(ok).Should(BeTrue())
@@ -67,8 +123,7 @@ var _ = Describe("Event", func() {
 			err = bbs.RemoveDesiredLRPByProcessGuid(logger, desiredLRP.ProcessGuid)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			event, err = eventSource.Next()
-			Ω(err).ShouldNot(HaveOccurred())
+			Eventually(events).Should(Receive(&event))
 
 			desiredLRPRemovedEvent, ok := event.(receptor.DesiredLRPRemovedEvent)
 			Ω(ok).Should(BeTrue())
@@ -97,8 +152,9 @@ var _ = Describe("Event", func() {
 			actualLRP, err := bbs.ActualLRPByProcessGuidAndIndex(desiredLRP.ProcessGuid, 0)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			event, err := eventSource.Next()
-			Ω(err).ShouldNot(HaveOccurred())
+			var event receptor.Event
+
+			Eventually(events).Should(Receive(&event))
 
 			actualLRPCreatedEvent, ok := event.(receptor.ActualLRPCreatedEvent)
 			Ω(ok).Should(BeTrue())
@@ -111,8 +167,7 @@ var _ = Describe("Event", func() {
 			actualLRP, err = bbs.ActualLRPByProcessGuidAndIndex(desiredLRP.ProcessGuid, 0)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			event, err = eventSource.Next()
-			Ω(err).ShouldNot(HaveOccurred())
+			Eventually(events).Should(Receive(&event))
 
 			actualLRPChangedEvent, ok := event.(receptor.ActualLRPChangedEvent)
 			Ω(ok).Should(BeTrue())
@@ -122,8 +177,7 @@ var _ = Describe("Event", func() {
 			err = bbs.RemoveActualLRP(actualLRP.ActualLRPKey, actualLRP.ActualLRPContainerKey, logger)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			event, err = eventSource.Next()
-			Ω(err).ShouldNot(HaveOccurred())
+			Eventually(events).Should(Receive(&event))
 
 			actualLRPRemovedEvent, ok := event.(receptor.ActualLRPRemovedEvent)
 			Ω(ok).Should(BeTrue())

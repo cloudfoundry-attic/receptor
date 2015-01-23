@@ -13,36 +13,56 @@ type Hub interface {
 	Subscribe() (receptor.EventSource, error)
 	Emit(receptor.Event)
 	Close() error
-	HasSubscribers() bool
+
+	RegisterCallback(func(count int))
 }
 
 type hub struct {
 	subscribers []*hubSource
 	closed      bool
 	lock        sync.Mutex
+
+	cb func(count int)
 }
 
 func NewHub() Hub {
 	return &hub{}
 }
 
+func (hub *hub) RegisterCallback(cb func(int)) {
+	hub.lock.Lock()
+	hub.cb = cb
+	size := len(hub.subscribers)
+	hub.lock.Unlock()
+	if cb != nil {
+		cb(size)
+	}
+}
+
 func (hub *hub) Subscribe() (receptor.EventSource, error) {
 	hub.lock.Lock()
-	defer hub.lock.Unlock()
 
 	if hub.closed {
+		hub.lock.Unlock()
 		return nil, receptor.ErrSubscribedToClosedHub
 	}
 
 	sub := newSource(MAX_PENDING_SUBSCRIBER_EVENTS)
 	hub.subscribers = append(hub.subscribers, sub)
+	cb := hub.cb
+	size := len(hub.subscribers)
+	hub.lock.Unlock()
+
+	if cb != nil {
+		cb(size)
+	}
 	return sub, nil
 }
 
 func (hub *hub) Emit(event receptor.Event) {
 	hub.lock.Lock()
-	defer hub.lock.Unlock()
 
+	size := len(hub.subscribers)
 	remainingSubscribers := make([]*hubSource, 0, len(hub.subscribers))
 
 	for _, sub := range hub.subscribers {
@@ -53,6 +73,16 @@ func (hub *hub) Emit(event receptor.Event) {
 	}
 
 	hub.subscribers = remainingSubscribers
+	var cb func(int)
+	if len(hub.subscribers) != size {
+		cb = hub.cb
+		size = len(hub.subscribers)
+	}
+	hub.lock.Unlock()
+
+	if cb != nil {
+		cb(size)
+	}
 }
 
 func (hub *hub) Close() error {
@@ -65,14 +95,10 @@ func (hub *hub) Close() error {
 
 	hub.closeSubscribers()
 	hub.closed = true
+	if hub.cb != nil {
+		hub.cb(0)
+	}
 	return nil
-}
-
-func (hub *hub) HasSubscribers() bool {
-	hub.lock.Lock()
-	defer hub.lock.Unlock()
-
-	return len(hub.subscribers) != 0
 }
 
 func (hub *hub) closeSubscribers() {
