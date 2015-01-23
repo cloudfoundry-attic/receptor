@@ -42,7 +42,7 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	task, err := serialization.TaskFromRequest(taskRequest)
 	if err != nil {
-		log.Error("task-request-invalid", err, lager.Data{"task": task})
+		log.Error("task-request-invalid", err)
 		writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
 			Type:    receptor.InvalidTask,
 			Message: err.Error(),
@@ -52,7 +52,7 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	err = h.bbs.DesireTask(log, task)
 	if err != nil {
-		log.Error("failed-to-desire-task", err, lager.Data{"task": task})
+		log.Error("failed-to-desire-task", err)
 
 		if _, ok := err.(models.ValidationError); ok {
 			writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
