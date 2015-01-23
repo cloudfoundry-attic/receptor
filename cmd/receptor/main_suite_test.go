@@ -8,6 +8,7 @@ import (
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/cmd/receptor/testrunner"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
+	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/cloudfoundry/gunk/diegonats"
 	"github.com/cloudfoundry/gunk/timeprovider"
 	"github.com/cloudfoundry/storeadapter"
@@ -90,7 +91,7 @@ var _ = BeforeEach(func() {
 	etcdRunner.Start()
 
 	etcdAdapter = etcdRunner.Adapter()
-	bbs = Bbs.NewBBS(etcdAdapter, timeprovider.NewTimeProvider(), logger)
+	bbs = Bbs.NewBBS(etcdAdapter, timeprovider.NewTimeProvider(), models.NewDefaultRestartCalculator(), logger)
 
 	receptorAddress = fmt.Sprintf("127.0.0.1:%d", 6700+GinkgoParallelNode())
 	receptorTaskHandlerAddress = fmt.Sprintf("127.0.0.1:%d", 1169+GinkgoParallelNode())
