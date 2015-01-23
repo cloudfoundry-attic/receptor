@@ -18,7 +18,7 @@ type Hub interface {
 }
 
 type hub struct {
-	subscribers []*hubSource
+	subscribers map[*hubSource]struct{}
 	closed      bool
 	lock        sync.Mutex
 
@@ -26,7 +26,9 @@ type hub struct {
 }
 
 func NewHub() Hub {
-	return &hub{}
+	return &hub{
+		subscribers: make(map[*hubSource]struct{}),
+	}
 }
 
 func (hub *hub) RegisterCallback(cb func(int)) {
@@ -48,7 +50,7 @@ func (hub *hub) Subscribe() (receptor.EventSource, error) {
 	}
 
 	sub := newSource(MAX_PENDING_SUBSCRIBER_EVENTS)
-	hub.subscribers = append(hub.subscribers, sub)
+	hub.subscribers[sub] = struct{}{}
 	cb := hub.cb
 	size := len(hub.subscribers)
 	hub.lock.Unlock()
@@ -63,16 +65,14 @@ func (hub *hub) Emit(event receptor.Event) {
 	hub.lock.Lock()
 
 	size := len(hub.subscribers)
-	remainingSubscribers := make([]*hubSource, 0, len(hub.subscribers))
 
-	for _, sub := range hub.subscribers {
+	for sub, _ := range hub.subscribers {
 		err := sub.send(event)
-		if err == nil {
-			remainingSubscribers = append(remainingSubscribers, sub)
+		if err != nil {
+			delete(hub.subscribers, sub)
 		}
 	}
 
-	hub.subscribers = remainingSubscribers
 	var cb func(int)
 	if len(hub.subscribers) != size {
 		cb = hub.cb
@@ -102,7 +102,7 @@ func (hub *hub) Close() error {
 }
 
 func (hub *hub) closeSubscribers() {
-	for _, sub := range hub.subscribers {
+	for sub, _ := range hub.subscribers {
 		_ = sub.Close()
 	}
 	hub.subscribers = nil
