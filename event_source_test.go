@@ -3,6 +3,7 @@ package receptor_test
 import (
 	"encoding/json"
 	"errors"
+	"io"
 
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/fake_receptor"
@@ -275,6 +276,28 @@ var _ = Describe("EventSource", func() {
 			It("propagates the error", func() {
 				_, err := eventSource.Next()
 				Ω(err).Should(Equal(receptor.NewRawEventSourceError(rawError)))
+			})
+		})
+
+		Context("when the raw event source returns io.EOF", func() {
+			BeforeEach(func() {
+				fakeRawEventSource.NextReturns(sse.Event{}, io.EOF)
+			})
+
+			It("returns io.EOF", func() {
+				_, err := eventSource.Next()
+				Ω(err).Should(Equal(io.EOF))
+			})
+		})
+
+		Context("when the raw event source returns sse.ErrSourceClosed", func() {
+			BeforeEach(func() {
+				fakeRawEventSource.NextReturns(sse.Event{}, sse.ErrSourceClosed)
+			})
+
+			It("returns receptor.ErrSourceClosed", func() {
+				_, err := eventSource.Next()
+				Ω(err).Should(Equal(receptor.ErrSourceClosed))
 			})
 		})
 	})
