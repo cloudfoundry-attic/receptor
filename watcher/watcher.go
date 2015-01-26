@@ -10,7 +10,7 @@ import (
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
-	"github.com/cloudfoundry/gunk/timeprovider"
+	"github.com/pivotal-golang/clock"
 	"github.com/pivotal-golang/lager"
 	"github.com/tedsuo/ifrit"
 )
@@ -20,7 +20,7 @@ type Watcher ifrit.Runner
 type watcher struct {
 	bbs               bbs.ReceptorBBS
 	hub               event.Hub
-	timeProvider      timeprovider.TimeProvider
+	clock             clock.Clock
 	retryWaitDuration time.Duration
 	logger            lager.Logger
 }
@@ -28,14 +28,14 @@ type watcher struct {
 func NewWatcher(
 	bbs bbs.ReceptorBBS,
 	hub event.Hub,
-	timeProvider timeprovider.TimeProvider,
+	clock clock.Clock,
 	retryWaitDuration time.Duration,
 	logger lager.Logger,
 ) Watcher {
 	return &watcher{
 		bbs:               bbs,
 		hub:               hub,
-		timeProvider:      timeProvider,
+		clock:             clock,
 		retryWaitDuration: retryWaitDuration,
 		logger:            logger,
 	}
@@ -61,11 +61,11 @@ func (w *watcher) Run(signals <-chan os.Signal, ready chan<- struct{}) error {
 	var desiredStop, actualStop chan<- bool
 	var desiredErrors, actualErrors <-chan error
 
-	reWatchTimerDesired := w.timeProvider.NewTimer(w.retryWaitDuration)
+	reWatchTimerDesired := w.clock.NewTimer(w.retryWaitDuration)
 	defer reWatchTimerDesired.Stop()
 	reWatchTimerDesired.Stop()
 
-	reWatchTimerActual := w.timeProvider.NewTimer(w.retryWaitDuration)
+	reWatchTimerActual := w.clock.NewTimer(w.retryWaitDuration)
 	defer reWatchTimerActual.Stop()
 	reWatchTimerActual.Stop()
 

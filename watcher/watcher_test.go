@@ -11,9 +11,9 @@ import (
 	"github.com/cloudfoundry-incubator/receptor/watcher"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
-	"github.com/cloudfoundry/gunk/timeprovider/faketimeprovider"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/pivotal-golang/clock/fakeclock"
 	"github.com/pivotal-golang/lager/lagertest"
 	"github.com/tedsuo/ifrit"
 )
@@ -28,7 +28,7 @@ var _ = Describe("Watcher", func() {
 	var (
 		bbs             *fake_bbs.FakeReceptorBBS
 		hub             *eventfakes.FakeHub
-		timeProvider    *faketimeprovider.FakeTimeProvider
+		clock           *fakeclock.FakeClock
 		receptorWatcher watcher.Watcher
 		process         ifrit.Process
 
@@ -42,7 +42,7 @@ var _ = Describe("Watcher", func() {
 	BeforeEach(func() {
 		bbs = new(fake_bbs.FakeReceptorBBS)
 		hub = new(eventfakes.FakeHub)
-		timeProvider = faketimeprovider.New(time.Now())
+		clock = fakeclock.NewFakeClock(time.Now())
 		logger := lagertest.NewTestLogger("test")
 
 		desiredLRPStop = make(chan bool, 1)
@@ -54,7 +54,7 @@ var _ = Describe("Watcher", func() {
 		bbs.WatchForDesiredLRPChangesReturns(desiredLRPStop, desiredLRPErrors)
 		bbs.WatchForActualLRPChangesReturns(actualLRPStop, actualLRPErrors)
 
-		receptorWatcher = watcher.NewWatcher(bbs, hub, timeProvider, retryWaitDuration, logger)
+		receptorWatcher = watcher.NewWatcher(bbs, hub, clock, retryWaitDuration, logger)
 	})
 
 	AfterEach(func() {
@@ -121,22 +121,22 @@ var _ = Describe("Watcher", func() {
 					})
 
 					It("requests a new desired watch after the retry interval", func() {
-						timeProvider.Increment(retryWaitDuration / 2)
+						clock.Increment(retryWaitDuration / 2)
 						Consistently(bbs.WatchForDesiredLRPChangesCallCount).Should(Equal(1))
-						timeProvider.Increment(retryWaitDuration * 2)
+						clock.Increment(retryWaitDuration * 2)
 						Eventually(bbs.WatchForDesiredLRPChangesCallCount).Should(Equal(2))
 					})
 
 					Context("and the hub reports no subscribers before the retry interval elapses", func() {
 						BeforeEach(func() {
-							timeProvider.Increment(retryWaitDuration / 2)
+							clock.Increment(retryWaitDuration / 2)
 							callback(0)
 							// give watcher time to clear out event loop
 							time.Sleep(10 * time.Millisecond)
 						})
 
 						It("does not request new watches", func() {
-							timeProvider.Increment(retryWaitDuration * 2)
+							clock.Increment(retryWaitDuration * 2)
 							Consistently(bbs.WatchForDesiredLRPChangesCallCount).Should(Equal(1))
 						})
 					})
@@ -148,22 +148,22 @@ var _ = Describe("Watcher", func() {
 					})
 
 					It("requests a new actual watch after the retry interval", func() {
-						timeProvider.Increment(retryWaitDuration / 2)
+						clock.Increment(retryWaitDuration / 2)
 						Consistently(bbs.WatchForActualLRPChangesCallCount).Should(Equal(1))
-						timeProvider.Increment(retryWaitDuration * 2)
+						clock.Increment(retryWaitDuration * 2)
 						Eventually(bbs.WatchForActualLRPChangesCallCount).Should(Equal(2))
 					})
 
 					Context("and the hub reports no subscribers before the retry interval elapses", func() {
 						BeforeEach(func() {
-							timeProvider.Increment(retryWaitDuration / 2)
+							clock.Increment(retryWaitDuration / 2)
 							callback(0)
 							// give watcher time to clear out event loop
 							time.Sleep(10 * time.Millisecond)
 						})
 
 						It("does not request new watches", func() {
-							timeProvider.Increment(retryWaitDuration * 2)
+							clock.Increment(retryWaitDuration * 2)
 							Consistently(bbs.WatchForActualLRPChangesCallCount).Should(Equal(1))
 						})
 					})
@@ -207,7 +207,7 @@ var _ = Describe("Watcher", func() {
 					Eventually(bbs.WatchForDesiredLRPChangesCallCount).Should(Equal(2))
 					desiredLRPErrors <- errors.New("second error")
 
-					Consistently(timeProvider.WatcherCount).Should(Equal(1))
+					Consistently(clock.WatcherCount).Should(Equal(1))
 				})
 			})
 
@@ -225,7 +225,7 @@ var _ = Describe("Watcher", func() {
 					Eventually(bbs.WatchForActualLRPChangesCallCount).Should(Equal(2))
 					actualLRPErrors <- errors.New("second error")
 
-					Consistently(timeProvider.WatcherCount).Should(Equal(1))
+					Consistently(clock.WatcherCount).Should(Equal(1))
 				})
 			})
 		})

@@ -10,12 +10,12 @@ import (
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/cloudfoundry/gunk/diegonats"
-	"github.com/cloudfoundry/gunk/timeprovider"
 	"github.com/cloudfoundry/storeadapter"
 	"github.com/cloudfoundry/storeadapter/storerunner/etcdstorerunner"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
+	"github.com/pivotal-golang/clock"
 	"github.com/pivotal-golang/lager"
 	"github.com/pivotal-golang/lager/lagertest"
 	"github.com/tedsuo/ifrit"
@@ -91,7 +91,7 @@ var _ = BeforeEach(func() {
 	etcdRunner.Start()
 
 	etcdAdapter = etcdRunner.Adapter()
-	bbs = Bbs.NewBBS(etcdAdapter, timeprovider.NewTimeProvider(), models.NewDefaultRestartCalculator(), logger)
+	bbs = Bbs.NewBBS(etcdAdapter, clock.NewClock(), models.NewDefaultRestartCalculator(), logger)
 
 	receptorAddress = fmt.Sprintf("127.0.0.1:%d", 6700+GinkgoParallelNode())
 	receptorTaskHandlerAddress = fmt.Sprintf("127.0.0.1:%d", 1169+GinkgoParallelNode())

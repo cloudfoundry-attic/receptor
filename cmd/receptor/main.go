@@ -22,10 +22,10 @@ import (
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/cloudfoundry/dropsonde"
 	"github.com/cloudfoundry/gunk/diegonats"
-	"github.com/cloudfoundry/gunk/timeprovider"
 	"github.com/cloudfoundry/gunk/workpool"
 	"github.com/cloudfoundry/storeadapter/etcdstoreadapter"
 	"github.com/nu7hatch/gouuid"
+	"github.com/pivotal-golang/clock"
 	"github.com/pivotal-golang/lager"
 	"github.com/pivotal-golang/localip"
 	"github.com/tedsuo/ifrit"
@@ -146,7 +146,7 @@ func main() {
 	lrpChangeWatcher := watcher.NewWatcher(
 		bbs,
 		hub,
-		timeprovider.NewTimeProvider(),
+		clock.NewClock(),
 		bbsWatchRetryWaitDuration,
 		logger,
 	)
@@ -233,7 +233,7 @@ func initializeReceptorBBS(logger lager.Logger) Bbs.ReceptorBBS {
 		logger.Fatal("failed-to-connect-to-etcd", err)
 	}
 
-	return Bbs.NewReceptorBBS(etcdAdapter, timeprovider.NewTimeProvider(), logger)
+	return Bbs.NewReceptorBBS(etcdAdapter, clock.NewClock(), logger)
 }
 
 func initializeServerRegistration(logger lager.Logger) (registration natbeat.RegistryMessage) {
