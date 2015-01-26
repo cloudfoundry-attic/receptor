@@ -35,6 +35,12 @@ func (h *EventStreamHandler) EventStream(w http.ResponseWriter, req *http.Reques
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+	defer func() {
+		err := source.Close()
+		if err != nil {
+			logger.Debug("failed-to-close-event-source", lager.Data{"error-msg": err.Error()})
+		}
+	}()
 
 	w.WriteHeader(http.StatusOK)
 
@@ -81,10 +87,6 @@ func (h *EventStreamHandler) EventStream(w http.ResponseWriter, req *http.Reques
 
 		case <-closeNotifier:
 			logger.Info("client-closed-response-body")
-			err := source.Close()
-			if err != nil {
-				logger.Debug("failed-to-close-event-source", lager.Data{"error-msg": err.Error()})
-			}
 			return
 		}
 	}

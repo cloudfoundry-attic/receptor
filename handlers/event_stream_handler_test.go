@@ -25,6 +25,14 @@ func (fakeEvent) EventType() receptor.EventType {
 	return "fake"
 }
 
+type unmarshalableEvent struct {
+	Fn func() `json:"fn"`
+}
+
+func (unmarshalableEvent) EventType() receptor.EventType {
+	return "unmarshalable"
+}
+
 var _ = Describe("Event Stream Handlers", func() {
 	var (
 		logger  lager.Logger
@@ -126,11 +134,39 @@ var _ = Describe("Event Stream Handlers", func() {
 					Name: "fake",
 					Data: []byte(`{"token":"B"}`),
 				}))
+			})
 
-				close(eventsToEmit)
+			Context("when the source provides an unmarshalable event", func() {
+				BeforeEach(func() {
+					unmarshalable := unmarshalableEvent{Fn: func() {}}
+					eventsToEmit <- unmarshalable
+				})
 
-				_, err := reader.Next()
-				Ω(err).Should(Equal(io.EOF))
+				It("closes the event stream to the client", func() {
+					reader := sse.NewReadCloser(response.Body)
+					_, err := reader.Next()
+					Ω(err).Should(Equal(io.EOF))
+				})
+
+				It("closes the event source", func() {
+					Eventually(fakeSource.CloseCallCount).Should(Equal(1))
+				})
+			})
+
+			Context("when the event source returns an error", func() {
+				BeforeEach(func() {
+					close(eventsToEmit)
+				})
+
+				It("closes the client event stream", func() {
+					reader := sse.NewReadCloser(response.Body)
+					_, err := reader.Next()
+					Ω(err).Should(Equal(io.EOF))
+				})
+
+				It("close the event source", func() {
+					Eventually(fakeSource.CloseCallCount).Should(Equal(1))
+				})
 			})
 
 			Context("when the client closes the response body", func() {
