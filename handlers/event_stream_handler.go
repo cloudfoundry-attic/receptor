@@ -41,7 +41,7 @@ func (h *EventStreamHandler) EventStream(w http.ResponseWriter, req *http.Reques
 	flusher.Flush()
 
 	eventID := 0
-	errChan := make(chan error)
+	errChan := make(chan error, 1)
 	eventChan := make(chan receptor.Event)
 
 	for {
