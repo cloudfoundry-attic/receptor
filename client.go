@@ -159,19 +159,14 @@ func (c *client) KillActualLRPByProcessGuidAndIndex(processGuid string, index in
 }
 
 func (c *client) SubscribeToEvents() (EventSource, error) {
-	eventSource := &sse.EventSource{
-		Client: c.streamingHTTPClient,
-		CreateRequest: func() *http.Request {
-			request, err := c.reqGen.CreateRequest(EventStream, nil, nil)
-			if err != nil {
-				panic(err) // totally shouldn't happen
-			}
+	eventSource, err := sse.Connect(c.streamingHTTPClient, time.Second, func() *http.Request {
+		request, err := c.reqGen.CreateRequest(EventStream, nil, nil)
+		if err != nil {
+			panic(err) // totally shouldn't happen
+		}
 
-			return request
-		},
-	}
-
-	err := eventSource.Connect()
+		return request
+	})
 	if err != nil {
 		return nil, err
 	}
