@@ -160,8 +160,10 @@ If a `completion_callback_url` is provided Diego will `POST` to the provided URL
 #### Networking
 By default network access for any container is limited but some tasks might need specific network access and that can be setup using `egress_rules` field.
 
+Rules are evaluated in reverse order of their position, i.e., the last one takes precedence.
+
 #### `egress_rules` [optional]
-Security Group is a list of egress firewall rules that are applied to a container running in Diego
+`egress_rules` are a list of egress firewall rules that are applied to a container running in Diego
 
 ##### `protocol` [required]
 The protocol of the rule that can be one of the following `tcp`, `udp`,`icmp`, `all`.
@@ -192,6 +194,8 @@ A list of destination ports that are integers between 1 and 65535.
 Enable logging of the rule
 > `log` is optional for `tcp` and `all`.
 > It is an error to provide `log` as true when protocol is `udp` or `icmp`.
+
+> Define all rules with `log` enabled at the end of your `egress_rules` to guarantee logging.
 
 ##### Examples
 ***

@@ -179,16 +179,17 @@ There are plans to generalize this interface and make it possible to build custo
 
 By default network access for any container is limited but some LRPs might need specific network access and that can be setup using `egress_rules` field.
 
+Rules are evaluated in reverse order of their position, i.e., the last one takes precedence.
+
 #### `ports` [optional]
 
 `ports` is a list of ports to open in the container.  Processes running in the container can bind to these ports to receive incoming traffic.  These ports are only valid within the container namespace and an arbitrary host-side port is created when the container is created.  This host-side port is made available on the `ActualLRP`.
 
 #### `routes` [optional]
-
 `routes` are a list of fully qualified domain names (e.g. `"foo.example.com"`).  These routes are automatically registered with the router and point to the *first* port in the `ports` list.
 
 #### `egress_rules` [optional]
-Security Group is a list of egress firewall rules that are applied to a container running in Diego
+`egress_rules` are a list of egress firewall rules that are applied to a container running in Diego
 
 ##### `protocol` [required]
 The protocol of the rule that can be one of the following `tcp`, `udp`,`icmp`, `all`.
@@ -219,6 +220,8 @@ A list of destination ports that are integers between 1 and 65535.
 Enable logging of the rule
 > `log` is optional for `tcp` and `all`.
 > It is an error to provide `log` as true when protocol is `udp` or `icmp`.
+
+> Define all rules with `log` enabled at the end of your `egress_rules` to guarantee logging.
 
 ##### Examples
 ***
