@@ -59,7 +59,7 @@ This returns an array of [`DesiredLRPResponse`](lrps.md#fetching-desiredlrps) ob
 
 ### Fetching a Specific DesiredLRP
 
-To fetch a DesiredLRP by [`process_guid`](lrps.md#process-guid):
+To fetch a DesiredLRP by [`process_guid`](lrps.md#process_guid):
 
 ```
 GET /v1/desired_lrps/:process_guid
