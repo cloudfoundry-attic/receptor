@@ -50,12 +50,24 @@ func (e closeError) Error() string {
 }
 
 //go:generate counterfeiter -o fake_receptor/fake_event_source.go . EventSource
+
+// EventSource provides sequential access to a stream of events.
 type EventSource interface {
+	// Next reads the next event from the source. If the connection is lost, it
+	// automatically reconnects.
+	//
+	// If the end of the stream is reached cleanly (which should actually never
+	// happen), io.EOF is returned. If called after or during Close,
+	// ErrSourceClosed is returned.
 	Next() (Event, error)
+
+	// Close releases the underlying response, interrupts any in-flight Next, and
+	// prevents further calls to Next.
 	Close() error
 }
 
 //go:generate counterfeiter -o fake_receptor/fake_raw_event_source.go . RawEventSource
+
 type RawEventSource interface {
 	Next() (sse.Event, error)
 	Close() error

@@ -24,6 +24,7 @@ var ErrSubscribedToClosedHub = errors.New("subscribed to closed hub")
 var ErrHubAlreadyClosed = errors.New("hub already closed")
 
 //go:generate counterfeiter -o fake_receptor/fake_client.go . Client
+
 type Client interface {
 	CreateTask(TaskCreateRequest) error
 	Tasks() ([]TaskResponse, error)

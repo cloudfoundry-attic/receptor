@@ -114,4 +114,9 @@ Diego supports killing the ActualLRPs for a given `process_guid` at a given `ind
 DELETE /v1/actual_lrps/:process_guid/index/:index
 ```
 
+## Receiving events when Actual or Desired LRPs change
+
+To get server side event stream for changes to DesiredLRPs and ActualLRPs, see [Events](events.md).
+
+
 [back](README.md)
