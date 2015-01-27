@@ -103,10 +103,10 @@ For more details on the environment variables provided to processes in the conta
 
 #### `cpu_weight` [optional]
 
-To control the CPU shares provided to a container, set `cpu_weight`.  This must be a positive number in the range `1-100`.  The `cpu_weight` enforces a relative fair share of the CPU among containers.  It's best explained with examples.  Consider the following scenarios (we shall assume that each container is running a busy process that is attempting to consumer as many CPU resources as possible):
+To control the CPU shares provided to a container, set `cpu_weight`.  This must be a positive number in the range `1-100`.  The `cpu_weight` enforces a relative fair share of the CPU among containers.  It's best explained with examples.  Consider the following scenarios (we shall assume that each container is running a busy process that is attempting to consume as many CPU resources as possible):
 
 - Two containers, with equal values of `cpu_weight`: both containers will receive equal shares of CPU time.
-- Two containers, one with `cpu_weight=50` the other with `cpu_weight=100`: the latter will get (roughly) 2/3 of the CPU time, the former 1/3.
+- Two containers, one with `cpu_weight=50` the other with `cpu_weight=100`: the later will get (roughly) 2/3 of the CPU time, the former 1/3.
 
 #### `disk_mb` [optional]
 
@@ -307,7 +307,7 @@ Tasks in Diego undergo a simple lifecycle encoded in the Tasks's state:
 - When the Cell begins to create the container and run the Task action, the Task enters the `RUNNING` state.
 - When the Task completes, the Cell annotates the `TaskResponse` with `failed`, `failure_reason`, and `result`, and puts the Task in the `COMPLETED` state.
 
-At this point it is up to the consumer of Diego to acknowledge and resolve the completed Task.  This can either be done via a completion callback (described [above](#completion_callback_url)) or by [deleting](delete_tasks.md) the Task.  When the Task is being resolved it first enters the `RESOLVING` state and is ultimately removed from Diego.
+At this point it is up to the consumer of Diego to acknowledge and resolve the completed Task.  This can either be done via a completion callback (described [above](#completion_callback_url-optional)) or by [deleting](delete_tasks.md) the Task.  When the Task is being resolved it first enters the `RESOLVING` state and is ultimately removed from Diego.
 
 Diego will automatically reap Tasks that remain unresolved after 2 minutes.
 

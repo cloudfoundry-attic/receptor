@@ -5,7 +5,7 @@ The work performed by a [Task](tasks.md) or [LRP](lrps.md) is expressed in terms
 The following actions are available.  The details are presented below:
 
 - [`RunAction`](#runaction): runs a process in the container
-- [`DownloadAction`](#donwloadaction): fetches an archive (`.tgz` or `.zip`) and extracts it into the container
+- [`DownloadAction`](#downloadaction): fetches an archive (`.tgz` or `.zip`) and extracts it into the container
 - [`UploadAction`](#uploadaction): uploads a single file, in the container, to a URL via POST
 - [`ParallelAction`](#parallelaction): runs multiple actions in parallel.
 - [`SerialAction`](#serialaction): runs multiple actions in order.
