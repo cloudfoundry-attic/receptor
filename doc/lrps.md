@@ -1,6 +1,6 @@
 # LRPs: Long Running Processes
 
-Diego can distribute and monitor multiple instances of a Long Running Process (LRP).  These instances are distributed across Diego Cells and restarted automatically if they crash or disappear.  The instances are identical (though each instance is given a unique index (in the range `0, 1, ...N-1`) and a a unique instance guid).
+Diego can distribute and monitor multiple instances of a Long Running Process (LRP).  These instances are distributed across Diego Cells and restarted automatically if they crash or disappear.  The instances are identical (though each instance is given a unique index (in the range `0, 1, ...N-1`) and a unique instance guid).
 
 LRPs are described by providing Diego with a `DesiredLRP`.  The `DesiredLRP` can be thought of as a manifest that describes how an LRP should be executed and monitored.
 
@@ -124,10 +124,10 @@ For more details on the environment variables provided to processes in the conta
 
 #### `cpu_weight` [optional]
 
-To control the CPU shares provided to a container, set `cpu_weight`.  This must be a positive number in the range `1-100`.  The `cpu_weight` enforces a relative fair share of the CPU among containers.  It's best explained with examples.  Consider the following scenarios (we shall assume that each container is running a busy process that is attempting to consumer as many CPU resources as possible):
+To control the CPU shares provided to a container, set `cpu_weight`.  This must be a positive number in the range `1-100`.  The `cpu_weight` enforces a relative fair share of the CPU among containers.  It's best explained with examples.  Consider the following scenarios (we shall assume that each container is running a busy process that is attempting to consume as many CPU resources as possible):
 
 - Two containers, with equal values of `cpu_weight`: both containers will receive equal shares of CPU time.
-- Two containers, one with `cpu_weight=50` the other with `cpu_weight=100`: the latter will get (roughly) 2/3 of the CPU time, the former 1/3.
+- Two containers, one with `cpu_weight=50` the other with `cpu_weight=100`: the later will get (roughly) 2/3 of the CPU time, the former 1/3.
 
 #### `disk_mb` [optional]
 
