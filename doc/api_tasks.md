@@ -27,7 +27,7 @@ This returns an array of [`TaskResponse`](tasks.md#retreiving-tasks) objects
 
 ### Fetching Tasks by Domain
 
-To fetch all Tasks in a given [`domain`](tasks.md#domain):
+To fetch all Tasks in a given [`domain`](tasks.md#domain-required):
 
 ```
 GET /v1/tasks?domain=domain-name
@@ -37,7 +37,7 @@ This returns an array of [`TaskResponse`](tasks.md#retreiving-tasks) objects
 
 ### Fetching a Specific Task
 
-To fetch a Task by [`task_guid`](tasks.md#task-guid):
+To fetch a Task by [`task_guid`](tasks.md#task_guid-required):
 
 ```
 GET /v1/tasks/:task_guid
