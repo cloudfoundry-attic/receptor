@@ -278,12 +278,24 @@ var _ = Describe("Desired LRP Handlers", func() {
 		expectedProcessGuid := "some-guid"
 		instances := 15
 		annotation := "new-annotation"
-		routes := []string{"new-route-1", "new-route-2"}
+		routingInfo := receptor.RoutingInfo{
+			CFRoutes: []receptor.CFRoute{
+				{
+					Port:      8080,
+					Hostnames: []string{"new-route-1", "new-route-2"},
+				},
+			},
+		}
+
+		routeMessage := json.RawMessage(`[{"port":8080,"hostnames":["new-route-1","new-route-2"]}]`)
+		routes := map[string]*json.RawMessage{
+			receptor.CFRouter: &routeMessage,
+		}
 
 		validUpdateRequest := receptor.DesiredLRPUpdateRequest{
 			Instances:  &instances,
 			Annotation: &annotation,
-			Routes:     routes,
+			Routes:     &routingInfo,
 		}
 
 		expectedUpdate := models.DesiredLRPUpdate{

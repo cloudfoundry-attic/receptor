@@ -324,4 +324,46 @@ var _ = Describe("Resources", func() {
 			})
 		})
 	})
+
+	Describe("RoutingInfo", func() {
+		var r receptor.RoutingInfo
+
+		BeforeEach(func() {
+			r.Other = make(map[string]*json.RawMessage)
+		})
+
+		Context("Serialization", func() {
+			jsonRoutes := `{
+					"cf-router": [{ "port": 1, "hostnames": ["a", "b"]}],
+					"foo" : "bar"
+					}`
+
+			Context("MarshalJson", func() {
+				It("marshals routes when present", func() {
+					r.CFRoutes = append(r.CFRoutes, receptor.CFRoute{Port: 1, Hostnames: []string{"a", "b"}})
+					msg := json.RawMessage([]byte(`"bar"`))
+					r.Other["foo"] = &msg
+					bytes, err := json.Marshal(r)
+					Ω(err).ShouldNot(HaveOccurred())
+					Ω(bytes).Should(MatchJSON(jsonRoutes))
+				})
+			})
+
+			Context("Unmarshal", func() {
+				It("returns both cf-routes and other", func() {
+					err := json.Unmarshal([]byte(jsonRoutes), &r)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					Ω(r.CFRoutes).Should(HaveLen(1))
+					route := r.CFRoutes[0]
+					Ω(route.Port).Should(Equal(uint16(1)))
+					Ω(route.Hostnames).Should(ConsistOf("a", "b"))
+
+					Ω(r.Other).Should(HaveLen(1))
+					raw := r.Other["foo"]
+					Ω([]byte(*raw)).Should(Equal([]byte(`"bar"`)))
+				})
+			})
+		})
+	})
 })

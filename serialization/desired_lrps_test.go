@@ -1,6 +1,8 @@
 package serialization_test
 
 import (
+	"encoding/json"
+
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
@@ -10,6 +12,23 @@ import (
 )
 
 var _ = Describe("DesiredLRP Serialization", func() {
+	var routes map[string]*json.RawMessage
+	var routingInfo receptor.RoutingInfo
+
+	BeforeEach(func() {
+		routingInfo.CFRoutes = []receptor.CFRoute{
+			{
+				Port:      1,
+				Hostnames: []string{"route-1", "route-2"},
+			},
+		}
+
+		raw := json.RawMessage([]byte(`[{"port":1,"hostnames":["route-1","route-2"]}]`))
+		routes = map[string]*json.RawMessage{
+			receptor.CFRouter: &raw,
+		}
+	})
+
 	Describe("DesiredLRPFromRequest", func() {
 		var request receptor.DesiredLRPCreateRequest
 		var desiredLRP models.DesiredLRP
@@ -31,7 +50,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				RootFSPath:  "the-rootfs-path",
 				Annotation:  "foo",
 				Instances:   1,
-				Ports:       []uint32{2345, 6789},
+				Ports:       []uint16{2345, 6789},
 				Action: &models.RunAction{
 					Path: "the-path",
 				},
@@ -40,6 +59,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				EgressRules: []models.SecurityGroupRule{
 					securityRule,
 				},
+				Routes: &routingInfo,
 			}
 		})
 		JustBeforeEach(func() {
@@ -54,13 +74,17 @@ var _ = Describe("DesiredLRP Serialization", func() {
 			Ω(desiredLRP.Annotation).Should(Equal("foo"))
 			Ω(desiredLRP.StartTimeout).Should(Equal(uint(4)))
 			Ω(desiredLRP.Ports).Should(HaveLen(2))
-			Ω(desiredLRP.Ports[0]).Should(Equal(uint32(2345)))
-			Ω(desiredLRP.Ports[1]).Should(Equal(uint32(6789)))
+			Ω(desiredLRP.Ports[0]).Should(Equal(uint16(2345)))
+			Ω(desiredLRP.Ports[1]).Should(Equal(uint16(6789)))
 			Ω(desiredLRP.Privileged).Should(BeTrue())
 			Ω(desiredLRP.EgressRules).Should(HaveLen(1))
 			Ω(desiredLRP.EgressRules[0].Protocol).Should(Equal(securityRule.Protocol))
 			Ω(desiredLRP.EgressRules[0].PortRange).Should(Equal(securityRule.PortRange))
 			Ω(desiredLRP.EgressRules[0].Destinations).Should(Equal(securityRule.Destinations))
+			Ω(desiredLRP.Routes).Should(HaveLen(1))
+			cfroute, ok := desiredLRP.Routes[receptor.CFRouter]
+			Ω(ok).Should(BeTrue())
+			Ω([]byte(*cfroute)).Should(MatchJSON(`[{"port": 1,"hostnames": ["route-1", "route-2"]}]`))
 		})
 	})
 
@@ -91,10 +115,10 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				MemoryMB:     1234,
 				CPUWeight:    192,
 				Privileged:   true,
-				Ports: []uint32{
+				Ports: []uint16{
 					456,
 				},
-				Routes:     []string{"route-0", "route-1"},
+				Routes:     routes,
 				LogGuid:    "log-guid-0",
 				LogSource:  "log-source-name-0",
 				Annotation: "annotation-0",
@@ -120,10 +144,10 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				MemoryMB:     1234,
 				CPUWeight:    192,
 				Privileged:   true,
-				Ports: []uint32{
+				Ports: []uint16{
 					456,
 				},
-				Routes:     []string{"route-0", "route-1"},
+				Routes:     &routingInfo,
 				LogGuid:    "log-guid-0",
 				LogSource:  "log-source-name-0",
 				Annotation: "annotation-0",
@@ -156,10 +180,10 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				MemoryMB:     1234,
 				CPUWeight:    192,
 				Privileged:   true,
-				Ports: []uint32{
+				Ports: []uint16{
 					456,
 				},
-				Routes:     []string{"route-0", "route-1"},
+				Routes:     &routingInfo,
 				LogGuid:    "log-guid-0",
 				LogSource:  "log-source-name-0",
 				Annotation: "annotation-0",
@@ -182,10 +206,10 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				MemoryMB:     1234,
 				CPUWeight:    192,
 				Privileged:   true,
-				Ports: []uint32{
+				Ports: []uint16{
 					456,
 				},
-				Routes:     []string{"route-0", "route-1"},
+				Routes:     routes,
 				LogGuid:    "log-guid-0",
 				LogSource:  "log-source-name-0",
 				Annotation: "annotation-0",

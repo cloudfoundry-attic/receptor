@@ -12,8 +12,8 @@ type EnvironmentVariable struct {
 }
 
 type PortMapping struct {
-	ContainerPort uint32 `json:"container_port"`
-	HostPort      uint32 `json:"host_port,omitempty"`
+	ContainerPort uint16 `json:"container_port"`
+	HostPort      uint16 `json:"host_port,omitempty"`
 }
 
 const (
@@ -154,6 +154,60 @@ func (response *TaskResponse) UnmarshalJSON(payload []byte) error {
 	return nil
 }
 
+const CFRouter = "cf-router"
+
+type CFRoute struct {
+	Port      uint16   `json:"port"`
+	Hostnames []string `json:"hostnames"`
+}
+
+type CFRoutes []CFRoute
+
+type RoutingInfo struct {
+	CFRoutes
+	Other map[string]*json.RawMessage
+}
+
+func (r RoutingInfo) MarshalJSON() ([]byte, error) {
+	out := make(map[string]*json.RawMessage)
+	for k, v := range r.Other {
+		out[k] = v
+	}
+
+	if len(r.CFRoutes) > 0 {
+		bytes, err := json.Marshal(r.CFRoutes)
+		if err != nil {
+			return nil, err
+		}
+		raw := json.RawMessage(bytes)
+		out[CFRouter] = &raw
+	}
+
+	return json.Marshal(out)
+}
+
+func (r *RoutingInfo) UnmarshalJSON(data []byte) error {
+	var out map[string]*json.RawMessage
+	err := json.Unmarshal(data, &out)
+	if err != nil {
+		return err
+	}
+
+	if cfroutes, ok := out[CFRouter]; ok {
+		delete(out, CFRouter)
+		err := json.Unmarshal(*cfroutes, &r.CFRoutes)
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(out) > 0 {
+		r.Other = out
+	}
+
+	return nil
+}
+
 type DesiredLRPCreateRequest struct {
 	ProcessGuid          string                     `json:"process_guid"`
 	Domain               string                     `json:"domain"`
@@ -169,8 +223,8 @@ type DesiredLRPCreateRequest struct {
 	MemoryMB             int                        `json:"memory_mb"`
 	CPUWeight            uint                       `json:"cpu_weight"`
 	Privileged           bool                       `json:"privileged"`
-	Ports                []uint32                   `json:"ports"`
-	Routes               []string                   `json:"routes"`
+	Ports                []uint16                   `json:"ports"`
+	Routes               *RoutingInfo               `json:"routes,omitempty"`
 	LogGuid              string                     `json:"log_guid"`
 	LogSource            string                     `json:"log_source"`
 	Annotation           string                     `json:"annotation,omitempty"`
@@ -270,9 +324,9 @@ func (request *DesiredLRPCreateRequest) UnmarshalJSON(payload []byte) error {
 }
 
 type DesiredLRPUpdateRequest struct {
-	Instances  *int     `json:"instances,omitempty"`
-	Routes     []string `json:"routes,omitempty"`
-	Annotation *string  `json:"annotation,omitempty"`
+	Instances  *int         `json:"instances,omitempty"`
+	Routes     *RoutingInfo `json:"routes,omitempty"`
+	Annotation *string      `json:"annotation,omitempty"`
 }
 
 type DesiredLRPResponse struct {
@@ -290,8 +344,8 @@ type DesiredLRPResponse struct {
 	MemoryMB             int                        `json:"memory_mb"`
 	CPUWeight            uint                       `json:"cpu_weight"`
 	Privileged           bool                       `json:"privileged"`
-	Ports                []uint32                   `json:"ports"`
-	Routes               []string                   `json:"routes"`
+	Ports                []uint16                   `json:"ports"`
+	Routes               *RoutingInfo               `json:"routes,omitempty"`
 	LogGuid              string                     `json:"log_guid"`
 	LogSource            string                     `json:"log_source"`
 	Annotation           string                     `json:"annotation,omitempty"`

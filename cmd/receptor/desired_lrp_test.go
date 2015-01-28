@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync/atomic"
 
@@ -82,7 +83,13 @@ var _ = Describe("Desired LRP API", func() {
 
 		instances := 6
 		annotation := "update-annotation"
-		routes := []string{"updated-route"}
+		rawMessage := json.RawMessage([]byte(`[{"port":8080,"hostnames":["updated-route"]}]`))
+		routes := map[string]*json.RawMessage{
+			"cf-router": &rawMessage,
+		}
+		routingInfo := receptor.RoutingInfo{
+			CFRoutes: []receptor.CFRoute{{Port: 8080, Hostnames: []string{"updated-route"}}},
+		}
 
 		BeforeEach(func() {
 			createLRPReq := newValidDesiredLRPCreateRequest()
@@ -92,7 +99,7 @@ var _ = Describe("Desired LRP API", func() {
 			update := receptor.DesiredLRPUpdateRequest{
 				Instances:  &instances,
 				Annotation: &annotation,
-				Routes:     routes,
+				Routes:     &routingInfo,
 			}
 
 			updateErr = client.UpdateDesiredLRP(createLRPReq.ProcessGuid, update)
@@ -199,7 +206,7 @@ func newValidDesiredLRPCreateRequest() receptor.DesiredLRPCreateRequest {
 		Domain:      "test-domain",
 		Stack:       "some-stack",
 		Instances:   1,
-		Ports:       []uint32{1234, 5678},
+		Ports:       []uint16{1234, 5678},
 		Action: &models.RunAction{
 			Path: "/bin/bash",
 		},

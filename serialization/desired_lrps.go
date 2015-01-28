@@ -1,11 +1,14 @@
 package serialization
 
 import (
+	"encoding/json"
+
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 )
 
 func DesiredLRPFromRequest(req receptor.DesiredLRPCreateRequest) models.DesiredLRP {
+
 	return models.DesiredLRP{
 		ProcessGuid:          req.ProcessGuid,
 		Domain:               req.Domain,
@@ -22,7 +25,7 @@ func DesiredLRPFromRequest(req receptor.DesiredLRPCreateRequest) models.DesiredL
 		CPUWeight:            req.CPUWeight,
 		Privileged:           req.Privileged,
 		Ports:                req.Ports,
-		Routes:               req.Routes,
+		Routes:               RoutingInfoToRawMessages(req.Routes),
 		LogGuid:              req.LogGuid,
 		LogSource:            req.LogSource,
 		Annotation:           req.Annotation,
@@ -47,7 +50,7 @@ func DesiredLRPToResponse(lrp models.DesiredLRP) receptor.DesiredLRPResponse {
 		CPUWeight:            lrp.CPUWeight,
 		Privileged:           lrp.Privileged,
 		Ports:                lrp.Ports,
-		Routes:               lrp.Routes,
+		Routes:               RoutingInfoFromRawMessages(lrp.Routes),
 		LogGuid:              lrp.LogGuid,
 		LogSource:            lrp.LogSource,
 		Annotation:           lrp.Annotation,
@@ -72,7 +75,7 @@ func DesiredLRPFromResponse(resp receptor.DesiredLRPResponse) models.DesiredLRP 
 		CPUWeight:            resp.CPUWeight,
 		Privileged:           resp.Privileged,
 		Ports:                resp.Ports,
-		Routes:               resp.Routes,
+		Routes:               RoutingInfoToRawMessages(resp.Routes),
 		LogGuid:              resp.LogGuid,
 		LogSource:            resp.LogSource,
 		Annotation:           resp.Annotation,
@@ -82,7 +85,51 @@ func DesiredLRPFromResponse(resp receptor.DesiredLRPResponse) models.DesiredLRP 
 func DesiredLRPUpdateFromRequest(req receptor.DesiredLRPUpdateRequest) models.DesiredLRPUpdate {
 	return models.DesiredLRPUpdate{
 		Instances:  req.Instances,
-		Routes:     req.Routes,
+		Routes:     RoutingInfoToRawMessages(req.Routes),
 		Annotation: req.Annotation,
 	}
+}
+
+func RoutingInfoToRawMessages(r *receptor.RoutingInfo) map[string]*json.RawMessage {
+	if r == nil {
+		return nil
+	}
+
+	out := make(map[string]*json.RawMessage)
+	for k, v := range r.Other {
+		out[k] = v
+	}
+
+	if len(r.CFRoutes) > 0 {
+		bytes, err := json.Marshal(r.CFRoutes)
+		if err != nil {
+			panic(err)
+		}
+		raw := json.RawMessage(bytes)
+		out[receptor.CFRouter] = &raw
+	}
+
+	return out
+}
+
+func RoutingInfoFromRawMessages(raw map[string]*json.RawMessage) *receptor.RoutingInfo {
+	if len(raw) == 0 {
+		return nil
+	}
+
+	var r receptor.RoutingInfo
+
+	if cfroutes, ok := raw[receptor.CFRouter]; ok {
+		delete(raw, receptor.CFRouter)
+		err := json.Unmarshal(*cfroutes, &r.CFRoutes)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	if len(raw) > 0 {
+		r.Other = raw
+	}
+
+	return &r
 }

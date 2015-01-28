@@ -1,6 +1,7 @@
 package main_test
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/cloudfoundry-incubator/receptor"
@@ -40,11 +41,14 @@ var _ = Describe("Event", func() {
 			}
 		}()
 
+		rawMessage := json.RawMessage([]byte(`{"port":8080,"hosts":["primer-route"]}`))
 		primerLRP := models.DesiredLRP{
 			ProcessGuid: "primer-guid",
 			Domain:      "primer-domain",
 			Stack:       "primer-stack",
-			Routes:      []string{"primer-route"},
+			Routes: map[string]*json.RawMessage{
+				"router": &rawMessage,
+			},
 			Action: &models.RunAction{
 				Path: "true",
 			},
@@ -59,7 +63,12 @@ var _ = Describe("Event", func() {
 			case <-events:
 				break PRIMING
 			case <-time.After(50 * time.Millisecond):
-				err = bbs.UpdateDesiredLRP(logger, primerLRP.ProcessGuid, models.DesiredLRPUpdate{Routes: []string{"garbage-route"}})
+				routeMsg := json.RawMessage([]byte(`{"port":8080,"hosts":["garbage-route"]}`))
+				err = bbs.UpdateDesiredLRP(logger, primerLRP.ProcessGuid, models.DesiredLRPUpdate{
+					Routes: map[string]*json.RawMessage{
+						"router": &routeMsg,
+					},
+				})
 				Ω(err).ShouldNot(HaveOccurred())
 			}
 		}
@@ -85,11 +94,15 @@ var _ = Describe("Event", func() {
 
 	Describe("Desired LRPs", func() {
 		BeforeEach(func() {
+			routeMessage := json.RawMessage([]byte(`[{"port":8080,"hostnames":["original-route"]}]`))
+			routes := map[string]*json.RawMessage{
+				receptor.CFRouter: &routeMessage,
+			}
 			desiredLRP = models.DesiredLRP{
 				ProcessGuid: "some-guid",
 				Domain:      "some-domain",
 				Stack:       "some-stack",
-				Routes:      []string{"original-route"},
+				Routes:      routes,
 				Action: &models.RunAction{
 					Path: "true",
 				},
@@ -109,7 +122,16 @@ var _ = Describe("Event", func() {
 			Ω(desiredLRPCreatedEvent.DesiredLRPResponse).Should(Equal(serialization.DesiredLRPToResponse(desiredLRP)))
 
 			By("updating an existing DesiredLRP")
-			newRoutes := []string{"new-route"}
+			routeMessage := json.RawMessage([]byte(`[{"port":8080,"hostnames":["new-route"]}]`))
+			newRoutes := map[string]*json.RawMessage{
+				receptor.CFRouter: &routeMessage,
+			}
+			expectedRoutingInfo := receptor.RoutingInfo{
+				CFRoutes: []receptor.CFRoute{{
+					Port:      8080,
+					Hostnames: []string{"new-route"},
+				}},
+			}
 			err = bbs.UpdateDesiredLRP(logger, desiredLRP.ProcessGuid, models.DesiredLRPUpdate{Routes: newRoutes})
 			Ω(err).ShouldNot(HaveOccurred())
 
@@ -117,7 +139,7 @@ var _ = Describe("Event", func() {
 
 			desiredLRPChangedEvent, ok := event.(receptor.DesiredLRPChangedEvent)
 			Ω(ok).Should(BeTrue())
-			Ω(desiredLRPChangedEvent.After.Routes).Should(Equal(newRoutes))
+			Ω(desiredLRPChangedEvent.After.Routes).Should(Equal(&expectedRoutingInfo))
 
 			By("removing the DesiredLRP")
 			err = bbs.RemoveDesiredLRPByProcessGuid(logger, desiredLRP.ProcessGuid)
