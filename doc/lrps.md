@@ -179,7 +179,7 @@ There are plans to generalize this interface and make it possible to build custo
 
 By default network access for any container is limited but some LRPs might need specific network access and that can be setup using `egress_rules` field.  Rules are evaluated in reverse order of their position, i.e., the last one takes precedence.
 
-> Lattice users: Lattice is intended to be a single-tenant cluster environment.  In Lattice there are no network access constraints on the containers so there is no need ot specify `egress_rules`.
+> Lattice users: Lattice is intended to be a single-tenant cluster environment.  In Lattice there are no network access constraints on the containers so there is no need to specify `egress_rules`.
 
 #### `ports` [optional]
 
