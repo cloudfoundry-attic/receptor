@@ -414,8 +414,16 @@ type ActualLRPResponse struct {
 }
 
 type CellResponse struct {
-	CellID string `json:"cell_id"`
-	Stack  string `json:"stack"`
+	CellID   string `json:"cell_id"`
+	Stack    string `json:"stack"`
+	Zone     string `json:"zone"`
+	Capacity CellCapacity
+}
+
+type CellCapacity struct {
+	MemoryMB   int `json:"memory_mb"`
+	DiskMB     int `json:"disk_mb"`
+	Containers int `json:"containers"`
 }
 
 type Event interface {

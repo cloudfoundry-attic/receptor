@@ -20,7 +20,8 @@ var _ = Describe("Cell API", func() {
 
 	BeforeEach(func() {
 		heartbeatInterval = 100 * time.Millisecond
-		cellPresence = models.NewCellPresence("cell-0", "stack-0", "1.2.3.4", "the-zone")
+		capacity := models.NewCellCapacity(128, 1024, 6)
+		cellPresence = models.NewCellPresence("cell-0", "stack-0", "1.2.3.4", "the-zone", capacity)
 		heartbeatRunner := bbs.NewCellHeartbeat(cellPresence, heartbeatInterval)
 		heartbeatProcess = ginkgomon.Invoke(heartbeatRunner)
 		receptorProcess = ginkgomon.Invoke(receptorRunner)
