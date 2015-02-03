@@ -377,7 +377,6 @@ var _ = Describe("Actual LRP Handlers", func() {
 			Context("when reading LRPs from BBS succeeds", func() {
 				BeforeEach(func() {
 					fakeBBS.ActualLRPByProcessGuidAndIndexReturns(actualLRPPG1I2, nil)
-					fakeBBS.RequestStopLRPInstanceReturns(nil)
 				})
 
 				It("calls the BBS to retrieve the actual LRPs", func() {
@@ -388,10 +387,12 @@ var _ = Describe("Actual LRP Handlers", func() {
 				})
 
 				It("calls the BBS to request stop LRP instances", func() {
-					Ω(fakeBBS.RequestStopLRPInstanceCallCount()).Should(Equal(1))
-					key, _ := fakeBBS.RequestStopLRPInstanceArgsForCall(0)
-					Ω(key.ProcessGuid).Should(Equal("process-guid-1"))
-					Ω(key.Index).Should(Equal(2))
+					Ω(fakeBBS.RetireActualLRPsCallCount()).Should(Equal(1))
+					actualLRPs, _ := fakeBBS.RetireActualLRPsArgsForCall(0)
+					Ω(actualLRPs).Should(HaveLen(1))
+					actualLRP := actualLRPs[0]
+					Ω(actualLRP.ProcessGuid).Should(Equal("process-guid-1"))
+					Ω(actualLRP.Index).Should(Equal(2))
 				})
 
 				It("responds with 204 Status NO CONTENT", func() {
@@ -419,27 +420,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 				})
 
 				It("does not call the BBS to request stopping instances", func() {
-					Ω(fakeBBS.RequestStopLRPInstanceCallCount()).Should(Equal(0))
-				})
-
-				It("responds with a 500 Internal Error", func() {
-					Ω(responseRecorder.Code).Should(Equal(http.StatusInternalServerError))
-				})
-
-				It("responds with a relevant error message", func() {
-					expectedBody, _ := json.Marshal(receptor.Error{
-						Type:    receptor.UnknownError,
-						Message: "Something went wrong",
-					})
-
-					Ω(responseRecorder.Body.String()).Should(Equal(string(expectedBody)))
-				})
-			})
-
-			Context("when stopping instances on the BBS fails", func() {
-				BeforeEach(func() {
-					fakeBBS.ActualLRPByProcessGuidAndIndexReturns(actualLRPPG1I2, nil)
-					fakeBBS.RequestStopLRPInstanceReturns(errors.New("Something went wrong"))
+					Ω(fakeBBS.RetireActualLRPsCallCount()).Should(Equal(0))
 				})
 
 				It("responds with a 500 Internal Error", func() {
@@ -460,7 +441,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 		Context("when the index is not specified", func() {
 			It("does not call the BBS at all", func() {
 				Ω(fakeBBS.ActualLRPByProcessGuidAndIndexCallCount()).Should(Equal(0))
-				Ω(fakeBBS.RequestStopLRPInstanceCallCount()).Should(Equal(0))
+				Ω(fakeBBS.RetireActualLRPsCallCount()).Should(Equal(0))
 			})
 
 			It("responds with 400 Bad Request", func() {
@@ -484,7 +465,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 			It("does not call the BBS at all", func() {
 				Ω(fakeBBS.ActualLRPByProcessGuidAndIndexCallCount()).Should(Equal(0))
-				Ω(fakeBBS.RequestStopLRPInstanceCallCount()).Should(Equal(0))
+				Ω(fakeBBS.RetireActualLRPsCallCount()).Should(Equal(0))
 			})
 
 			It("responds with 400 Bad Request", func() {
@@ -508,7 +489,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 			It("does not call the BBS at all", func() {
 				Ω(fakeBBS.ActualLRPByProcessGuidAndIndexCallCount()).Should(Equal(0))
-				Ω(fakeBBS.RequestStopLRPInstanceCallCount()).Should(Equal(0))
+				Ω(fakeBBS.RetireActualLRPsCallCount()).Should(Equal(0))
 			})
 
 			It("responds with 400 Bad Request", func() {
