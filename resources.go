@@ -154,59 +154,7 @@ func (response *TaskResponse) UnmarshalJSON(payload []byte) error {
 	return nil
 }
 
-const CFRouter = "cf-router"
-
-type CFRoute struct {
-	Port      uint16   `json:"port"`
-	Hostnames []string `json:"hostnames"`
-}
-
-type CFRoutes []CFRoute
-
-type RoutingInfo struct {
-	CFRoutes
-	Other map[string]*json.RawMessage
-}
-
-func (r RoutingInfo) MarshalJSON() ([]byte, error) {
-	out := make(map[string]*json.RawMessage)
-	for k, v := range r.Other {
-		out[k] = v
-	}
-
-	if len(r.CFRoutes) > 0 {
-		bytes, err := json.Marshal(r.CFRoutes)
-		if err != nil {
-			return nil, err
-		}
-		raw := json.RawMessage(bytes)
-		out[CFRouter] = &raw
-	}
-
-	return json.Marshal(out)
-}
-
-func (r *RoutingInfo) UnmarshalJSON(data []byte) error {
-	var out map[string]*json.RawMessage
-	err := json.Unmarshal(data, &out)
-	if err != nil {
-		return err
-	}
-
-	if cfroutes, ok := out[CFRouter]; ok {
-		delete(out, CFRouter)
-		err := json.Unmarshal(*cfroutes, &r.CFRoutes)
-		if err != nil {
-			return err
-		}
-	}
-
-	if len(out) > 0 {
-		r.Other = out
-	}
-
-	return nil
-}
+type RoutingInfo map[string]*json.RawMessage
 
 type DesiredLRPCreateRequest struct {
 	ProcessGuid          string                     `json:"process_guid"`

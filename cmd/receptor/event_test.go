@@ -95,9 +95,8 @@ var _ = Describe("Event", func() {
 	Describe("Desired LRPs", func() {
 		BeforeEach(func() {
 			routeMessage := json.RawMessage([]byte(`[{"port":8080,"hostnames":["original-route"]}]`))
-			routes := map[string]*json.RawMessage{
-				receptor.CFRouter: &routeMessage,
-			}
+			routes := map[string]*json.RawMessage{"cf-router": &routeMessage}
+
 			desiredLRP = models.DesiredLRP{
 				ProcessGuid: "some-guid",
 				Domain:      "some-domain",
@@ -124,13 +123,7 @@ var _ = Describe("Event", func() {
 			By("updating an existing DesiredLRP")
 			routeMessage := json.RawMessage([]byte(`[{"port":8080,"hostnames":["new-route"]}]`))
 			newRoutes := map[string]*json.RawMessage{
-				receptor.CFRouter: &routeMessage,
-			}
-			expectedRoutingInfo := receptor.RoutingInfo{
-				CFRoutes: []receptor.CFRoute{{
-					Port:      8080,
-					Hostnames: []string{"new-route"},
-				}},
+				"cf-router": &routeMessage,
 			}
 			err = bbs.UpdateDesiredLRP(logger, desiredLRP.ProcessGuid, models.DesiredLRPUpdate{Routes: newRoutes})
 			Ω(err).ShouldNot(HaveOccurred())
@@ -139,7 +132,7 @@ var _ = Describe("Event", func() {
 
 			desiredLRPChangedEvent, ok := event.(receptor.DesiredLRPChangedEvent)
 			Ω(ok).Should(BeTrue())
-			Ω(desiredLRPChangedEvent.After.Routes).Should(Equal(&expectedRoutingInfo))
+			Ω(*desiredLRPChangedEvent.After.Routes).Should(Equal(receptor.RoutingInfo(newRoutes)))
 
 			By("removing the DesiredLRP")
 			err = bbs.RemoveDesiredLRPByProcessGuid(logger, desiredLRP.ProcessGuid)

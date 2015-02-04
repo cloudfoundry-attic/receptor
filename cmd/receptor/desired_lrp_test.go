@@ -84,11 +84,9 @@ var _ = Describe("Desired LRP API", func() {
 		instances := 6
 		annotation := "update-annotation"
 		rawMessage := json.RawMessage([]byte(`[{"port":8080,"hostnames":["updated-route"]}]`))
-		routes := map[string]*json.RawMessage{
-			"cf-router": &rawMessage,
-		}
+
 		routingInfo := receptor.RoutingInfo{
-			CFRoutes: []receptor.CFRoute{{Port: 8080, Hostnames: []string{"updated-route"}}},
+			"cf-router": &rawMessage,
 		}
 
 		BeforeEach(func() {
@@ -114,8 +112,8 @@ var _ = Describe("Desired LRP API", func() {
 			desiredLRPs, err := bbs.DesiredLRPs()
 			Ω(err).ShouldNot(HaveOccurred())
 			Ω(desiredLRPs[0].Instances).To(Equal(instances))
-			Ω(desiredLRPs[0].Routes).To(Equal(routes))
 			Ω(desiredLRPs[0].Annotation).To(Equal(annotation))
+			Ω(desiredLRPs[0].Routes).To(Equal(map[string]*json.RawMessage(routingInfo)))
 		})
 	})
 

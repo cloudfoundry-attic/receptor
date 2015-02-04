@@ -16,17 +16,11 @@ var _ = Describe("DesiredLRP Serialization", func() {
 	var routingInfo receptor.RoutingInfo
 
 	BeforeEach(func() {
-		routingInfo.CFRoutes = []receptor.CFRoute{
-			{
-				Port:      1,
-				Hostnames: []string{"route-1", "route-2"},
-			},
-		}
-
 		raw := json.RawMessage([]byte(`[{"port":1,"hostnames":["route-1","route-2"]}]`))
 		routes = map[string]*json.RawMessage{
-			receptor.CFRouter: &raw,
+			"cf-router": &raw,
 		}
+		routingInfo = receptor.RoutingInfo(routes)
 	})
 
 	Describe("DesiredLRPFromRequest", func() {
@@ -82,9 +76,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 			Ω(desiredLRP.EgressRules[0].PortRange).Should(Equal(securityRule.PortRange))
 			Ω(desiredLRP.EgressRules[0].Destinations).Should(Equal(securityRule.Destinations))
 			Ω(desiredLRP.Routes).Should(HaveLen(1))
-			cfroute, ok := desiredLRP.Routes[receptor.CFRouter]
-			Ω(ok).Should(BeTrue())
-			Ω([]byte(*cfroute)).Should(MatchJSON(`[{"port": 1,"hostnames": ["route-1", "route-2"]}]`))
+			Ω([]byte(*desiredLRP.Routes["cf-router"])).Should(MatchJSON(`[{"port": 1,"hostnames": ["route-1", "route-2"]}]`))
 		})
 	})
 
