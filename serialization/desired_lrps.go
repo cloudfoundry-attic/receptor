@@ -8,7 +8,6 @@ import (
 )
 
 func DesiredLRPFromRequest(req receptor.DesiredLRPCreateRequest) models.DesiredLRP {
-
 	return models.DesiredLRP{
 		ProcessGuid:          req.ProcessGuid,
 		Domain:               req.Domain,
@@ -28,6 +27,7 @@ func DesiredLRPFromRequest(req receptor.DesiredLRPCreateRequest) models.DesiredL
 		Routes:               RoutingInfoToRawMessages(req.Routes),
 		LogGuid:              req.LogGuid,
 		LogSource:            req.LogSource,
+		MetricsGuid:          req.MetricsGuid,
 		Annotation:           req.Annotation,
 		EgressRules:          req.EgressRules,
 	}
@@ -53,6 +53,7 @@ func DesiredLRPToResponse(lrp models.DesiredLRP) receptor.DesiredLRPResponse {
 		Routes:               RoutingInfoFromRawMessages(lrp.Routes),
 		LogGuid:              lrp.LogGuid,
 		LogSource:            lrp.LogSource,
+		MetricsGuid:          lrp.MetricsGuid,
 		Annotation:           lrp.Annotation,
 		EgressRules:          lrp.EgressRules,
 	}
@@ -78,6 +79,7 @@ func DesiredLRPFromResponse(resp receptor.DesiredLRPResponse) models.DesiredLRP 
 		Routes:               RoutingInfoToRawMessages(resp.Routes),
 		LogGuid:              resp.LogGuid,
 		LogSource:            resp.LogSource,
+		MetricsGuid:          resp.MetricsGuid,
 		Annotation:           resp.Annotation,
 	}
 }

@@ -33,6 +33,7 @@ type TaskCreateRequest struct {
 	Domain                string                     `json:"domain"`
 	LogGuid               string                     `json:"log_guid"`
 	LogSource             string                     `json:"log_source"`
+	MetricsGuid           string                     `json:"metrics_guid"`
 	MemoryMB              int                        `json:"memory_mb"`
 	ResultFile            string                     `json:"result_file"`
 	Stack                 string                     `json:"stack"`
@@ -95,6 +96,7 @@ type TaskResponse struct {
 	Domain                string                     `json:"domain"`
 	LogGuid               string                     `json:"log_guid"`
 	LogSource             string                     `json:"log_source"`
+	MetricsGuid           string                     `json:"metrics_guid"`
 	MemoryMB              int                        `json:"memory_mb"`
 	ResultFile            string                     `json:"result_file"`
 	Stack                 string                     `json:"stack"`
@@ -175,6 +177,7 @@ type DesiredLRPCreateRequest struct {
 	Routes               RoutingInfo                `json:"routes,omitempty"`
 	LogGuid              string                     `json:"log_guid"`
 	LogSource            string                     `json:"log_source"`
+	MetricsGuid          string                     `json:"metrics_guid"`
 	Annotation           string                     `json:"annotation,omitempty"`
 	EgressRules          []models.SecurityGroupRule `json:"egress_rules,omitempty"`
 }
@@ -296,6 +299,7 @@ type DesiredLRPResponse struct {
 	Routes               RoutingInfo                `json:"routes,omitempty"`
 	LogGuid              string                     `json:"log_guid"`
 	LogSource            string                     `json:"log_source"`
+	MetricsGuid          string                     `json:"metrics_guid"`
 	Annotation           string                     `json:"annotation,omitempty"`
 	EgressRules          []models.SecurityGroupRule `json:"egress_rules,omitempty"`
 }

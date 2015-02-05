@@ -50,6 +50,9 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				},
 				StartTimeout: 4,
 				Privileged:   true,
+				LogGuid:      "log-guid-0",
+				LogSource:    "log-source-name-0",
+				MetricsGuid:  "metrics-guid-0",
 				EgressRules: []models.SecurityGroupRule{
 					securityRule,
 				},
@@ -76,6 +79,9 @@ var _ = Describe("DesiredLRP Serialization", func() {
 			Ω(desiredLRP.EgressRules[0].PortRange).Should(Equal(securityRule.PortRange))
 			Ω(desiredLRP.EgressRules[0].Destinations).Should(Equal(securityRule.Destinations))
 			Ω(desiredLRP.Routes).Should(HaveLen(1))
+			Ω(desiredLRP.LogGuid).Should(Equal("log-guid-0"))
+			Ω(desiredLRP.LogSource).Should(Equal("log-source-name-0"))
+			Ω(desiredLRP.MetricsGuid).Should(Equal("metrics-guid-0"))
 			Ω([]byte(*desiredLRP.Routes["cf-router"])).Should(MatchJSON(`[{"port": 1,"hostnames": ["route-1", "route-2"]}]`))
 		})
 	})
@@ -110,10 +116,11 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				Ports: []uint16{
 					456,
 				},
-				Routes:     routes,
-				LogGuid:    "log-guid-0",
-				LogSource:  "log-source-name-0",
-				Annotation: "annotation-0",
+				Routes:      routes,
+				LogGuid:     "log-guid-0",
+				LogSource:   "log-source-name-0",
+				MetricsGuid: "metrics-guid-0",
+				Annotation:  "annotation-0",
 				EgressRules: []models.SecurityGroupRule{
 					securityRule,
 				},
@@ -139,10 +146,11 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				Ports: []uint16{
 					456,
 				},
-				Routes:     routingInfo,
-				LogGuid:    "log-guid-0",
-				LogSource:  "log-source-name-0",
-				Annotation: "annotation-0",
+				Routes:      routingInfo,
+				LogGuid:     "log-guid-0",
+				LogSource:   "log-source-name-0",
+				MetricsGuid: "metrics-guid-0",
+				Annotation:  "annotation-0",
 				EgressRules: []models.SecurityGroupRule{
 					securityRule,
 				},
@@ -175,10 +183,11 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				Ports: []uint16{
 					456,
 				},
-				Routes:     routingInfo,
-				LogGuid:    "log-guid-0",
-				LogSource:  "log-source-name-0",
-				Annotation: "annotation-0",
+				Routes:      routingInfo,
+				LogGuid:     "log-guid-0",
+				LogSource:   "log-source-name-0",
+				MetricsGuid: "metrics-guid-0",
+				Annotation:  "annotation-0",
 			}
 		})
 
@@ -201,10 +210,11 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				Ports: []uint16{
 					456,
 				},
-				Routes:     routes,
-				LogGuid:    "log-guid-0",
-				LogSource:  "log-source-name-0",
-				Annotation: "annotation-0",
+				Routes:      routes,
+				LogGuid:     "log-guid-0",
+				LogSource:   "log-source-name-0",
+				MetricsGuid: "metrics-guid-0",
+				Annotation:  "annotation-0",
 			}
 
 			actualDesiredLRP := serialization.DesiredLRPFromResponse(desiredLRPResponse)
