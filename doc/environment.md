@@ -2,7 +2,7 @@
 
 Diego sets up a hierarchy of environment variables available to processes running in containers.  This hierarchy includes the following layers in order:
 
-- Environment variables baked into the Dockerimage (for Dockerimage based rootfses only)
+- Environment variables baked into the Docker image (for Docker image based containers only)
 - Container-level environment variables (defined on the [`Task`](tasks.md#env) and [`LRP`](lrps.md#env) objects)
 - Configuration environment variables (LRPs only, described below)
 - Process-level environment variables (defined on the [`RunAction`](actions.md#runaction) object)

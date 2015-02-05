@@ -81,15 +81,19 @@ Diego can support different target platforms (linux, windows, etc.). `stack` all
 
 By default, when provisioning a container, Diego will mount a pre-configured root filesystem.  Currently, the default filesystem provided by [diego-release](https://github.com/cloudfoundry-incubator/diego-release) is based on lucid64 and is geared towards supporting the Cloud Foundry buildpacks.
 
-It is possible, however, to provide a custom root filesystem by specifying a Dockerimage for `root_fs`:
+It is possible, however, to provide a custom root filesystem by specifying a Docker image for `root_fs`:
 
 ```
 "root_fs": "docker:///docker-org/docker-image#docker-tag"
 ```
 
-Currently, only the public docker hub is supported.
+To pull the image from a different registry than the default (Docker Hub), specify it as the host in the URI string, e.g.:
 
-> You *must* specify the dockerimage `root_fs` uri as specified, including the leading `docker:///`!
+```
+"root_fs": "docker://index.myregistry.gov/docker-org/docker-image#docker-tag"
+```
+
+> You *must* specify the dockerimage `root_fs` uri as specified, including the leading `docker://`!
 
 > [Lattice](https://github.com/pivotal-cf-experimental/lattice) does not ship with a default rootfs. You must specify a docker-image when using Lattice. You can mount the filesystem provided by diego-release by specifying `"root_fs": "docker:///cloudfoundry/lucid64"` or `"root_fs": "docker:///cloudfoundry/trusty64"`.
 
@@ -202,30 +206,30 @@ Enable logging of the rule
 `ALL`
 ```
 {
-"protocol": "all",
-"destinations": ["1.2.3.4"],
-"log": true
+    "protocol": "all",
+    "destinations": ["1.2.3.4"],
+    "log": true
 }
 ```
 ***
 `TCP`
 ```
 {
-"protocol": "tcp",
-"destinations": ["1.2.3.4-2.3.4.5"],
-"ports": [80, 443],
-"log": true
+    "protocol": "tcp",
+    "destinations": ["1.2.3.4-2.3.4.5"],
+    "ports": [80, 443],
+    "log": true
 }
 ```
 ***
 `UDP`
 ```
 {
-"protocol": "udp",
-"destinations": ["1.2.3.4/4"],
-"port_range": {
-    "start": 8000,
-    "end": 8085
+    "protocol": "udp",
+    "destinations": ["1.2.3.4/4"],
+    "port_range": {
+        "start": 8000,
+        "end": 8085
     }
 }
 ```
@@ -233,11 +237,11 @@ Enable logging of the rule
 `ICMP`
 ```
 {
-"protocol": "icmp",
-"destinations": ["1.2.3.4", "2.3.4.5/6"],
-"icmp_info": {
-    "type": 1,
-    "code": 40
+    "protocol": "icmp",
+    "destinations": ["1.2.3.4", "2.3.4.5/6"],
+    "icmp_info": {
+        "type": 1,
+        "code": 40
     }
 }
 ```
