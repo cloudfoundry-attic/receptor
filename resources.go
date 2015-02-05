@@ -37,7 +37,7 @@ type TaskCreateRequest struct {
 	ResultFile            string                     `json:"result_file"`
 	Stack                 string                     `json:"stack"`
 	TaskGuid              string                     `json:"task_guid"`
-	RootFSPath            string                     `json:"root_fs"`
+	RootFSPath            string                     `json:"rootfs"`
 	Privileged            bool                       `json:"privileged"`
 	EnvironmentVariables  []EnvironmentVariable      `json:"env,omitempty"`
 	EgressRules           []models.SecurityGroupRule `json:"egress_rules,omitempty"`
@@ -99,7 +99,7 @@ type TaskResponse struct {
 	ResultFile            string                     `json:"result_file"`
 	Stack                 string                     `json:"stack"`
 	TaskGuid              string                     `json:"task_guid"`
-	RootFSPath            string                     `json:"root_fs"`
+	RootFSPath            string                     `json:"rootfs"`
 	Privileged            bool                       `json:"privileged"`
 	EnvironmentVariables  []EnvironmentVariable      `json:"env,omitempty"`
 	CellID                string                     `json:"cell_id"`
@@ -159,7 +159,7 @@ type RoutingInfo map[string]*json.RawMessage
 type DesiredLRPCreateRequest struct {
 	ProcessGuid          string                     `json:"process_guid"`
 	Domain               string                     `json:"domain"`
-	RootFSPath           string                     `json:"root_fs"`
+	RootFSPath           string                     `json:"rootfs"`
 	Instances            int                        `json:"instances"`
 	Stack                string                     `json:"stack"`
 	EnvironmentVariables []EnvironmentVariable      `json:"env,omitempty"`
@@ -280,7 +280,7 @@ type DesiredLRPUpdateRequest struct {
 type DesiredLRPResponse struct {
 	ProcessGuid          string                     `json:"process_guid"`
 	Domain               string                     `json:"domain"`
-	RootFSPath           string                     `json:"root_fs"`
+	RootFSPath           string                     `json:"rootfs"`
 	Instances            int                        `json:"instances"`
 	Stack                string                     `json:"stack"`
 	EnvironmentVariables []EnvironmentVariable      `json:"env,omitempty"`

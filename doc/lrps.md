@@ -25,7 +25,7 @@ When desiring an LRP you `POST` a valid `DesiredLRPCreateRequest`.  The [API ref
 
     "instances": 17,
 
-    "root_fs": "docker:///docker-org/docker-image",
+    "rootfs": "docker:///docker-org/docker-image",
     "env": [
         {"name": "ENV_NAME_A", "value": "ENV_VALUE_A"},
         {"name": "ENV_NAME_B", "value": "ENV_VALUE_B"}
@@ -98,25 +98,25 @@ Diego can run and manage multiple instances (`ActualLRP`s) for each `DesiredLRP`
 
 #### Container Contents and Environment
 
-#### `root_fs` [optional]
+#### `rootfs` [optional]
 
 By default, when provisioning a container Diego will mount a pre-configured root filesystem.  Currently, the default filesystem provided by [diego-release](https://github.com/cloudfoundry-incubator/diego-release) is based on lucid64 and is geared towards supporting the Cloud Foundry buildpacks.
 
-It is possible, however, to provide a custom root filesystem by specifying a Docker image for `root_fs`:
+It is possible, however, to provide a custom root filesystem by specifying a Docker image for `rootfs`:
 
 ```
-"root_fs": "docker:///docker-org/docker-image#docker-tag"
+"rootfs": "docker:///docker-org/docker-image#docker-tag"
 ```
 
 To pull the image from a different registry than the default (Docker Hub), specify it as the host in the URI string, e.g.:
 
 ```
-"root_fs": "docker://index.myregistry.gov/docker-org/docker-image#docker-tag"
+"rootfs": "docker://index.myregistry.gov/docker-org/docker-image#docker-tag"
 ```
 
-> You *must* specify the dockerimage `root_fs` uri as specified, including the leading `docker://`!
+> You *must* specify the dockerimage `rootfs` uri as specified, including the leading `docker://`!
 
-> [Lattice](https://github.com/pivotal-cf-experimental/lattice) does not ship with a default rootfs. You must specify a Docker image when using Lattice. You can mount the filesystem provided by diego-release by specifying `"root_fs": "docker:///cloudfoundry/lucid64"` or `"root_fs": "docker:///cloudfoundry/trusty64"`.
+> [Lattice](https://github.com/pivotal-cf-experimental/lattice) does not ship with a default rootfs. You must specify a Docker image when using Lattice. You can mount the filesystem provided by diego-release by specifying `"rootfs": "docker:///cloudfoundry/lucid64"` or `"rootfs": "docker:///cloudfoundry/trusty64"`.
 
 #### `env` [optional]
 
@@ -155,7 +155,7 @@ If false, Diego will create a container that is in a user namespace.  Processes 
 
 #### Actions
 
-When an LRP instance is instantiated, a container is created with the specified `root_fs` mounted.  Diego is responsible for performing any container setup necessary to successfully launch processes and monitor said processes.
+When an LRP instance is instantiated, a container is created with the specified `rootfs` mounted.  Diego is responsible for performing any container setup necessary to successfully launch processes and monitor said processes.
 
 #### `setup` [optional]
 
