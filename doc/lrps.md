@@ -42,7 +42,18 @@ When desiring an LRP you `POST` a valid `DesiredLRPCreateRequest`.  The [API ref
     "start_timeout": N seconds,
 
     "ports": [8080, 5050],
-    "routes": ["a.example.com", "b.example.com"],
+    "routes": {
+        "cf-router": [
+            {
+                "hostnames": ["a.example.com", "b.example.com"],
+                "port": 8080
+            }, {
+                "hostnames": ["c.example.com"],
+                "port": 5050
+            }
+        ],
+        "router-key": "any opaque json payload"
+    }
 
     "log_guid": "some-log-guid",
     "log_source": "some-log-source",
@@ -177,9 +188,7 @@ If provided, Diego will give the `action` action up to `start_timeout` seconds t
 
 #### Networking
 
-Diego can open and expose arbitrary `ports` inside the container.  Currently, if at least one `port` is opened and `routes` are defined, Diego will automatically register the **first** port on the container with the [router](https://github.com/cloudfoundry/gorouter).  Consumers that attempt to access one of the routes in the `routes` array will be connected via the router to one of the ActualLRP instances currently running.
-
-There are plans to generalize this interface and make it possible to build custom service discovery solutions on top of Diego.  The API is likely to change in backward-incompatible ways as we work these requirements out.
+Diego can open and expose arbitrary `ports` inside the container.  There are plans to generalize this support and make it possible to build custom service discovery solutions on top of Diego.  The API is likely to change in backward-incompatible ways as we work these requirements out.
 
 By default network access for any container is limited but some LRPs might need specific network access and that can be setup using `egress_rules` field.  Rules are evaluated in reverse order of their position, i.e., the last one takes precedence.
 
@@ -190,7 +199,14 @@ By default network access for any container is limited but some LRPs might need 
 `ports` is a list of ports to open in the container.  Processes running in the container can bind to these ports to receive incoming traffic.  These ports are only valid within the container namespace and an arbitrary host-side port is created when the container is created.  This host-side port is made available on the `ActualLRP`.
 
 #### `routes` [optional]
-`routes` are a list of fully qualified domain names (e.g. `"foo.example.com"`).  These routes are automatically registered with the router and point to the *first* port in the `ports` list.
+
+`routes` is a map where the keys identify route providers and the values hold information for the providers to consume.  The information in the map must be valid JSON but is not proessed by Diego.  The total length of the routing information must not exceed 4096 bytes.
+
+##### `cf-router` [optional]
+
+The route provider `cf-router` is used by the Diego [route emitter](https://github.com/cloudfoundry-incubator/route-emitter) to automatically register routes to the container with the [router](https://github.com/cloudfoundry/gorouter).  The routing information is a list of objects that associate a container port with a list of fully qualified host names (e.g. `"foo.example.com"`).  Consumers that attempt to access one of the hostnames via the router will be connected to one of the ActualLRP instances that is currently running.
+
+Example: `"cf-router": [{"port":8080, "hostnames":["foo.example.com"]}}]`
 
 #### `egress_rules` [optional]
 `egress_rules` are a list of egress firewall rules that are applied to a container running in Diego
