@@ -290,7 +290,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 		validUpdateRequest := receptor.DesiredLRPUpdateRequest{
 			Instances:  &instances,
 			Annotation: &annotation,
-			Routes:     &routingInfo,
+			Routes:     routingInfo,
 		}
 
 		expectedUpdate := models.DesiredLRPUpdate{

@@ -53,7 +53,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				EgressRules: []models.SecurityGroupRule{
 					securityRule,
 				},
-				Routes: &routingInfo,
+				Routes: routingInfo,
 			}
 		})
 		JustBeforeEach(func() {
@@ -139,7 +139,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				Ports: []uint16{
 					456,
 				},
-				Routes:     &routingInfo,
+				Routes:     routingInfo,
 				LogGuid:    "log-guid-0",
 				LogSource:  "log-source-name-0",
 				Annotation: "annotation-0",
@@ -175,7 +175,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				Ports: []uint16{
 					456,
 				},
-				Routes:     &routingInfo,
+				Routes:     routingInfo,
 				LogGuid:    "log-guid-0",
 				LogSource:  "log-source-name-0",
 				Annotation: "annotation-0",

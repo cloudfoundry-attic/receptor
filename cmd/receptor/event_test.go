@@ -132,7 +132,7 @@ var _ = Describe("Event", func() {
 
 			desiredLRPChangedEvent, ok := event.(receptor.DesiredLRPChangedEvent)
 			Ω(ok).Should(BeTrue())
-			Ω(*desiredLRPChangedEvent.After.Routes).Should(Equal(receptor.RoutingInfo(newRoutes)))
+			Ω(desiredLRPChangedEvent.After.Routes).Should(Equal(receptor.RoutingInfo(newRoutes)))
 
 			By("removing the DesiredLRP")
 			err = bbs.RemoveDesiredLRPByProcessGuid(logger, desiredLRP.ProcessGuid)

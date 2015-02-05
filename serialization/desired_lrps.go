@@ -90,12 +90,12 @@ func DesiredLRPUpdateFromRequest(req receptor.DesiredLRPUpdateRequest) models.De
 	}
 }
 
-func RoutingInfoToRawMessages(r *receptor.RoutingInfo) map[string]*json.RawMessage {
+func RoutingInfoToRawMessages(r receptor.RoutingInfo) map[string]*json.RawMessage {
 	var messages map[string]*json.RawMessage
 
 	if r != nil {
 		messages = map[string]*json.RawMessage{}
-		for key, value := range *r {
+		for key, value := range r {
 			messages[key] = value
 		}
 	}
@@ -103,7 +103,7 @@ func RoutingInfoToRawMessages(r *receptor.RoutingInfo) map[string]*json.RawMessa
 	return messages
 }
 
-func RoutingInfoFromRawMessages(raw map[string]*json.RawMessage) *receptor.RoutingInfo {
+func RoutingInfoFromRawMessages(raw map[string]*json.RawMessage) receptor.RoutingInfo {
 	if raw == nil {
 		return nil
 	}
@@ -112,5 +112,5 @@ func RoutingInfoFromRawMessages(raw map[string]*json.RawMessage) *receptor.Routi
 	for key, value := range raw {
 		info[key] = value
 	}
-	return &info
+	return info
 }

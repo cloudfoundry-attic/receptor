@@ -11,20 +11,20 @@ type CFRoute struct {
 	Port      uint16   `json:"port"`
 }
 
-func (c CFRoutes) RoutingInfo() *RoutingInfo {
+func (c CFRoutes) RoutingInfo() RoutingInfo {
 	data, _ := json.Marshal(c)
 	routingInfo := json.RawMessage(data)
-	return &RoutingInfo{
+	return RoutingInfo{
 		CF_ROUTER: &routingInfo,
 	}
 }
 
-func CFRoutesFromRoutingInfo(routingInfo *RoutingInfo) (CFRoutes, error) {
+func CFRoutesFromRoutingInfo(routingInfo RoutingInfo) (CFRoutes, error) {
 	if routingInfo == nil {
 		return nil, nil
 	}
 
-	data, found := (*routingInfo)[CF_ROUTER]
+	data, found := routingInfo[CF_ROUTER]
 	if !found {
 		return nil, nil
 	}

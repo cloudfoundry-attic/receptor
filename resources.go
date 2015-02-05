@@ -172,7 +172,7 @@ type DesiredLRPCreateRequest struct {
 	CPUWeight            uint                       `json:"cpu_weight"`
 	Privileged           bool                       `json:"privileged"`
 	Ports                []uint16                   `json:"ports"`
-	Routes               *RoutingInfo               `json:"routes,omitempty"`
+	Routes               RoutingInfo                `json:"routes,omitempty"`
 	LogGuid              string                     `json:"log_guid"`
 	LogSource            string                     `json:"log_source"`
 	Annotation           string                     `json:"annotation,omitempty"`
@@ -272,9 +272,9 @@ func (request *DesiredLRPCreateRequest) UnmarshalJSON(payload []byte) error {
 }
 
 type DesiredLRPUpdateRequest struct {
-	Instances  *int         `json:"instances,omitempty"`
-	Routes     *RoutingInfo `json:"routes,omitempty"`
-	Annotation *string      `json:"annotation,omitempty"`
+	Instances  *int        `json:"instances,omitempty"`
+	Routes     RoutingInfo `json:"routes,omitempty"`
+	Annotation *string     `json:"annotation,omitempty"`
 }
 
 type DesiredLRPResponse struct {
@@ -293,7 +293,7 @@ type DesiredLRPResponse struct {
 	CPUWeight            uint                       `json:"cpu_weight"`
 	Privileged           bool                       `json:"privileged"`
 	Ports                []uint16                   `json:"ports"`
-	Routes               *RoutingInfo               `json:"routes,omitempty"`
+	Routes               RoutingInfo                `json:"routes,omitempty"`
 	LogGuid              string                     `json:"log_guid"`
 	LogSource            string                     `json:"log_source"`
 	Annotation           string                     `json:"annotation,omitempty"`

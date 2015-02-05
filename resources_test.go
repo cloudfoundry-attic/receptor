@@ -326,48 +326,68 @@ var _ = Describe("Resources", func() {
 	})
 
 	Describe("RoutingInfo", func() {
+		const jsonRoutes = `{
+			"cf-router": [{ "port": 1, "hostnames": ["a", "b"]}],
+			"foo" : "bar"
+		}`
+
 		var routingInfo receptor.RoutingInfo
 
 		BeforeEach(func() {
 			routingInfo = receptor.RoutingInfo{}
 		})
 
-		Context("Serialization", func() {
-			jsonRoutes := `{
-					"cf-router": [{ "port": 1, "hostnames": ["a", "b"]}],
-					"foo" : "bar"
-					}`
+		Describe("MarshalJson", func() {
+			It("marshals routes when present", func() {
+				routingInfo := receptor.RoutingInfo{}
 
-			Context("MarshalJson", func() {
-				It("marshals routes when present", func() {
-					routingInfo := receptor.RoutingInfo{}
-
-					bytes, err := json.Marshal(receptor.CFRoutes{
-						{Hostnames: []string{"a", "b"}, Port: 1},
-					})
-					Ω(err).ShouldNot(HaveOccurred())
-
-					cfRawMessage := json.RawMessage(bytes)
-					routingInfo[receptor.CF_ROUTER] = &cfRawMessage
-
-					fooRawMessage := json.RawMessage([]byte(`"bar"`))
-					routingInfo["foo"] = &fooRawMessage
-
-					bytes, err = json.Marshal(routingInfo)
-					Ω(err).ShouldNot(HaveOccurred())
-					Ω(bytes).Should(MatchJSON(jsonRoutes))
+				bytes, err := json.Marshal(receptor.CFRoutes{
+					{Hostnames: []string{"a", "b"}, Port: 1},
 				})
+				Ω(err).ShouldNot(HaveOccurred())
+
+				cfRawMessage := json.RawMessage(bytes)
+				routingInfo[receptor.CF_ROUTER] = &cfRawMessage
+
+				fooRawMessage := json.RawMessage([]byte(`"bar"`))
+				routingInfo["foo"] = &fooRawMessage
+
+				bytes, err = json.Marshal(routingInfo)
+				Ω(err).ShouldNot(HaveOccurred())
+				Ω(bytes).Should(MatchJSON(jsonRoutes))
 			})
 
-			Context("Unmarshal", func() {
-				It("returns both cf-routes and other", func() {
-					err := json.Unmarshal([]byte(jsonRoutes), &routingInfo)
+			Context("when the routing info is empty", func() {
+				It("serialization can omit it", func() {
+					type wrapper struct {
+						Name   string               `json:"name"`
+						Routes receptor.RoutingInfo `json:"routes,omitempty"`
+					}
+
+					w := wrapper{
+						Name:   "wrapper",
+						Routes: receptor.RoutingInfo{},
+					}
+
+					Ω(w.Routes).ShouldNot(BeNil())
+					Ω(w.Routes).Should(BeEmpty())
+
+					bytes, err := json.Marshal(w)
 					Ω(err).ShouldNot(HaveOccurred())
 
-					Ω(len(routingInfo)).Should(Equal(2))
-					Ω(string(*routingInfo["cf-router"])).Should(MatchJSON(`[{"port": 1,"hostnames":["a", "b"]}]`))
-					Ω(string(*routingInfo["foo"])).Should(MatchJSON(`"bar"`))
+					Ω(bytes).Should(MatchJSON(`{"name":"wrapper"}`))
 				})
+			})
+		})
+
+		Describe("Unmarshal", func() {
+			It("returns both cf-routes and other", func() {
+				err := json.Unmarshal([]byte(jsonRoutes), &routingInfo)
+				Ω(err).ShouldNot(HaveOccurred())
+
+				Ω(len(routingInfo)).Should(Equal(2))
+				Ω(string(*routingInfo["cf-router"])).Should(MatchJSON(`[{"port": 1,"hostnames":["a", "b"]}]`))
+				Ω(string(*routingInfo["foo"])).Should(MatchJSON(`"bar"`))
 			})
 		})
 	})

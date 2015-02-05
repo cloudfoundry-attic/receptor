@@ -36,7 +36,7 @@ var _ = Describe("RoutingInfoHelpers", func() {
 	})
 
 	Describe("RoutingInfo", func() {
-		var routingInfo *receptor.RoutingInfo
+		var routingInfo receptor.RoutingInfo
 
 		JustBeforeEach(func() {
 			routingInfo = routes.RoutingInfo()
@@ -46,7 +46,7 @@ var _ = Describe("RoutingInfoHelpers", func() {
 			expectedBytes, err := json.Marshal(routes)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			payload, err := (*routingInfo)[receptor.CF_ROUTER].MarshalJSON()
+			payload, err := routingInfo[receptor.CF_ROUTER].MarshalJSON()
 			Ω(err).ShouldNot(HaveOccurred())
 
 			Ω(payload).Should(MatchJSON(expectedBytes))
@@ -58,7 +58,7 @@ var _ = Describe("RoutingInfoHelpers", func() {
 			})
 
 			It("marshals an empty list", func() {
-				payload, err := (*routingInfo)[receptor.CF_ROUTER].MarshalJSON()
+				payload, err := routingInfo[receptor.CF_ROUTER].MarshalJSON()
 				Ω(err).ShouldNot(HaveOccurred())
 
 				Ω(payload).Should(MatchJSON(`[]`))
@@ -71,7 +71,7 @@ var _ = Describe("RoutingInfoHelpers", func() {
 			routesResult    receptor.CFRoutes
 			conversionError error
 
-			routingInfo *receptor.RoutingInfo
+			routingInfo receptor.RoutingInfo
 		)
 
 		JustBeforeEach(func() {
@@ -89,7 +89,7 @@ var _ = Describe("RoutingInfoHelpers", func() {
 
 			Context("when the CF routes are nil", func() {
 				BeforeEach(func() {
-					routingInfo = &receptor.RoutingInfo{receptor.CF_ROUTER: nil}
+					routingInfo = receptor.RoutingInfo{receptor.CF_ROUTER: nil}
 				})
 
 				It("returns nil routes", func() {
@@ -101,7 +101,7 @@ var _ = Describe("RoutingInfoHelpers", func() {
 
 		Context("when CF routes are not present in the routing info", func() {
 			BeforeEach(func() {
-				routingInfo = &receptor.RoutingInfo{}
+				routingInfo = receptor.RoutingInfo{}
 			})
 
 			It("returns nil routes", func() {

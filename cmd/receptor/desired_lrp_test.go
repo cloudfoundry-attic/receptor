@@ -97,7 +97,7 @@ var _ = Describe("Desired LRP API", func() {
 			update := receptor.DesiredLRPUpdateRequest{
 				Instances:  &instances,
 				Annotation: &annotation,
-				Routes:     &routingInfo,
+				Routes:     routingInfo,
 			}
 
 			updateErr = client.UpdateDesiredLRP(createLRPReq.ProcessGuid, update)
