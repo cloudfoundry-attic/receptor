@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/cloudfoundry-incubator/receptor"
+	"github.com/cloudfoundry-incubator/route-emitter/cfroutes"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 
 	. "github.com/onsi/ginkgo"
@@ -341,7 +342,7 @@ var _ = Describe("Resources", func() {
 			It("marshals routes when present", func() {
 				routingInfo := receptor.RoutingInfo{}
 
-				bytes, err := json.Marshal(receptor.CFRoutes{
+				bytes, err := json.Marshal(cfroutes.CFRoutes{
 					{Hostnames: []string{"a", "b"}, Port: 1},
 				})
 				Ω(err).ShouldNot(HaveOccurred())
