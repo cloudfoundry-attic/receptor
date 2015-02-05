@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 
 	"github.com/cloudfoundry-incubator/receptor"
-	"github.com/cloudfoundry-incubator/runtime-schema/cc_messages"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 
 	. "github.com/onsi/ginkgo"
@@ -341,12 +340,20 @@ var _ = Describe("Resources", func() {
 
 			Context("MarshalJson", func() {
 				It("marshals routes when present", func() {
-					routingInfo := *cc_messages.NewRoutingInfo([]string{"a", "b"}, 1)
+					routingInfo := receptor.RoutingInfo{}
 
-					otherRawMessage := json.RawMessage([]byte(`"bar"`))
-					routingInfo["foo"] = &otherRawMessage
+					bytes, err := json.Marshal(receptor.CFRoutes{
+						{Hostnames: []string{"a", "b"}, Port: 1},
+					})
+					Ω(err).ShouldNot(HaveOccurred())
 
-					bytes, err := json.Marshal(routingInfo)
+					cfRawMessage := json.RawMessage(bytes)
+					routingInfo[receptor.CF_ROUTER] = &cfRawMessage
+
+					fooRawMessage := json.RawMessage([]byte(`"bar"`))
+					routingInfo["foo"] = &fooRawMessage
+
+					bytes, err = json.Marshal(routingInfo)
 					Ω(err).ShouldNot(HaveOccurred())
 					Ω(bytes).Should(MatchJSON(jsonRoutes))
 				})
