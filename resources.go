@@ -416,10 +416,10 @@ type ActualLRPResponse struct {
 }
 
 type CellResponse struct {
-	CellID   string `json:"cell_id"`
-	Stack    string `json:"stack"`
-	Zone     string `json:"zone"`
-	Capacity CellCapacity
+	CellID   string       `json:"cell_id"`
+	Stack    string       `json:"stack"`
+	Zone     string       `json:"zone"`
+	Capacity CellCapacity `json:"capacity"`
 }
 
 type CellCapacity struct {
