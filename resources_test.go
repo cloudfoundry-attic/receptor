@@ -348,7 +348,7 @@ var _ = Describe("Resources", func() {
 				Ω(err).ShouldNot(HaveOccurred())
 
 				cfRawMessage := json.RawMessage(bytes)
-				routingInfo[receptor.CF_ROUTER] = &cfRawMessage
+				routingInfo[cfroutes.CF_ROUTER] = &cfRawMessage
 
 				fooRawMessage := json.RawMessage([]byte(`"bar"`))
 				routingInfo["foo"] = &fooRawMessage
