@@ -161,7 +161,7 @@ var _ = Describe("Event", func() {
 
 		It("receives events", func() {
 			By("creating a ActualLRP")
-			err := bbs.CreateActualLRP(desiredLRP, 0, logger)
+			err := bbs.CreateActualLRP(logger, desiredLRP, 0)
 			Ω(err).ShouldNot(HaveOccurred())
 
 			actualLRP, err := bbs.ActualLRPByProcessGuidAndIndex(desiredLRP.ProcessGuid, 0)
@@ -176,7 +176,7 @@ var _ = Describe("Event", func() {
 			Ω(actualLRPCreatedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
 
 			By("updating an existing ActualLRP")
-			err = bbs.ClaimActualLRP(actualLRP.ActualLRPKey, models.NewActualLRPContainerKey("some-instance-guid", "some-cell-id"), logger)
+			err = bbs.ClaimActualLRP(logger, actualLRP.ActualLRPKey, models.NewActualLRPContainerKey("some-instance-guid", "some-cell-id"))
 			Ω(err).ShouldNot(HaveOccurred())
 
 			actualLRP, err = bbs.ActualLRPByProcessGuidAndIndex(desiredLRP.ProcessGuid, 0)
@@ -189,7 +189,7 @@ var _ = Describe("Event", func() {
 			Ω(actualLRPChangedEvent.After).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
 
 			By("removing the ActualLRP")
-			err = bbs.RemoveActualLRP(actualLRP.ActualLRPKey, actualLRP.ActualLRPContainerKey, logger)
+			err = bbs.RemoveActualLRP(logger, actualLRP.ActualLRPKey, actualLRP.ActualLRPContainerKey)
 			Ω(err).ShouldNot(HaveOccurred())
 
 			Eventually(events).Should(Receive(&event))

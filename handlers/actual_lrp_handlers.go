@@ -178,7 +178,7 @@ func (h *ActualLRPHandler) KillByProcessGuidAndIndex(w http.ResponseWriter, req 
 		return
 	}
 
-	h.bbs.RetireActualLRPs([]models.ActualLRP{actualLRP}, logger)
+	h.bbs.RetireActualLRPs(logger, []models.ActualLRP{actualLRP})
 
 	w.WriteHeader(http.StatusNoContent)
 }

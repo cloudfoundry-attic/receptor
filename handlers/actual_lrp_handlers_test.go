@@ -388,7 +388,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 				It("calls the BBS to request stop LRP instances", func() {
 					Ω(fakeBBS.RetireActualLRPsCallCount()).Should(Equal(1))
-					actualLRPs, _ := fakeBBS.RetireActualLRPsArgsForCall(0)
+					_, actualLRPs := fakeBBS.RetireActualLRPsArgsForCall(0)
 					Ω(actualLRPs).Should(HaveLen(1))
 					actualLRP := actualLRPs[0]
 					Ω(actualLRP.ProcessGuid).Should(Equal("process-guid-1"))
