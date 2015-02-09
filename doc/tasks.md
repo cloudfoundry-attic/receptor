@@ -315,7 +315,7 @@ Tasks in Diego undergo a simple lifecycle encoded in the Tasks's state:
 - When the Cell begins to create the container and run the Task action, the Task enters the `RUNNING` state.
 - When the Task completes, the Cell annotates the `TaskResponse` with `failed`, `failure_reason`, and `result`, and puts the Task in the `COMPLETED` state.
 
-At this point it is up to the consumer of Diego to acknowledge and resolve the completed Task.  This can either be done via a completion callback (described [above](#completion_callback_url-optional)) or by [deleting](delete_tasks.md) the Task.  When the Task is being resolved it first enters the `RESOLVING` state and is ultimately removed from Diego.
+At this point it is up to the consumer of Diego to acknowledge and resolve the completed Task.  This can either be done via a completion callback (described [above](#completion_callback_url-optional)) or by [deleting](api_tasks.md#resolving-completed-tasks) the Task.  When the Task is being resolved it first enters the `RESOLVING` state and is ultimately removed from Diego.
 
 Diego will automatically reap Tasks that remain unresolved after 2 minutes.
 
@@ -325,6 +325,6 @@ Diego will automatically reap Tasks that remain unresolved after 2 minutes.
 
 ## Cancelling Tasks
 
-Diego supports cancelling inflight tasks.  More documentation on this is available [here](cancel_tasks.md).
+Diego supports cancelling inflight tasks.  More documentation on this is available [here](api_tasks.md#cancelling-inflight-tasks).
 
 [back](README.md)
