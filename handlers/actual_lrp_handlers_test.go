@@ -214,9 +214,10 @@ var _ = Describe("Actual LRP Handlers", func() {
 				BeforeEach(func() {
 					req.Form = url.Values{":process_guid": []string{"process-guid-1"}}
 
-					fakeBBS.ActualLRPGroupsByProcessGuidReturns(models.ActualLRPGroupsByIndex{
-						2: {Instance: &actualLRP2, Evacuating: &evacuatingLRP2},
-					}, nil)
+					fakeBBS.ActualLRPGroupsByProcessGuidReturns(
+						models.ActualLRPGroupsByIndex{2: {Instance: &actualLRP2, Evacuating: &evacuatingLRP2}},
+						nil,
+					)
 				})
 
 				It("calls the BBS to retrieve the actual LRPs", func() {
@@ -302,8 +303,9 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		BeforeEach(func() {
 			req = newTestRequest("")
-			req.Form = url.Values{":process_guid": []string{"process-guid-1"},
-				":index": []string{"2"},
+			req.Form = url.Values{
+				":process_guid": []string{"process-guid-1"},
+				":index":        []string{"2"},
 			}
 		})
 
@@ -313,12 +315,15 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		Context("when reading LRPs from BBS succeeds", func() {
 			BeforeEach(func() {
-				fakeBBS.ActualLRPByProcessGuidAndIndexReturns(actualLRP2, nil)
+				fakeBBS.ActualLRPGroupByProcessGuidAndIndexReturns(
+					models.ActualLRPGroup{Instance: &actualLRP2},
+					nil,
+				)
 			})
 
 			It("calls the BBS to retrieve the actual LRPs", func() {
-				Ω(fakeBBS.ActualLRPByProcessGuidAndIndexCallCount()).Should(Equal(1))
-				processGuid, index := fakeBBS.ActualLRPByProcessGuidAndIndexArgsForCall(0)
+				Ω(fakeBBS.ActualLRPGroupByProcessGuidAndIndexCallCount()).Should(Equal(1))
+				processGuid, index := fakeBBS.ActualLRPGroupByProcessGuidAndIndexArgsForCall(0)
 				Ω(processGuid).Should(Equal("process-guid-1"))
 				Ω(index).Should(Equal(2))
 			})
@@ -334,11 +339,28 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 				Ω(response).Should(Equal(serialization.ActualLRPToResponse(actualLRP2, false)))
 			})
+
+			Context("when the LRP group contains an evacuating", func() {
+				BeforeEach(func() {
+					fakeBBS.ActualLRPGroupByProcessGuidAndIndexReturns(
+						models.ActualLRPGroup{Instance: &actualLRP2, Evacuating: &evacuatingLRP2},
+						nil,
+					)
+				})
+
+				It("responds with the reconciled LRP", func() {
+					response := receptor.ActualLRPResponse{}
+					err := json.Unmarshal(responseRecorder.Body.Bytes(), &response)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					Ω(response).Should(Equal(serialization.ActualLRPToResponse(evacuatingLRP2, true)))
+				})
+			})
 		})
 
 		Context("when reading LRPs from BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.ActualLRPByProcessGuidAndIndexReturns(models.ActualLRP{}, errors.New("Something went wrong"))
+				fakeBBS.ActualLRPGroupByProcessGuidAndIndexReturns(models.ActualLRPGroup{}, errors.New("Something went wrong"))
 			})
 
 			It("responds with a 500 Internal Error", func() {
@@ -357,7 +379,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		Context("when the BBS does not return any actual LRP", func() {
 			BeforeEach(func() {
-				fakeBBS.ActualLRPByProcessGuidAndIndexReturns(models.ActualLRP{}, bbserrors.ErrStoreResourceNotFound)
+				fakeBBS.ActualLRPGroupByProcessGuidAndIndexReturns(models.ActualLRPGroup{}, bbserrors.ErrStoreResourceNotFound)
 			})
 
 			It("responds with 404 Not Found", func() {

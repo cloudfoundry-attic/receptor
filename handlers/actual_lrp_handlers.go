@@ -124,7 +124,7 @@ func (h *ActualLRPHandler) GetByProcessGuidAndIndex(w http.ResponseWriter, req *
 		return
 	}
 
-	actualLRP, err := h.bbs.ActualLRPByProcessGuidAndIndex(processGuid, index)
+	actualLRPGroup, err := h.bbs.ActualLRPGroupByProcessGuidAndIndex(processGuid, index)
 	if err == bbserrors.ErrStoreResourceNotFound {
 		writeJSONResponse(w, http.StatusNotFound, nil)
 		return
@@ -136,7 +136,9 @@ func (h *ActualLRPHandler) GetByProcessGuidAndIndex(w http.ResponseWriter, req *
 		return
 	}
 
-	writeJSONResponse(w, http.StatusOK, serialization.ActualLRPToResponse(actualLRP, false))
+	actualLRP, evacuating, err := actualLRPGroup.Resolve()
+
+	writeJSONResponse(w, http.StatusOK, serialization.ActualLRPToResponse(*actualLRP, evacuating))
 }
 
 func (h *ActualLRPHandler) KillByProcessGuidAndIndex(w http.ResponseWriter, req *http.Request) {
