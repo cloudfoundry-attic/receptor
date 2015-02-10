@@ -171,7 +171,7 @@ func (h *ActualLRPHandler) KillByProcessGuidAndIndex(w http.ResponseWriter, req 
 		return
 	}
 
-	actualLRP, err := h.bbs.ActualLRPByProcessGuidAndIndex(processGuid, index)
+	actualLRPGroup, err := h.bbs.ActualLRPGroupByProcessGuidAndIndex(processGuid, index)
 	if err != nil {
 		if err == bbserrors.ErrStoreResourceNotFound {
 			responseErr := fmt.Errorf("process-guid '%s' does not exist or has no instance at index %d", processGuid, index)
@@ -188,7 +188,14 @@ func (h *ActualLRPHandler) KillByProcessGuidAndIndex(w http.ResponseWriter, req 
 		return
 	}
 
-	h.bbs.RetireActualLRPs(logger, []models.ActualLRP{actualLRP})
+	actualLRP, _, err := actualLRPGroup.Resolve()
+	if err != nil {
+		logger.Error("failed-to-fetch-actual-lrp-by-process-guid-and-index", err)
+		writeUnknownErrorResponse(w, err)
+		return
+	}
+
+	h.bbs.RetireActualLRPs(logger, []models.ActualLRP{*actualLRP})
 
 	w.WriteHeader(http.StatusNoContent)
 }
