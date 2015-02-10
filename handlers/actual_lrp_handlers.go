@@ -33,12 +33,13 @@ func (h *ActualLRPHandler) GetAll(w http.ResponseWriter, req *http.Request) {
 	})
 
 	var actualLRPs []models.ActualLRP
+	var actualLRPGroups []models.ActualLRPGroup
 	var err error
 
 	if domain == "" {
-		actualLRPs, err = h.bbs.ActualLRPs()
+		actualLRPGroups, err = h.bbs.ActualLRPGroups()
 	} else {
-		actualLRPs, err = h.bbs.ActualLRPsByDomain(domain)
+		actualLRPGroups, err = h.bbs.ActualLRPGroupsByDomain(domain)
 	}
 
 	if err != nil {
@@ -48,8 +49,12 @@ func (h *ActualLRPHandler) GetAll(w http.ResponseWriter, req *http.Request) {
 	}
 
 	responses := make([]receptor.ActualLRPResponse, 0, len(actualLRPs))
-	for _, actualLRP := range actualLRPs {
-		responses = append(responses, serialization.ActualLRPToResponse(actualLRP))
+	for _, actualLRPGroup := range actualLRPGroups {
+		lrp, evacuating, err := actualLRPGroup.Resolve()
+		if err != nil {
+			continue
+		}
+		responses = append(responses, serialization.ActualLRPToResponse(*lrp, evacuating))
 	}
 
 	writeJSONResponse(w, http.StatusOK, responses)
@@ -77,7 +82,7 @@ func (h *ActualLRPHandler) GetAllByProcessGuid(w http.ResponseWriter, req *http.
 
 	responses := make([]receptor.ActualLRPResponse, 0, len(actualLRPs))
 	for _, actualLRP := range actualLRPs {
-		responses = append(responses, serialization.ActualLRPToResponse(actualLRP))
+		responses = append(responses, serialization.ActualLRPToResponse(actualLRP, false))
 	}
 
 	writeJSONResponse(w, http.StatusOK, responses)
@@ -128,7 +133,7 @@ func (h *ActualLRPHandler) GetByProcessGuidAndIndex(w http.ResponseWriter, req *
 		return
 	}
 
-	writeJSONResponse(w, http.StatusOK, serialization.ActualLRPToResponse(actualLRP))
+	writeJSONResponse(w, http.StatusOK, serialization.ActualLRPToResponse(actualLRP, false))
 }
 
 func (h *ActualLRPHandler) KillByProcessGuidAndIndex(w http.ResponseWriter, req *http.Request) {

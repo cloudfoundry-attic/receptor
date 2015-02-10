@@ -138,6 +138,7 @@ var _ = Describe("EventSource", func() {
 						State:        models.ActualLRPStateUnclaimed,
 						Since:        1,
 					},
+					false,
 				)
 			})
 

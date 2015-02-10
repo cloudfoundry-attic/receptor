@@ -417,6 +417,7 @@ type ActualLRPResponse struct {
 	CrashCount     int            `json:"crash_count"`
 	PlacementError string         `json:"placement_error,omitempty"`
 	Since          int64          `json:"since"`
+	Evacuating     bool           `json:"evacuating"`
 }
 
 type CellResponse struct {

@@ -173,7 +173,7 @@ var _ = Describe("Event", func() {
 
 			actualLRPCreatedEvent, ok := event.(receptor.ActualLRPCreatedEvent)
 			Ω(ok).Should(BeTrue())
-			Ω(actualLRPCreatedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
+			Ω(actualLRPCreatedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP, false)))
 
 			By("updating an existing ActualLRP")
 			err = bbs.ClaimActualLRP(logger, actualLRP.ActualLRPKey, models.NewActualLRPContainerKey("some-instance-guid", "some-cell-id"))
@@ -186,7 +186,7 @@ var _ = Describe("Event", func() {
 
 			actualLRPChangedEvent, ok := event.(receptor.ActualLRPChangedEvent)
 			Ω(ok).Should(BeTrue())
-			Ω(actualLRPChangedEvent.After).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
+			Ω(actualLRPChangedEvent.After).Should(Equal(serialization.ActualLRPToResponse(actualLRP, false)))
 
 			By("removing the ActualLRP")
 			err = bbs.RemoveActualLRP(logger, actualLRP.ActualLRPKey, actualLRP.ActualLRPContainerKey)
@@ -196,7 +196,7 @@ var _ = Describe("Event", func() {
 
 			actualLRPRemovedEvent, ok := event.(receptor.ActualLRPRemovedEvent)
 			Ω(ok).Should(BeTrue())
-			Ω(actualLRPRemovedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
+			Ω(actualLRPRemovedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP, false)))
 		})
 	})
 })

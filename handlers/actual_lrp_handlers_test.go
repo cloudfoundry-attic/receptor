@@ -49,9 +49,15 @@ var _ = Describe("Actual LRP Handlers", func() {
 	})
 
 	Describe("GetAll", func() {
+		var (
+			actualLRP1     models.ActualLRP
+			actualLRP2     models.ActualLRP
+			evacuatingLRP2 models.ActualLRP
+		)
+
 		Context("when reading LRPs from BBS succeeds", func() {
 			BeforeEach(func() {
-				actualLRP1 := models.ActualLRP{
+				actualLRP1 = models.ActualLRP{
 					ActualLRPKey: models.NewActualLRPKey(
 						"process-guid-0",
 						1,
@@ -64,7 +70,8 @@ var _ = Describe("Actual LRP Handlers", func() {
 					State: models.ActualLRPStateRunning,
 					Since: 1138,
 				}
-				actualLRP2 := models.ActualLRP{
+
+				actualLRP2 = models.ActualLRP{
 					ActualLRPKey: models.NewActualLRPKey(
 						"process-guid-1",
 						1,
@@ -74,20 +81,32 @@ var _ = Describe("Actual LRP Handlers", func() {
 						"instance-guid-1",
 						"cell-id-1",
 					),
-					State: models.ActualLRPStateRunning,
+					State: models.ActualLRPStateClaimed,
 					Since: 1138,
 				}
+
+				evacuatingLRP2 = actualLRP2
+				evacuatingLRP2.State = models.ActualLRPStateRunning
+				evacuatingLRP2.Since = 3417
 
 				fakeBBS.ActualLRPsReturns([]models.ActualLRP{
 					actualLRP1,
 					actualLRP2,
 				}, nil)
-				fakeBBS.ActualLRPsByDomainReturns([]models.ActualLRP{actualLRP2}, nil)
+
+				fakeBBS.ActualLRPGroupsReturns([]models.ActualLRPGroup{
+					{Instance: &actualLRP1},
+					{Instance: &actualLRP2, Evacuating: &evacuatingLRP2},
+				}, nil)
+
+				fakeBBS.ActualLRPGroupsByDomainReturns([]models.ActualLRPGroup{
+					{Instance: &actualLRP2, Evacuating: &evacuatingLRP2},
+				}, nil)
 			})
 
 			It("call the BBS to retrieve the actual LRPs", func() {
 				handler.GetAll(responseRecorder, newTestRequest(""))
-				Ω(fakeBBS.ActualLRPsCallCount()).Should(Equal(1))
+				Ω(fakeBBS.ActualLRPGroupsCallCount()).Should(Equal(1))
 			})
 
 			It("responds with 200 Status OK", func() {
@@ -106,7 +125,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 					Ω(err).ShouldNot(HaveOccurred())
 
 					Ω(response).Should(HaveLen(1))
-					Ω(response[0].Domain).Should(Equal("domain-1"))
+					Ω(response[0]).Should(Equal(serialization.ActualLRPToResponse(evacuatingLRP2, true)))
 				})
 			})
 
@@ -120,18 +139,24 @@ var _ = Describe("Actual LRP Handlers", func() {
 					Ω(response).Should(HaveLen(2))
 					Ω(response[0].ProcessGuid).Should(Equal("process-guid-0"))
 					Ω(response[1].ProcessGuid).Should(Equal("process-guid-1"))
+					expectedResponses := []receptor.ActualLRPResponse{
+						serialization.ActualLRPToResponse(actualLRP1, false),
+						serialization.ActualLRPToResponse(evacuatingLRP2, true),
+					}
+
+					Ω(response).Should(ConsistOf(expectedResponses))
 				})
 			})
 		})
 
 		Context("when the BBS returns no lrps", func() {
 			BeforeEach(func() {
-				fakeBBS.ActualLRPsReturns([]models.ActualLRP{}, nil)
+				fakeBBS.ActualLRPGroupsReturns([]models.ActualLRPGroup{}, nil)
 			})
 
-			It("call the BBS to retrieve the desired LRP", func() {
+			It("call the BBS to retrieve the actual LRPs", func() {
 				handler.GetAll(responseRecorder, newTestRequest(""))
-				Ω(fakeBBS.ActualLRPsCallCount()).Should(Equal(1))
+				Ω(fakeBBS.ActualLRPGroupsCallCount()).Should(Equal(1))
 			})
 
 			It("responds with 200 Status OK", func() {
@@ -147,7 +172,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		Context("when reading from the BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.ActualLRPsReturns([]models.ActualLRP{}, errors.New("Something went wrong"))
+				fakeBBS.ActualLRPGroupsReturns([]models.ActualLRPGroup{}, errors.New("Something went wrong"))
 			})
 
 			It("responds with an error", func() {
@@ -203,7 +228,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 				Ω(err).ShouldNot(HaveOccurred())
 
 				Ω(response).Should(HaveLen(1))
-				Ω(response).Should(ContainElement(serialization.ActualLRPToResponse(actualLRPPG1I2)))
+				Ω(response).Should(ContainElement(serialization.ActualLRPToResponse(actualLRPPG1I2, false)))
 			})
 		})
 
@@ -300,7 +325,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 				err := json.Unmarshal(responseRecorder.Body.Bytes(), &response)
 				Ω(err).ShouldNot(HaveOccurred())
 
-				Ω(response).Should(Equal(serialization.ActualLRPToResponse(actualLRPPG1I2)))
+				Ω(response).Should(Equal(serialization.ActualLRPToResponse(actualLRPPG1I2, false)))
 			})
 		})
 

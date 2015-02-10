@@ -334,7 +334,7 @@ var _ = Describe("Watcher", func() {
 
 					actualLRPCreatedEvent, ok := event.(receptor.ActualLRPCreatedEvent)
 					Ω(ok).Should(BeTrue())
-					Ω(actualLRPCreatedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
+					Ω(actualLRPCreatedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP, false)))
 				})
 			})
 
@@ -349,8 +349,8 @@ var _ = Describe("Watcher", func() {
 
 					actualLRPChangedEvent, ok := event.(receptor.ActualLRPChangedEvent)
 					Ω(ok).Should(BeTrue())
-					Ω(actualLRPChangedEvent.Before).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
-					Ω(actualLRPChangedEvent.After).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
+					Ω(actualLRPChangedEvent.Before).Should(Equal(serialization.ActualLRPToResponse(actualLRP, false)))
+					Ω(actualLRPChangedEvent.After).Should(Equal(serialization.ActualLRPToResponse(actualLRP, false)))
 				})
 			})
 
@@ -365,7 +365,7 @@ var _ = Describe("Watcher", func() {
 
 					actualLRPRemovedEvent, ok := event.(receptor.ActualLRPRemovedEvent)
 					Ω(ok).Should(BeTrue())
-					Ω(actualLRPRemovedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP)))
+					Ω(actualLRPRemovedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP, false)))
 				})
 			})
 		})

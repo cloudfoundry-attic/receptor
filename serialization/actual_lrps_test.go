@@ -56,9 +56,10 @@ var _ = Describe("ActualLRP Serialization", func() {
 				State:      receptor.ActualLRPStateRunning,
 				CrashCount: 42,
 				Since:      99999999999,
+				Evacuating: true,
 			}
 
-			actualResponse := serialization.ActualLRPToResponse(actualLRP)
+			actualResponse := serialization.ActualLRPToResponse(actualLRP, true)
 			Ω(actualResponse).Should(Equal(expectedResponse))
 		})
 
@@ -72,11 +73,11 @@ var _ = Describe("ActualLRP Serialization", func() {
 
 			for modelState, jsonState := range expectedStateMap {
 				actualLRP.State = modelState
-				Ω(serialization.ActualLRPToResponse(actualLRP).State).Should(Equal(jsonState))
+				Ω(serialization.ActualLRPToResponse(actualLRP, false).State).Should(Equal(jsonState))
 			}
 
 			actualLRP.State = ""
-			Ω(serialization.ActualLRPToResponse(actualLRP).State).Should(Equal(receptor.ActualLRPStateInvalid))
+			Ω(serialization.ActualLRPToResponse(actualLRP, false).State).Should(Equal(receptor.ActualLRPStateInvalid))
 		})
 
 		Context("when there is placement error", func() {
@@ -105,7 +106,7 @@ var _ = Describe("ActualLRP Serialization", func() {
 					Since:          99999999999,
 				}
 
-				actualResponse := serialization.ActualLRPToResponse(actualLRP)
+				actualResponse := serialization.ActualLRPToResponse(actualLRP, false)
 				Ω(actualResponse).Should(Equal(expectedResponse))
 			})
 		})

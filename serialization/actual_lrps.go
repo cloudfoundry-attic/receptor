@@ -5,7 +5,7 @@ import (
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 )
 
-func ActualLRPToResponse(actualLRP models.ActualLRP) receptor.ActualLRPResponse {
+func ActualLRPToResponse(actualLRP models.ActualLRP, evacuating bool) receptor.ActualLRPResponse {
 	return receptor.ActualLRPResponse{
 		ProcessGuid:    actualLRP.ProcessGuid,
 		InstanceGuid:   actualLRP.InstanceGuid,
@@ -18,6 +18,7 @@ func ActualLRPToResponse(actualLRP models.ActualLRP) receptor.ActualLRPResponse 
 		PlacementError: actualLRP.PlacementError,
 		Since:          actualLRP.Since,
 		CrashCount:     actualLRP.CrashCount,
+		Evacuating:     evacuating,
 	}
 }
 
