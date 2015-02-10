@@ -32,7 +32,6 @@ func (h *ActualLRPHandler) GetAll(w http.ResponseWriter, req *http.Request) {
 		"domain": domain,
 	})
 
-	var actualLRPs []models.ActualLRP
 	var actualLRPGroups []models.ActualLRPGroup
 	var err error
 
@@ -43,12 +42,12 @@ func (h *ActualLRPHandler) GetAll(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if err != nil {
-		logger.Error("failed-to-fetch-actual-lrps", err)
+		logger.Error("failed-to-fetch-actual-lrp-groups", err)
 		writeUnknownErrorResponse(w, err)
 		return
 	}
 
-	responses := make([]receptor.ActualLRPResponse, 0, len(actualLRPs))
+	responses := make([]receptor.ActualLRPResponse, 0, len(actualLRPGroups))
 	for _, actualLRPGroup := range actualLRPGroups {
 		lrp, evacuating, err := actualLRPGroup.Resolve()
 		if err != nil {
@@ -73,16 +72,20 @@ func (h *ActualLRPHandler) GetAllByProcessGuid(w http.ResponseWriter, req *http.
 		return
 	}
 
-	actualLRPs, err := h.bbs.ActualLRPsByProcessGuid(processGuid)
+	actualLRPGroupsByIndex, err := h.bbs.ActualLRPGroupsByProcessGuid(processGuid)
 	if err != nil {
-		logger.Error("failed-to-fetch-actual-lrps-by-process-guid", err)
+		logger.Error("failed-to-fetch-actual-lrp-groups-by-process-guid", err)
 		writeUnknownErrorResponse(w, err)
 		return
 	}
 
-	responses := make([]receptor.ActualLRPResponse, 0, len(actualLRPs))
-	for _, actualLRP := range actualLRPs {
-		responses = append(responses, serialization.ActualLRPToResponse(actualLRP, false))
+	responses := make([]receptor.ActualLRPResponse, 0, len(actualLRPGroupsByIndex))
+	for _, actualLRPGroup := range actualLRPGroupsByIndex {
+		lrp, evacuating, err := actualLRPGroup.Resolve()
+		if err != nil {
+			continue
+		}
+		responses = append(responses, serialization.ActualLRPToResponse(*lrp, evacuating))
 	}
 
 	writeJSONResponse(w, http.StatusOK, responses)

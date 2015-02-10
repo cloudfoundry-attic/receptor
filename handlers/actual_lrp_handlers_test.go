@@ -25,7 +25,33 @@ var _ = Describe("Actual LRP Handlers", func() {
 		responseRecorder *httptest.ResponseRecorder
 		handler          *handlers.ActualLRPHandler
 
-		actualLRPPG1I2 = models.ActualLRP{
+		actualLRP1     models.ActualLRP
+		actualLRP2     models.ActualLRP
+		evacuatingLRP2 models.ActualLRP
+	)
+
+	BeforeEach(func() {
+		fakeBBS = new(fake_bbs.FakeReceptorBBS)
+		logger = lager.NewLogger("test")
+		logger.RegisterSink(lager.NewWriterSink(GinkgoWriter, lager.DEBUG))
+		responseRecorder = httptest.NewRecorder()
+		handler = handlers.NewActualLRPHandler(fakeBBS, logger)
+
+		actualLRP1 = models.ActualLRP{
+			ActualLRPKey: models.NewActualLRPKey(
+				"process-guid-0",
+				1,
+				"domain-0",
+			),
+			ActualLRPContainerKey: models.NewActualLRPContainerKey(
+				"instance-guid-0",
+				"cell-id-0",
+			),
+			State: models.ActualLRPStateRunning,
+			Since: 1138,
+		}
+
+		actualLRP2 = models.ActualLRP{
 			ActualLRPKey: models.NewActualLRPKey(
 				"process-guid-1",
 				2,
@@ -36,64 +62,17 @@ var _ = Describe("Actual LRP Handlers", func() {
 				"cell-id-1",
 			),
 			State: models.ActualLRPStateClaimed,
-			Since: 3147,
+			Since: 4444,
 		}
-	)
 
-	BeforeEach(func() {
-		fakeBBS = new(fake_bbs.FakeReceptorBBS)
-		logger = lager.NewLogger("test")
-		logger.RegisterSink(lager.NewWriterSink(GinkgoWriter, lager.DEBUG))
-		responseRecorder = httptest.NewRecorder()
-		handler = handlers.NewActualLRPHandler(fakeBBS, logger)
+		evacuatingLRP2 = actualLRP2
+		evacuatingLRP2.State = models.ActualLRPStateRunning
+		evacuatingLRP2.Since = 3417
 	})
 
 	Describe("GetAll", func() {
-		var (
-			actualLRP1     models.ActualLRP
-			actualLRP2     models.ActualLRP
-			evacuatingLRP2 models.ActualLRP
-		)
-
 		Context("when reading LRPs from BBS succeeds", func() {
 			BeforeEach(func() {
-				actualLRP1 = models.ActualLRP{
-					ActualLRPKey: models.NewActualLRPKey(
-						"process-guid-0",
-						1,
-						"domain-0",
-					),
-					ActualLRPContainerKey: models.NewActualLRPContainerKey(
-						"instance-guid-0",
-						"cell-id-0",
-					),
-					State: models.ActualLRPStateRunning,
-					Since: 1138,
-				}
-
-				actualLRP2 = models.ActualLRP{
-					ActualLRPKey: models.NewActualLRPKey(
-						"process-guid-1",
-						1,
-						"domain-1",
-					),
-					ActualLRPContainerKey: models.NewActualLRPContainerKey(
-						"instance-guid-1",
-						"cell-id-1",
-					),
-					State: models.ActualLRPStateClaimed,
-					Since: 1138,
-				}
-
-				evacuatingLRP2 = actualLRP2
-				evacuatingLRP2.State = models.ActualLRPStateRunning
-				evacuatingLRP2.Since = 3417
-
-				fakeBBS.ActualLRPsReturns([]models.ActualLRP{
-					actualLRP1,
-					actualLRP2,
-				}, nil)
-
 				fakeBBS.ActualLRPGroupsReturns([]models.ActualLRPGroup{
 					{Instance: &actualLRP1},
 					{Instance: &actualLRP2, Evacuating: &evacuatingLRP2},
@@ -104,7 +83,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 				}, nil)
 			})
 
-			It("call the BBS to retrieve the actual LRPs", func() {
+			It("calls the BBS to retrieve the actual LRP groups", func() {
 				handler.GetAll(responseRecorder, newTestRequest(""))
 				Ω(fakeBBS.ActualLRPGroupsCallCount()).Should(Equal(1))
 			})
@@ -199,7 +178,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		BeforeEach(func() {
 			req = newTestRequest("")
-			req.Form = url.Values{":process_guid": []string{"process-guid-1"}}
+			req.Form = url.Values{":process_guid": []string{"process-guid-0"}}
 		})
 
 		JustBeforeEach(func() {
@@ -208,14 +187,14 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		Context("when reading LRPs from BBS succeeds", func() {
 			BeforeEach(func() {
-				fakeBBS.ActualLRPsByProcessGuidReturns(models.ActualLRPsByIndex{
-					2: actualLRPPG1I2,
+				fakeBBS.ActualLRPGroupsByProcessGuidReturns(models.ActualLRPGroupsByIndex{
+					1: {Instance: &actualLRP1, Evacuating: nil},
 				}, nil)
 			})
 
 			It("calls the BBS to retrieve the actual LRPs", func() {
-				Ω(fakeBBS.ActualLRPsByProcessGuidCallCount()).Should(Equal(1))
-				Ω(fakeBBS.ActualLRPsByProcessGuidArgsForCall(0)).Should(Equal("process-guid-1"))
+				Ω(fakeBBS.ActualLRPGroupsByProcessGuidCallCount()).Should(Equal(1))
+				Ω(fakeBBS.ActualLRPGroupsByProcessGuidArgsForCall(0)).Should(Equal("process-guid-0"))
 			})
 
 			It("responds with 200 Status OK", func() {
@@ -228,13 +207,41 @@ var _ = Describe("Actual LRP Handlers", func() {
 				Ω(err).ShouldNot(HaveOccurred())
 
 				Ω(response).Should(HaveLen(1))
-				Ω(response).Should(ContainElement(serialization.ActualLRPToResponse(actualLRPPG1I2, false)))
+				Ω(response).Should(ContainElement(serialization.ActualLRPToResponse(actualLRP1, false)))
+			})
+
+			Context("when the index is evacuating", func() {
+				BeforeEach(func() {
+					req.Form = url.Values{":process_guid": []string{"process-guid-1"}}
+
+					fakeBBS.ActualLRPGroupsByProcessGuidReturns(models.ActualLRPGroupsByIndex{
+						2: {Instance: &actualLRP2, Evacuating: &evacuatingLRP2},
+					}, nil)
+				})
+
+				It("calls the BBS to retrieve the actual LRPs", func() {
+					Ω(fakeBBS.ActualLRPGroupsByProcessGuidCallCount()).Should(Equal(1))
+					Ω(fakeBBS.ActualLRPGroupsByProcessGuidArgsForCall(0)).Should(Equal("process-guid-1"))
+				})
+
+				It("responds with 200 Status OK", func() {
+					Ω(responseRecorder.Code).Should(Equal(http.StatusOK))
+				})
+
+				It("returns a list of actual lrp responses", func() {
+					response := []receptor.ActualLRPResponse{}
+					err := json.Unmarshal(responseRecorder.Body.Bytes(), &response)
+					Ω(err).ShouldNot(HaveOccurred())
+
+					Ω(response).Should(HaveLen(1))
+					Ω(response).Should(ContainElement(serialization.ActualLRPToResponse(evacuatingLRP2, true)))
+				})
 			})
 		})
 
-		Context("when reading LRPs from BBS fails", func() {
+		Context("when reading LRP groups from BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.ActualLRPsByProcessGuidReturns(nil, errors.New("Something went wrong"))
+				fakeBBS.ActualLRPGroupsByProcessGuidReturns(nil, errors.New("Something went wrong"))
 			})
 
 			It("responds with a 500 Internal Error", func() {
@@ -306,7 +313,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		Context("when reading LRPs from BBS succeeds", func() {
 			BeforeEach(func() {
-				fakeBBS.ActualLRPByProcessGuidAndIndexReturns(actualLRPPG1I2, nil)
+				fakeBBS.ActualLRPByProcessGuidAndIndexReturns(actualLRP2, nil)
 			})
 
 			It("calls the BBS to retrieve the actual LRPs", func() {
@@ -325,7 +332,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 				err := json.Unmarshal(responseRecorder.Body.Bytes(), &response)
 				Ω(err).ShouldNot(HaveOccurred())
 
-				Ω(response).Should(Equal(serialization.ActualLRPToResponse(actualLRPPG1I2, false)))
+				Ω(response).Should(Equal(serialization.ActualLRPToResponse(actualLRP2, false)))
 			})
 		})
 
@@ -401,7 +408,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 			Context("when reading LRPs from BBS succeeds", func() {
 				BeforeEach(func() {
-					fakeBBS.ActualLRPByProcessGuidAndIndexReturns(actualLRPPG1I2, nil)
+					fakeBBS.ActualLRPByProcessGuidAndIndexReturns(actualLRP2, nil)
 				})
 
 				It("calls the BBS to retrieve the actual LRPs", func() {

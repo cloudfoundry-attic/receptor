@@ -135,7 +135,7 @@ var _ = Describe("Actual LRP API", func() {
 		var actualLRPResponses []receptor.ActualLRPResponse
 		var getErr error
 
-		BeforeEach(func() {
+		JustBeforeEach(func() {
 			actualLRPResponses, getErr = client.ActualLRPsByProcessGuid("process-guid-0")
 		})
 
@@ -148,15 +148,10 @@ var _ = Describe("Actual LRP API", func() {
 		})
 
 		It("has the correct data from the bbs", func() {
-			actualLRPs, err := bbs.ActualLRPsByProcessGuid("process-guid-0")
+			evacuatingLRP, err := bbs.EvacuatingActualLRPByProcessGuidAndIndex(evacuatingLRPKey.ProcessGuid, evacuatingLRPKey.Index)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			expectedResponses := make([]receptor.ActualLRPResponse, 0, 1)
-			for _, actualLRP := range actualLRPs {
-				expectedResponses = append(expectedResponses, serialization.ActualLRPToResponse(actualLRP, false))
-			}
-
-			Ω(actualLRPResponses).Should(ConsistOf(expectedResponses))
+			Ω(actualLRPResponses).Should(ConsistOf(serialization.ActualLRPToResponse(evacuatingLRP, true)))
 		})
 	})
 
