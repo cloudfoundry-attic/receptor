@@ -261,7 +261,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		Context("when the BBS does not return any actual LRPs", func() {
 			BeforeEach(func() {
-				fakeBBS.ActualLRPsByProcessGuidReturns(models.ActualLRPsByIndex{}, nil)
+				fakeBBS.ActualLRPGroupsByProcessGuidReturns(models.ActualLRPGroupsByIndex{}, nil)
 			})
 
 			It("responds with 200 Status OK", func() {
@@ -393,7 +393,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 			})
 
 			It("does not call the BBS", func() {
-				Ω(fakeBBS.ActualLRPByProcessGuidAndIndexCallCount()).Should(Equal(0))
+				Ω(fakeBBS.ActualLRPGroupByProcessGuidAndIndexCallCount()).Should(Equal(0))
 			})
 
 			It("responds with 400 Bad Request", func() {
