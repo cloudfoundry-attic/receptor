@@ -43,6 +43,10 @@ func (h *EventStreamHandler) EventStream(w http.ResponseWriter, req *http.Reques
 		source.Close()
 	}()
 
+	w.Header().Add("Content-Type", "text/event-stream; charset=utf-8")
+	w.Header().Add("Cache-Control", "no-cache, no-store, must-revalidate")
+	w.Header().Add("Connection", "keep-alive")
+
 	w.WriteHeader(http.StatusOK)
 
 	flusher.Flush()

@@ -109,6 +109,12 @@ var _ = Describe("Event Stream Handlers", func() {
 				}))
 			})
 
+			It("returns Content-Type as text/event-stream", func() {
+				Ω(response.Header.Get("Content-Type")).Should(Equal("text/event-stream; charset=utf-8"))
+				Ω(response.Header.Get("Cache-Control")).Should(Equal("no-cache, no-store, must-revalidate"))
+				Ω(response.Header.Get("Connection")).Should(Equal("keep-alive"))
+			})
+
 			Context("when the source provides an unmarshalable event", func() {
 				It("closes the event stream to the client", func() {
 					hub.Emit(unmarshalableEvent{Fn: func() {}})
