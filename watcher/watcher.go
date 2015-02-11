@@ -191,19 +191,19 @@ func (w *watcher) watchDesired(logger lager.Logger) (chan<- bool, <-chan error) 
 
 func (w *watcher) watchActual(logger lager.Logger) (chan<- bool, <-chan error) {
 	return w.bbs.WatchForActualLRPChanges(logger,
-		func(created models.ActualLRP) {
+		func(created models.ActualLRP, evacuating bool) {
 			logger.Debug("handling-actual-create")
-			w.hub.Emit(receptor.NewActualLRPCreatedEvent(serialization.ActualLRPToResponse(created, false)))
+			w.hub.Emit(receptor.NewActualLRPCreatedEvent(serialization.ActualLRPToResponse(created, evacuating)))
 		},
-		func(changed models.ActualLRPChange) {
+		func(changed models.ActualLRPChange, evacuating bool) {
 			logger.Debug("handling-actual-change")
 			w.hub.Emit(receptor.NewActualLRPChangedEvent(
-				serialization.ActualLRPToResponse(changed.Before, false),
-				serialization.ActualLRPToResponse(changed.After, false),
+				serialization.ActualLRPToResponse(changed.Before, evacuating),
+				serialization.ActualLRPToResponse(changed.After, evacuating),
 			))
 		},
-		func(deleted models.ActualLRP) {
+		func(deleted models.ActualLRP, evacuating bool) {
 			logger.Debug("handling-actual-delete")
-			w.hub.Emit(receptor.NewActualLRPRemovedEvent(serialization.ActualLRPToResponse(deleted, false)))
+			w.hub.Emit(receptor.NewActualLRPRemovedEvent(serialization.ActualLRPToResponse(deleted, evacuating)))
 		})
 }

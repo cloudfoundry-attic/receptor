@@ -6,6 +6,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
+	"github.com/cloudfoundry-incubator/runtime-schema/bbs/bbserrors"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/tedsuo/ifrit/ginkgomon"
 
@@ -147,56 +148,130 @@ var _ = Describe("Event", func() {
 	})
 
 	Describe("Actual LRPs", func() {
+		const (
+			processGuid = "some-process-guid"
+			domain      = "some-domain"
+		)
+
+		var (
+			key             models.ActualLRPKey
+			containerKey    models.ActualLRPContainerKey
+			newContainerKey models.ActualLRPContainerKey
+			netInfo         models.ActualLRPNetInfo
+		)
+
 		BeforeEach(func() {
 			desiredLRP = models.DesiredLRP{
-				ProcessGuid: "some-guid",
-				Domain:      "some-domain",
+				ProcessGuid: processGuid,
+				Domain:      domain,
 				Stack:       "some-stack",
 				Instances:   1,
 				Action: &models.RunAction{
 					Path: "true",
 				},
 			}
+
+			key = models.NewActualLRPKey(processGuid, 0, domain)
+			containerKey = models.NewActualLRPContainerKey("instance-guid", "cell-id")
+			newContainerKey = models.NewActualLRPContainerKey("other-instance-guid", "other-cell-id")
+			netInfo = models.NewActualLRPNetInfo("1.1.1.1", []models.PortMapping{})
 		})
 
 		It("receives events", func() {
 			By("creating a ActualLRP")
-			err := bbs.CreateActualLRP(logger, desiredLRP, 0)
+			err := bbs.DesireLRP(logger, desiredLRP)
 			Ω(err).ShouldNot(HaveOccurred())
 
 			actualLRP, err := bbs.ActualLRPByProcessGuidAndIndex(desiredLRP.ProcessGuid, 0)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			var event receptor.Event
+			// discard DesiredLRP creation event
+			Eventually(events).Should(Receive())
 
+			var event receptor.Event
 			Eventually(events).Should(Receive(&event))
 
-			actualLRPCreatedEvent, ok := event.(receptor.ActualLRPCreatedEvent)
-			Ω(ok).Should(BeTrue())
+			Ω(event).Should(BeAssignableToTypeOf(receptor.ActualLRPCreatedEvent{}))
+			actualLRPCreatedEvent := event.(receptor.ActualLRPCreatedEvent)
 			Ω(actualLRPCreatedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP, false)))
 
-			By("updating an existing ActualLRP")
-			err = bbs.ClaimActualLRP(logger, actualLRP.ActualLRPKey, models.NewActualLRPContainerKey("some-instance-guid", "some-cell-id"))
+			By("updating the existing ActualLR")
+			err = bbs.ClaimActualLRP(logger, key, containerKey)
 			Ω(err).ShouldNot(HaveOccurred())
 
+			before := actualLRP
 			actualLRP, err = bbs.ActualLRPByProcessGuidAndIndex(desiredLRP.ProcessGuid, 0)
 			Ω(err).ShouldNot(HaveOccurred())
 
 			Eventually(events).Should(Receive(&event))
 
-			actualLRPChangedEvent, ok := event.(receptor.ActualLRPChangedEvent)
-			Ω(ok).Should(BeTrue())
+			Ω(event).Should(BeAssignableToTypeOf(receptor.ActualLRPChangedEvent{}))
+			actualLRPChangedEvent := event.(receptor.ActualLRPChangedEvent)
+			Ω(actualLRPChangedEvent.Before).Should(Equal(serialization.ActualLRPToResponse(before, false)))
 			Ω(actualLRPChangedEvent.After).Should(Equal(serialization.ActualLRPToResponse(actualLRP, false)))
 
-			By("removing the ActualLRP")
-			err = bbs.RemoveActualLRP(logger, actualLRP.ActualLRPKey, actualLRP.ActualLRPContainerKey)
+			By("evacuating the ActualLRP")
+			err = bbs.EvacuateRunningActualLRP(logger, key, containerKey, netInfo, 0)
+			Ω(err).Should(Equal(bbserrors.ErrServiceUnavailable))
+
+			evacuatingLRP, err := bbs.EvacuatingActualLRPByProcessGuidAndIndex(desiredLRP.ProcessGuid, 0)
 			Ω(err).ShouldNot(HaveOccurred())
 
 			Eventually(events).Should(Receive(&event))
 
-			actualLRPRemovedEvent, ok := event.(receptor.ActualLRPRemovedEvent)
-			Ω(ok).Should(BeTrue())
+			Ω(event).Should(BeAssignableToTypeOf(receptor.ActualLRPCreatedEvent{}))
+			actualLRPCreatedEvent = event.(receptor.ActualLRPCreatedEvent)
+			Ω(actualLRPCreatedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(evacuatingLRP, true)))
+
+			// discard instance -> UNCLAIMED
+			Eventually(events).Should(Receive())
+
+			By("starting and then evacuating the ActualLRP on another cell")
+			err = bbs.StartActualLRP(logger, key, newContainerKey, netInfo)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			// discard instance -> RUNNING
+			Eventually(events).Should(Receive())
+
+			evacuatingBefore := evacuatingLRP
+			err = bbs.EvacuateRunningActualLRP(logger, key, newContainerKey, netInfo, 0)
+			Ω(err).Should(Equal(bbserrors.ErrServiceUnavailable))
+
+			evacuatingLRP, err = bbs.EvacuatingActualLRPByProcessGuidAndIndex(desiredLRP.ProcessGuid, 0)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			Eventually(events).Should(Receive(&event))
+
+			Ω(event).Should(BeAssignableToTypeOf(receptor.ActualLRPChangedEvent{}))
+			actualLRPChangedEvent = event.(receptor.ActualLRPChangedEvent)
+			Ω(actualLRPChangedEvent.Before).Should(Equal(serialization.ActualLRPToResponse(evacuatingBefore, true)))
+			Ω(actualLRPChangedEvent.After).Should(Equal(serialization.ActualLRPToResponse(evacuatingLRP, true)))
+
+			// discard instance -> UNCLAIMED
+			Eventually(events).Should(Receive())
+
+			By("removing the instance ActualLRP")
+			actualLRP, err = bbs.ActualLRPByProcessGuidAndIndex(desiredLRP.ProcessGuid, 0)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			err = bbs.RemoveActualLRP(logger, key, models.ActualLRPContainerKey{})
+			Ω(err).ShouldNot(HaveOccurred())
+
+			Eventually(events).Should(Receive(&event))
+
+			Ω(event).Should(BeAssignableToTypeOf(receptor.ActualLRPRemovedEvent{}))
+			actualLRPRemovedEvent := event.(receptor.ActualLRPRemovedEvent)
 			Ω(actualLRPRemovedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP, false)))
+
+			By("removing the evacuating ActualLRP")
+			err = bbs.RemoveEvacuatingActualLRP(logger, key, newContainerKey)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			Eventually(events).Should(Receive(&event))
+
+			Ω(event).Should(BeAssignableToTypeOf(receptor.ActualLRPRemovedEvent{}))
+			actualLRPRemovedEvent = event.(receptor.ActualLRPRemovedEvent)
+			Ω(actualLRPRemovedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(evacuatingLRP, true)))
 		})
 	})
 })

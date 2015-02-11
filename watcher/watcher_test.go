@@ -236,9 +236,9 @@ var _ = Describe("Watcher", func() {
 			desiredCreateCB func(models.DesiredLRP)
 			desiredChangeCB func(models.DesiredLRPChange)
 			desiredDeleteCB func(models.DesiredLRP)
-			actualCreateCB  func(models.ActualLRP)
-			actualChangeCB  func(models.ActualLRPChange)
-			actualDeleteCB  func(models.ActualLRP)
+			actualCreateCB  func(models.ActualLRP, bool)
+			actualChangeCB  func(models.ActualLRPChange, bool)
+			actualDeleteCB  func(models.ActualLRP, bool)
 		)
 
 		BeforeEach(func() {
@@ -323,49 +323,95 @@ var _ = Describe("Watcher", func() {
 				}
 			})
 
-			Context("when a create arrives", func() {
+			Context("when a non-evacuating create arrives", func() {
 				BeforeEach(func() {
-					actualCreateCB(actualLRP)
+					actualCreateCB(actualLRP, false)
 				})
 
 				It("emits an ActualLRPCreatedEvent to the hub", func() {
 					Ω(hub.EmitCallCount()).Should(Equal(1))
 					event := hub.EmitArgsForCall(0)
+					Ω(event).Should(BeAssignableToTypeOf(receptor.ActualLRPCreatedEvent{}))
 
-					actualLRPCreatedEvent, ok := event.(receptor.ActualLRPCreatedEvent)
-					Ω(ok).Should(BeTrue())
+					actualLRPCreatedEvent := event.(receptor.ActualLRPCreatedEvent)
 					Ω(actualLRPCreatedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP, false)))
 				})
 			})
 
-			Context("when a change arrives", func() {
+			Context("when a non-evacuating change arrives", func() {
 				BeforeEach(func() {
-					actualChangeCB(models.ActualLRPChange{Before: actualLRP, After: actualLRP})
+					actualChangeCB(models.ActualLRPChange{Before: actualLRP, After: actualLRP}, false)
 				})
 
 				It("emits an ActualLRPChangedEvent to the hub", func() {
 					Ω(hub.EmitCallCount()).Should(Equal(1))
 					event := hub.EmitArgsForCall(0)
+					Ω(event).Should(BeAssignableToTypeOf(receptor.ActualLRPChangedEvent{}))
 
-					actualLRPChangedEvent, ok := event.(receptor.ActualLRPChangedEvent)
-					Ω(ok).Should(BeTrue())
+					actualLRPChangedEvent := event.(receptor.ActualLRPChangedEvent)
 					Ω(actualLRPChangedEvent.Before).Should(Equal(serialization.ActualLRPToResponse(actualLRP, false)))
 					Ω(actualLRPChangedEvent.After).Should(Equal(serialization.ActualLRPToResponse(actualLRP, false)))
 				})
 			})
 
-			Context("when a delete arrives", func() {
+			Context("when a non-evacuating delete arrives", func() {
 				BeforeEach(func() {
-					actualDeleteCB(actualLRP)
+					actualDeleteCB(actualLRP, false)
 				})
 
 				It("emits an ActualLRPRemovedEvent to the hub", func() {
 					Ω(hub.EmitCallCount()).Should(Equal(1))
 					event := hub.EmitArgsForCall(0)
+					Ω(event).Should(BeAssignableToTypeOf(receptor.ActualLRPRemovedEvent{}))
 
-					actualLRPRemovedEvent, ok := event.(receptor.ActualLRPRemovedEvent)
-					Ω(ok).Should(BeTrue())
+					actualLRPRemovedEvent := event.(receptor.ActualLRPRemovedEvent)
 					Ω(actualLRPRemovedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP, false)))
+				})
+			})
+
+			Context("when an evacuating create arrives", func() {
+				BeforeEach(func() {
+					actualCreateCB(actualLRP, true)
+				})
+
+				It("emits an ActualLRPCreatedEvent to the hub", func() {
+					Ω(hub.EmitCallCount()).Should(Equal(1))
+					event := hub.EmitArgsForCall(0)
+					Ω(event).Should(BeAssignableToTypeOf(receptor.ActualLRPCreatedEvent{}))
+
+					actualLRPCreatedEvent := event.(receptor.ActualLRPCreatedEvent)
+					Ω(actualLRPCreatedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP, true)))
+				})
+			})
+
+			Context("when an evacuating change arrives", func() {
+				BeforeEach(func() {
+					actualChangeCB(models.ActualLRPChange{Before: actualLRP, After: actualLRP}, true)
+				})
+
+				It("emits an ActualLRPChangedEvent to the hub", func() {
+					Ω(hub.EmitCallCount()).Should(Equal(1))
+					event := hub.EmitArgsForCall(0)
+					Ω(event).Should(BeAssignableToTypeOf(receptor.ActualLRPChangedEvent{}))
+
+					actualLRPChangedEvent := event.(receptor.ActualLRPChangedEvent)
+					Ω(actualLRPChangedEvent.Before).Should(Equal(serialization.ActualLRPToResponse(actualLRP, true)))
+					Ω(actualLRPChangedEvent.After).Should(Equal(serialization.ActualLRPToResponse(actualLRP, true)))
+				})
+			})
+
+			Context("when an evacuating delete arrives", func() {
+				BeforeEach(func() {
+					actualDeleteCB(actualLRP, true)
+				})
+
+				It("emits an ActualLRPRemovedEvent to the hub", func() {
+					Ω(hub.EmitCallCount()).Should(Equal(1))
+					event := hub.EmitArgsForCall(0)
+					Ω(event).Should(BeAssignableToTypeOf(receptor.ActualLRPRemovedEvent{}))
+
+					actualLRPRemovedEvent := event.(receptor.ActualLRPRemovedEvent)
+					Ω(actualLRPRemovedEvent.ActualLRPResponse).Should(Equal(serialization.ActualLRPToResponse(actualLRP, true)))
 				})
 			})
 		})
