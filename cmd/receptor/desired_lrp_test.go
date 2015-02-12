@@ -57,10 +57,14 @@ var _ = Describe("Desired LRP API", func() {
 		var lrpRequest receptor.DesiredLRPCreateRequest
 		var lrpResponse receptor.DesiredLRPResponse
 		var getErr error
+		var desiredLRP models.DesiredLRP
 
 		BeforeEach(func() {
 			lrpRequest = newValidDesiredLRPCreateRequest()
 			err := client.CreateDesiredLRP(lrpRequest)
+			Ω(err).ShouldNot(HaveOccurred())
+
+			desiredLRP, err = bbs.DesiredLRPByProcessGuid(lrpRequest.ProcessGuid)
 			Ω(err).ShouldNot(HaveOccurred())
 
 			lrpResponse, getErr = client.GetDesiredLRP(lrpRequest.ProcessGuid)
@@ -71,8 +75,6 @@ var _ = Describe("Desired LRP API", func() {
 		})
 
 		It("fetches the desired lrp with the matching process guid", func() {
-			desiredLRP := serialization.DesiredLRPFromRequest(lrpRequest)
-
 			expectedLRPResponse := serialization.DesiredLRPToResponse(desiredLRP)
 			Ω(lrpResponse).Should(Equal(expectedLRPResponse))
 		})

@@ -304,6 +304,7 @@ type DesiredLRPResponse struct {
 	MetricsGuid          string                     `json:"metrics_guid"`
 	Annotation           string                     `json:"annotation,omitempty"`
 	EgressRules          []models.SecurityGroupRule `json:"egress_rules,omitempty"`
+	ModificationTag      ModificationTag            `json:"modification_tag"`
 }
 
 type InnerDesiredLRPResponse DesiredLRPResponse
@@ -408,18 +409,24 @@ const (
 )
 
 type ActualLRPResponse struct {
-	ProcessGuid    string         `json:"process_guid"`
-	InstanceGuid   string         `json:"instance_guid"`
-	CellID         string         `json:"cell_id"`
-	Domain         string         `json:"domain"`
-	Index          int            `json:"index"`
-	Address        string         `json:"address"`
-	Ports          []PortMapping  `json:"ports"`
-	State          ActualLRPState `json:"state"`
-	CrashCount     int            `json:"crash_count"`
-	PlacementError string         `json:"placement_error,omitempty"`
-	Since          int64          `json:"since"`
-	Evacuating     bool           `json:"evacuating"`
+	ProcessGuid     string          `json:"process_guid"`
+	InstanceGuid    string          `json:"instance_guid"`
+	CellID          string          `json:"cell_id"`
+	Domain          string          `json:"domain"`
+	Index           int             `json:"index"`
+	Address         string          `json:"address"`
+	Ports           []PortMapping   `json:"ports"`
+	State           ActualLRPState  `json:"state"`
+	CrashCount      int             `json:"crash_count"`
+	PlacementError  string          `json:"placement_error,omitempty"`
+	Since           int64           `json:"since"`
+	Evacuating      bool            `json:"evacuating"`
+	ModificationTag ModificationTag `json:"modification_tag"`
+}
+
+type ModificationTag struct {
+	Epoch string `json:"epoch"`
+	Index uint   `json:"index"`
 }
 
 type CellResponse struct {

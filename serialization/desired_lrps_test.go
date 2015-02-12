@@ -124,6 +124,10 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				EgressRules: []models.SecurityGroupRule{
 					securityRule,
 				},
+				ModificationTag: models.ModificationTag{
+					Epoch: "some-epoch",
+					Index: 50,
+				},
 			}
 		})
 
@@ -153,6 +157,10 @@ var _ = Describe("DesiredLRP Serialization", func() {
 				Annotation:  "annotation-0",
 				EgressRules: []models.SecurityGroupRule{
 					securityRule,
+				},
+				ModificationTag: receptor.ModificationTag{
+					Epoch: "some-epoch",
+					Index: 50,
 				},
 			}
 

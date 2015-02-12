@@ -114,11 +114,15 @@ var _ = Describe("Event", func() {
 			err := bbs.DesireLRP(logger, desiredLRP)
 			Ω(err).ShouldNot(HaveOccurred())
 
+			desiredLRP, err := bbs.DesiredLRPByProcessGuid(desiredLRP.ProcessGuid)
+			Ω(err).ShouldNot(HaveOccurred())
+
 			var event receptor.Event
 			Eventually(events).Should(Receive(&event))
 
 			desiredLRPCreatedEvent, ok := event.(receptor.DesiredLRPCreatedEvent)
 			Ω(ok).Should(BeTrue())
+
 			Ω(desiredLRPCreatedEvent.DesiredLRPResponse).Should(Equal(serialization.DesiredLRPToResponse(desiredLRP)))
 
 			By("updating an existing DesiredLRP")

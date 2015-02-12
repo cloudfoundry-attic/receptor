@@ -30,6 +30,7 @@ func DesiredLRPFromRequest(req receptor.DesiredLRPCreateRequest) models.DesiredL
 		MetricsGuid:          req.MetricsGuid,
 		Annotation:           req.Annotation,
 		EgressRules:          req.EgressRules,
+		ModificationTag:      models.ModificationTag{},
 	}
 }
 
@@ -56,6 +57,7 @@ func DesiredLRPToResponse(lrp models.DesiredLRP) receptor.DesiredLRPResponse {
 		MetricsGuid:          lrp.MetricsGuid,
 		Annotation:           lrp.Annotation,
 		EgressRules:          lrp.EgressRules,
+		ModificationTag:      desiredLRPModificationTagToResponseModificationTag(lrp.ModificationTag),
 	}
 }
 
@@ -115,4 +117,11 @@ func RoutingInfoFromRawMessages(raw map[string]*json.RawMessage) receptor.Routin
 		info[key] = value
 	}
 	return info
+}
+
+func desiredLRPModificationTagToResponseModificationTag(modificationTag models.ModificationTag) receptor.ModificationTag {
+	return receptor.ModificationTag{
+		Epoch: modificationTag.Epoch,
+		Index: modificationTag.Index,
+	}
 }

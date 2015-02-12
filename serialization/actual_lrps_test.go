@@ -36,6 +36,10 @@ var _ = Describe("ActualLRP Serialization", func() {
 				State:      models.ActualLRPStateRunning,
 				CrashCount: 42,
 				Since:      99999999999,
+				ModificationTag: models.ModificationTag{
+					Epoch: "some-guid",
+					Index: 50,
+				},
 			}
 		})
 
@@ -57,6 +61,10 @@ var _ = Describe("ActualLRP Serialization", func() {
 				CrashCount: 42,
 				Since:      99999999999,
 				Evacuating: true,
+				ModificationTag: receptor.ModificationTag{
+					Epoch: "some-guid",
+					Index: 50,
+				},
 			}
 
 			actualResponse := serialization.ActualLRPToResponse(actualLRP, true)
@@ -104,6 +112,10 @@ var _ = Describe("ActualLRP Serialization", func() {
 					PlacementError: diego_errors.INSUFFICIENT_RESOURCES_MESSAGE,
 					CrashCount:     42,
 					Since:          99999999999,
+					ModificationTag: receptor.ModificationTag{
+						Epoch: "some-guid",
+						Index: 50,
+					},
 				}
 
 				actualResponse := serialization.ActualLRPToResponse(actualLRP, false)
@@ -126,6 +138,10 @@ var _ = Describe("ActualLRP Serialization", func() {
 				Ports:        []receptor.PortMapping{{ContainerPort: 10000, HostPort: 10000}},
 				State:        receptor.ActualLRPStateRunning,
 				Since:        99999999999,
+				ModificationTag: receptor.ModificationTag{
+					Epoch: "some-guid",
+					Index: 50,
+				},
 			}
 		})
 
@@ -137,6 +153,10 @@ var _ = Describe("ActualLRP Serialization", func() {
 				ActualLRPNetInfo:      models.NewActualLRPNetInfo("address", []models.PortMapping{{ContainerPort: 10000, HostPort: 10000}}),
 				State:                 models.ActualLRPStateRunning,
 				Since:                 99999999999,
+				ModificationTag: models.ModificationTag{
+					Epoch: "some-guid",
+					Index: 50,
+				},
 			}))
 		})
 
@@ -171,6 +191,10 @@ var _ = Describe("ActualLRP Serialization", func() {
 					State:                 models.ActualLRPStateUnclaimed,
 					PlacementError:        diego_errors.INSUFFICIENT_RESOURCES_MESSAGE,
 					Since:                 99999999999,
+					ModificationTag: models.ModificationTag{
+						Epoch: "some-guid",
+						Index: 50,
+					},
 				}))
 			})
 		})

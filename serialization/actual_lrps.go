@@ -7,18 +7,19 @@ import (
 
 func ActualLRPToResponse(actualLRP models.ActualLRP, evacuating bool) receptor.ActualLRPResponse {
 	return receptor.ActualLRPResponse{
-		ProcessGuid:    actualLRP.ProcessGuid,
-		InstanceGuid:   actualLRP.InstanceGuid,
-		CellID:         actualLRP.CellID,
-		Domain:         actualLRP.Domain,
-		Index:          actualLRP.Index,
-		Address:        actualLRP.Address,
-		Ports:          PortMappingFromModel(actualLRP.Ports),
-		State:          actualLRPStateToResponseState(actualLRP.State),
-		PlacementError: actualLRP.PlacementError,
-		Since:          actualLRP.Since,
-		CrashCount:     actualLRP.CrashCount,
-		Evacuating:     evacuating,
+		ProcessGuid:     actualLRP.ProcessGuid,
+		InstanceGuid:    actualLRP.InstanceGuid,
+		CellID:          actualLRP.CellID,
+		Domain:          actualLRP.Domain,
+		Index:           actualLRP.Index,
+		Address:         actualLRP.Address,
+		Ports:           PortMappingFromModel(actualLRP.Ports),
+		State:           actualLRPStateToResponseState(actualLRP.State),
+		PlacementError:  actualLRP.PlacementError,
+		Since:           actualLRP.Since,
+		CrashCount:      actualLRP.CrashCount,
+		Evacuating:      evacuating,
+		ModificationTag: actualLRPModificationTagToResponseModificationTag(actualLRP.ModificationTag),
 	}
 }
 
@@ -30,6 +31,7 @@ func ActualLRPFromResponse(resp receptor.ActualLRPResponse) models.ActualLRP {
 		State:                 actualLRPStateFromResponseState(resp.State),
 		PlacementError:        resp.PlacementError,
 		Since:                 resp.Since,
+		ModificationTag:       actualLRPModificationTagFromResponseModificationTag(resp.ModificationTag),
 	}
 }
 
@@ -58,5 +60,19 @@ func actualLRPStateFromResponseState(state receptor.ActualLRPState) models.Actua
 		return models.ActualLRPStateRunning
 	default:
 		return ""
+	}
+}
+
+func actualLRPModificationTagFromResponseModificationTag(modificationTag receptor.ModificationTag) models.ModificationTag {
+	return models.ModificationTag{
+		Epoch: modificationTag.Epoch,
+		Index: modificationTag.Index,
+	}
+}
+
+func actualLRPModificationTagToResponseModificationTag(modificationTag models.ModificationTag) receptor.ModificationTag {
+	return receptor.ModificationTag{
+		Epoch: modificationTag.Epoch,
+		Index: modificationTag.Index,
 	}
 }
