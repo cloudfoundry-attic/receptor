@@ -25,6 +25,17 @@ func LogWrap(handler http.Handler, logger lager.Logger) http.HandlerFunc {
 	}
 }
 
+func CookieAuthWrap(handler http.Handler, cookieName string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie(cookieName)
+		if err == nil {
+			r.Header.Set("Authorization", cookie.Value)
+		}
+
+		handler.ServeHTTP(w, r)
+	}
+}
+
 func BasicAuthWrap(handler http.Handler, username, password string) http.Handler {
 	opts := httpauth.AuthOptions{
 		Realm:               "API Authentication",
@@ -32,6 +43,7 @@ func BasicAuthWrap(handler http.Handler, username, password string) http.Handler
 		Password:            password,
 		UnauthorizedHandler: http.HandlerFunc(unauthorized),
 	}
+
 	return httpauth.BasicAuth(opts)(handler)
 }
 

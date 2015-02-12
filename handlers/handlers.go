@@ -56,7 +56,7 @@ func New(bbs Bbs.ReceptorBBS, hub event.Hub, logger lager.Logger, username, pass
 	}
 
 	if username != "" {
-		handler = BasicAuthWrap(handler, username, password)
+		handler = CookieAuthWrap(BasicAuthWrap(handler, username, password), receptor.AuthorizationCookieName)
 	}
 
 	if corsEnabled {

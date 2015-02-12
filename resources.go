@@ -6,6 +6,8 @@ import (
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 )
 
+const AuthorizationCookieName = "receptor_authorization"
+
 type EnvironmentVariable struct {
 	Name  string `json:"name"`
 	Value string `json:"value"`

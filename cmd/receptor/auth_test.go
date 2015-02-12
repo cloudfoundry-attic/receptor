@@ -1,8 +1,10 @@
 package main_test
 
 import (
+	"encoding/base64"
 	"net/http"
 
+	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/cmd/receptor/testrunner"
 	"github.com/tedsuo/ifrit/ginkgomon"
 
@@ -20,18 +22,40 @@ var _ = Describe("Basic Auth", func() {
 	})
 
 	Context("when a request without auth is made", func() {
+		var req *http.Request
 		var res *http.Response
+
+		BeforeEach(func() {
+			var err error
+			req, err = http.NewRequest("GET", "http://"+receptorAddress, nil)
+			Ω(err).ShouldNot(HaveOccurred())
+		})
+
 		JustBeforeEach(func() {
 			var err error
-			httpClient := new(http.Client)
-			res, err = httpClient.Get("http://" + receptorAddress)
+
+			res, err = http.DefaultClient.Do(req)
 			Ω(err).ShouldNot(HaveOccurred())
+
 			res.Body.Close()
 		})
 
 		Context("when the username and password have been set", func() {
 			It("returns 401 for all requests", func() {
 				Ω(res.StatusCode).Should(Equal(http.StatusUnauthorized))
+			})
+		})
+
+		Context("when the username and password have been set via the receptor_authorization cookie", func() {
+			BeforeEach(func() {
+				req.AddCookie(&http.Cookie{
+					Name:  receptor.AuthorizationCookieName,
+					Value: basicAuthHeader(username, password),
+				})
+			})
+
+			It("does not return 401", func() {
+				Ω(res.StatusCode).Should(Equal(http.StatusNotFound))
 			})
 		})
 
@@ -48,3 +72,8 @@ var _ = Describe("Basic Auth", func() {
 		})
 	})
 })
+
+func basicAuthHeader(username, password string) string {
+	credentials := username + ":" + password
+	return "Basic " + base64.StdEncoding.EncodeToString([]byte(credentials))
+}

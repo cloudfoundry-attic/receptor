@@ -105,6 +105,49 @@ var _ = Describe("Middleware", func() {
 		})
 	})
 
+	Describe("CookieAuthWrap", func() {
+		var cookieName string
+
+		BeforeEach(func() {
+			cookieName = "Cookie-Authorization"
+			handler = handlers.CookieAuthWrap(wrappedHandler, cookieName)
+		})
+
+		Context("when the cookie is present in the request", func() {
+			BeforeEach(func() {
+				req.AddCookie(&http.Cookie{
+					Name:  cookieName,
+					Value: "some-auth",
+				})
+
+				req.Header.Add("Authorization", "some-clobbered-auth")
+
+				handler.ServeHTTP(res, req)
+			})
+
+			It("forwards it as the request's Authorization header", func() {
+				Ω(wrappedHandler.ServeHTTPCallCount()).Should(Equal(1))
+
+				_, wrappedReq := wrappedHandler.ServeHTTPArgsForCall(0)
+				Ω(wrappedReq.Header.Get("Authorization")).Should(Equal("some-auth"))
+			})
+		})
+
+		Context("when the cookie is not present in the request", func() {
+			BeforeEach(func() {
+				req.Header.Add("Authorization", "some-not-clobbered-auth")
+				handler.ServeHTTP(res, req)
+			})
+
+			It("does not clobber the Authorization header", func() {
+				Ω(wrappedHandler.ServeHTTPCallCount()).Should(Equal(1))
+
+				_, wrappedReq := wrappedHandler.ServeHTTPArgsForCall(0)
+				Ω(wrappedReq.Header.Get("Authorization")).Should(Equal("some-not-clobbered-auth"))
+			})
+		})
+	})
+
 	Describe("BasicAuthWrap", func() {
 		var expectedUsername = "user"
 		var expectedPassword = "pass"
