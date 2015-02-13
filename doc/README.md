@@ -10,6 +10,7 @@ Here's an outline:
 - [Container Runtime Environment](environment.md)
 - [Available Actions](actions.md)
 - API Reference
+    - [Authorization](auth.md)
     - [Tasks](api_tasks.md)
     - [LRPs](api_lrps.md)
     - [Cells](api_cells.md)
