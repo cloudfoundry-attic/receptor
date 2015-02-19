@@ -429,6 +429,18 @@ type ModificationTag struct {
 	Index uint   `json:"index"`
 }
 
+func (m *ModificationTag) SucceededBy(otherModificationTag ModificationTag) bool {
+	if m.Epoch == "" {
+		return true
+	}
+
+	if otherModificationTag.Epoch == "" {
+		return true
+	}
+
+	return m.Epoch != otherModificationTag.Epoch || m.Index < otherModificationTag.Index
+}
+
 type CellResponse struct {
 	CellID   string       `json:"cell_id"`
 	Stack    string       `json:"stack"`

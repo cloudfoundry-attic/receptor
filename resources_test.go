@@ -392,4 +392,48 @@ var _ = Describe("Resources", func() {
 			})
 		})
 	})
+
+	Describe("ModificationTag", func() {
+		currentTag := receptor.ModificationTag{Epoch: "abc", Index: 1}
+		differentEpochCurrentIndexTag := receptor.ModificationTag{Epoch: "def", Index: 1}
+		differentEpochNewerIndexTag := receptor.ModificationTag{Epoch: "def", Index: 2}
+		differentEpochOlderIndexTag := receptor.ModificationTag{Epoch: "def", Index: 0}
+		missingEpochTag := receptor.ModificationTag{Epoch: "", Index: 0}
+		sameEpochNewerIndexTag := receptor.ModificationTag{Epoch: "abc", Index: 2}
+		sameEpochOlderIndexTag := receptor.ModificationTag{Epoch: "abc", Index: 0}
+
+		Describe("SucceededBy", func() {
+			It("returns true when the modification tag has an empty epoch", func() {
+				Ω(missingEpochTag.SucceededBy(currentTag)).Should(BeTrue())
+			})
+
+			It("returns true when the other modification tag has an empty epoch", func() {
+				Ω(currentTag.SucceededBy(missingEpochTag)).Should(BeTrue())
+			})
+
+			It("returns true when the epoch is different and the index is older", func() {
+				Ω(currentTag.SucceededBy(differentEpochOlderIndexTag)).Should(BeTrue())
+			})
+
+			It("returns true when the epoch is different and the index is the same", func() {
+				Ω(currentTag.SucceededBy(differentEpochCurrentIndexTag)).Should(BeTrue())
+			})
+
+			It("returns true when the epoch is different and the index is newer", func() {
+				Ω(currentTag.SucceededBy(differentEpochNewerIndexTag)).Should(BeTrue())
+			})
+
+			It("returns false when the epoch the same and the index is older", func() {
+				Ω(currentTag.SucceededBy(sameEpochOlderIndexTag)).Should(BeFalse())
+			})
+
+			It("returns false when the epoch the same and the index is the same", func() {
+				Ω(currentTag.SucceededBy(currentTag)).Should(BeFalse())
+			})
+
+			It("returns true when the epoch the same and the index is newer", func() {
+				Ω(currentTag.SucceededBy(sameEpochNewerIndexTag)).Should(BeTrue())
+			})
+		})
+	})
 })
