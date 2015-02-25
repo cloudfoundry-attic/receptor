@@ -429,16 +429,20 @@ type ModificationTag struct {
 	Index uint   `json:"index"`
 }
 
-func (m *ModificationTag) SucceededBy(otherModificationTag ModificationTag) bool {
-	if m.Epoch == "" {
+func (m *ModificationTag) Equal(other ModificationTag) bool {
+	if m.Epoch == "" || other.Epoch == "" {
+		return false
+	}
+
+	return m.Epoch == other.Epoch && m.Index == other.Index
+}
+
+func (m *ModificationTag) SucceededBy(other ModificationTag) bool {
+	if m.Epoch == "" || other.Epoch == "" {
 		return true
 	}
 
-	if otherModificationTag.Epoch == "" {
-		return true
-	}
-
-	return m.Epoch != otherModificationTag.Epoch || m.Index < otherModificationTag.Index
+	return m.Epoch != other.Epoch || m.Index < other.Index
 }
 
 type CellResponse struct {
