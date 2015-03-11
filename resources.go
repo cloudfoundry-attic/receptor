@@ -160,11 +160,45 @@ func (response *TaskResponse) UnmarshalJSON(payload []byte) error {
 
 type RoutingInfo map[string]*json.RawMessage
 
+type VolumeSetCreateRequest struct {
+	VolumeSetGuid    string `json:"volume_set_guid"`
+	Stack            string `json:"stack"`
+	Instances        int    `json:"isntances"`
+	SizeMB           int    `json:"size_mb"`
+	ReservedMemoryMB int    `json:"reserved_memory_mb"`
+}
+
+type VolumeState string
+
+const (
+	VolumeStatePending VolumeState = "Pending"
+	VolumeStateRunning VolumeState = "Running"
+	VolumeStateFailed  VolumeState = "Failed"
+)
+
+type VolumeResponse struct {
+	VolumeSetGuid    string      `json:"volume_set_guid"`
+	VolumeGuid       string      `json:"volume_guid"`
+	CellID           string      `json:"cell_id"`
+	Index            int         `json:"index"`
+	SizeMB           int         `json:"size_mb"`
+	ReservedMemoryMB int         `json:"reserved_memory_mb"`
+	State            VolumeState `json:"state"`
+	PlacementError   string      `json:"placement_error,omitempty"`
+	Since            int64       `json:"since"`
+}
+
+type VolumeSetAttachment struct {
+	VolumeSetGuid string `json:"volume_set_guid"`
+	Path          string `json:"path"`
+}
+
 type DesiredLRPCreateRequest struct {
 	ProcessGuid          string                     `json:"process_guid"`
 	Domain               string                     `json:"domain"`
 	RootFSPath           string                     `json:"rootfs"`
 	Instances            int                        `json:"instances"`
+	VolumeMount          *VolumeSetAttachment       `json:"volume_mount,omitempty"`
 	Stack                string                     `json:"stack"`
 	EnvironmentVariables []EnvironmentVariable      `json:"env,omitempty"`
 	Setup                models.Action              `json:"-"`
@@ -412,6 +446,7 @@ type ActualLRPResponse struct {
 	ProcessGuid     string          `json:"process_guid"`
 	InstanceGuid    string          `json:"instance_guid"`
 	CellID          string          `json:"cell_id"`
+	VolumeGuid      string          `json:"volume_guid",omitempty`
 	Domain          string          `json:"domain"`
 	Index           int             `json:"index"`
 	Address         string          `json:"address"`

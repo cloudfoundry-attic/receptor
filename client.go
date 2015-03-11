@@ -46,6 +46,9 @@ type Client interface {
 	ActualLRPByProcessGuidAndIndex(processGuid string, index int) (ActualLRPResponse, error)
 	KillActualLRPByProcessGuidAndIndex(processGuid string, index int) error
 
+	VolumesByVolumeSetGuid(volSetGuid string) ([]VolumeResponse, error)
+	CreateVolumeSet(volSet VolumeSetCreateRequest) error
+
 	SubscribeToEvents() (EventSource, error)
 
 	Cells() ([]CellResponse, error)
@@ -157,6 +160,16 @@ func (c *client) ActualLRPByProcessGuidAndIndex(processGuid string, index int) (
 func (c *client) KillActualLRPByProcessGuidAndIndex(processGuid string, index int) error {
 	err := c.doRequest(KillActualLRPByProcessGuidAndIndexRoute, rata.Params{"process_guid": processGuid, "index": strconv.Itoa(index)}, nil, nil, nil)
 	return err
+}
+
+func (c *client) VolumesByVolumeSetGuid(volSetGuid string) ([]VolumeResponse, error) {
+	volumes := []VolumeResponse{}
+	err := c.doRequest(VolumesByVolumeSetGuidRoute, rata.Params{"volume_set_guid": volSetGuid}, nil, nil, &volumes)
+	return volumes, err
+}
+
+func (c *client) CreateVolumeSet(req VolumeSetCreateRequest) error {
+	return c.doRequest(CreateVolumeSetRoute, nil, nil, req, nil)
 }
 
 func (c *client) SubscribeToEvents() (EventSource, error) {

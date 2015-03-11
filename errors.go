@@ -10,10 +10,12 @@ func (err Error) Error() string {
 }
 
 const (
-	TaskGuidAlreadyExists = "TaskGuidAlreadyExists"
-	TaskNotDeletable      = "TaskNotDeletable"
-	TaskNotFound          = "TaskNotFound"
-	InvalidTask           = "InvalidTask"
+	InvalidVolumeSet           = "InvalidVolumeSet"
+	VolumeSetGuidAlreadyExists = "VolumeSetGuidAlreadyExists"
+	TaskGuidAlreadyExists      = "TaskGuidAlreadyExists"
+	TaskNotDeletable           = "TaskNotDeletable"
+	TaskNotFound               = "TaskNotFound"
+	InvalidTask                = "InvalidTask"
 
 	DesiredLRPAlreadyExists = "DesiredLRPAlreadyExists"
 	DesiredLRPNotFound      = "DesiredLRPNotFound"

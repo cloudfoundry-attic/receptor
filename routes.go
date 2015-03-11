@@ -23,6 +23,10 @@ const (
 	ActualLRPByProcessGuidAndIndexRoute     = "ActualLRPByProcessGuidAndIndex"
 	KillActualLRPByProcessGuidAndIndexRoute = "KillActualLRPByProcessGuidAndIndex"
 
+	// Volumes
+	CreateVolumeSetRoute        = "CreateVolumeSet"
+	VolumesByVolumeSetGuidRoute = "VolumesByVolumeSetGuid"
+
 	// Cells
 	CellsRoute = "Cells"
 
@@ -54,6 +58,10 @@ var Routes = rata.Routes{
 	{Path: "/v1/actual_lrps/:process_guid", Method: "GET", Name: ActualLRPsByProcessGuidRoute},
 	{Path: "/v1/actual_lrps/:process_guid/index/:index", Method: "GET", Name: ActualLRPByProcessGuidAndIndexRoute},
 	{Path: "/v1/actual_lrps/:process_guid/index/:index", Method: "DELETE", Name: KillActualLRPByProcessGuidAndIndexRoute},
+
+	// Volumes
+	{Path: "/v1/volume_sets", Method: "POST", Name: CreateVolumeSetRoute},
+	{Path: "/v1/volumes/:volume_set_guid", Method: "GET", Name: VolumesByVolumeSetGuidRoute},
 
 	// Cells
 	{Path: "/v1/cells", Method: "GET", Name: CellsRoute},

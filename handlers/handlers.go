@@ -11,6 +11,7 @@ import (
 )
 
 func New(bbs Bbs.ReceptorBBS, hub event.Hub, logger lager.Logger, username, password string, corsEnabled bool) http.Handler {
+	volHandler := NewVolumeHandler(bbs, logger)
 	taskHandler := NewTaskHandler(bbs, logger)
 	desiredLRPHandler := NewDesiredLRPHandler(bbs, logger)
 	actualLRPHandler := NewActualLRPHandler(bbs, logger)
@@ -19,6 +20,10 @@ func New(bbs Bbs.ReceptorBBS, hub event.Hub, logger lager.Logger, username, pass
 	eventStreamHandler := NewEventStreamHandler(hub, logger)
 
 	actions := rata.Handlers{
+		//volumes
+		receptor.CreateVolumeSetRoute:        route(volHandler.CreateVolumeSet),
+		receptor.VolumesByVolumeSetGuidRoute: route(volHandler.VolumesByVolumeSetGuid),
+
 		// Tasks
 		receptor.CreateTaskRoute: route(taskHandler.Create),
 		receptor.TasksRoute:      route(taskHandler.GetAll),
