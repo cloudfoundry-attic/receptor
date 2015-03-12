@@ -322,6 +322,7 @@ type DesiredLRPResponse struct {
 	RootFSPath           string                     `json:"rootfs"`
 	Instances            int                        `json:"instances"`
 	Stack                string                     `json:"stack"`
+	VolumeMount          *VolumeSetAttachment       `json:"volume_mount,omitempty"`
 	EnvironmentVariables []EnvironmentVariable      `json:"env,omitempty"`
 	Setup                models.Action              `json:"setup"`
 	Action               models.Action              `json:"action"`

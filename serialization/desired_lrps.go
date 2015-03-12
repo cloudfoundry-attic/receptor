@@ -14,6 +14,7 @@ func DesiredLRPFromRequest(req receptor.DesiredLRPCreateRequest) models.DesiredL
 		RootFSPath:           req.RootFSPath,
 		Instances:            req.Instances,
 		Stack:                req.Stack,
+		VolumeMount:          volMountFromRequest(req.VolumeMount),
 		EnvironmentVariables: EnvironmentVariablesToModel(req.EnvironmentVariables),
 		Setup:                req.Setup,
 		Action:               req.Action,
@@ -41,6 +42,7 @@ func DesiredLRPToResponse(lrp models.DesiredLRP) receptor.DesiredLRPResponse {
 		RootFSPath:           lrp.RootFSPath,
 		Instances:            lrp.Instances,
 		Stack:                lrp.Stack,
+		VolumeMount:          volMountToResponse(lrp.VolumeMount),
 		EnvironmentVariables: EnvironmentVariablesFromModel(lrp.EnvironmentVariables),
 		Setup:                lrp.Setup,
 		Action:               lrp.Action,
@@ -68,6 +70,7 @@ func DesiredLRPFromResponse(resp receptor.DesiredLRPResponse) models.DesiredLRP 
 		RootFSPath:           resp.RootFSPath,
 		Instances:            resp.Instances,
 		Stack:                resp.Stack,
+		VolumeMount:          volMountFromRequest(resp.VolumeMount),
 		EnvironmentVariables: EnvironmentVariablesToModel(resp.EnvironmentVariables),
 		Setup:                resp.Setup,
 		Action:               resp.Action,
@@ -83,6 +86,26 @@ func DesiredLRPFromResponse(resp receptor.DesiredLRPResponse) models.DesiredLRP 
 		LogSource:            resp.LogSource,
 		MetricsGuid:          resp.MetricsGuid,
 		Annotation:           resp.Annotation,
+	}
+}
+
+func volMountFromRequest(mount *receptor.VolumeSetAttachment) *models.VolumeSetAttachment {
+	if mount == nil {
+		return nil
+	}
+	return &models.VolumeSetAttachment{
+		VolumeSetGuid: mount.VolumeSetGuid,
+		Path:          mount.Path,
+	}
+}
+
+func volMountToResponse(mount *models.VolumeSetAttachment) *receptor.VolumeSetAttachment {
+	if mount == nil {
+		return nil
+	}
+	return &receptor.VolumeSetAttachment{
+		VolumeSetGuid: mount.VolumeSetGuid,
+		Path:          mount.Path,
 	}
 }
 
