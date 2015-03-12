@@ -186,8 +186,9 @@ var _ = Describe("Event", func() {
 			err := bbs.DesireLRP(logger, desiredLRP)
 			Ω(err).ShouldNot(HaveOccurred())
 
-			actualLRP, err := bbs.ActualLRPByProcessGuidAndIndex(desiredLRP.ProcessGuid, 0)
+			actualLRPGroup, err := bbs.ActualLRPGroupByProcessGuidAndIndex(desiredLRP.ProcessGuid, 0)
 			Ω(err).ShouldNot(HaveOccurred())
+			actualLRP := *actualLRPGroup.Instance
 
 			// discard DesiredLRP creation event
 			Eventually(events).Should(Receive())
@@ -204,8 +205,9 @@ var _ = Describe("Event", func() {
 			Ω(err).ShouldNot(HaveOccurred())
 
 			before := actualLRP
-			actualLRP, err = bbs.ActualLRPByProcessGuidAndIndex(desiredLRP.ProcessGuid, 0)
+			actualLRPGroup, err = bbs.ActualLRPGroupByProcessGuidAndIndex(desiredLRP.ProcessGuid, 0)
 			Ω(err).ShouldNot(HaveOccurred())
+			actualLRP = *actualLRPGroup.Instance
 
 			Eventually(events).Should(Receive(&event))
 
@@ -255,8 +257,9 @@ var _ = Describe("Event", func() {
 			Eventually(events).Should(Receive())
 
 			By("removing the instance ActualLRP")
-			actualLRP, err = bbs.ActualLRPByProcessGuidAndIndex(desiredLRP.ProcessGuid, 0)
+			actualLRPGroup, err = bbs.ActualLRPGroupByProcessGuidAndIndex(desiredLRP.ProcessGuid, 0)
 			Ω(err).ShouldNot(HaveOccurred())
+			actualLRP = *actualLRPGroup.Instance
 
 			err = bbs.RemoveActualLRP(logger, key, models.ActualLRPContainerKey{})
 			Ω(err).ShouldNot(HaveOccurred())
