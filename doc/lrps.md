@@ -56,7 +56,7 @@ When desiring an LRP you `POST` a valid `DesiredLRPCreateRequest`.  The [API ref
 
     "log_guid": "some-log-guid",
     "log_source": "some-log-source",
-
+    "metrics_guid": "some-metrics-guid"
     "annotation": "arbitrary metadata",
 
     "egress_rules": [
@@ -305,6 +305,10 @@ Diego uses [loggregator](https://github.com/cloudfoundry/loggregator) to emit lo
 #### `log_source` [optional]
 
 `log_source` is an identifier emitted with each log line.  Individual `RunAction`s can override the `log_source`.  This allows a consumer of the log stream to distinguish between the logs of different processes.
+
+#### `metrics_guid` [optional]
+
+`metrics_guid` controls the metrics guid asscoiated with metrics coming from LRP processes.
 
 #### Attaching Arbitrary Metadata
 
