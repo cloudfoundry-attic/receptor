@@ -11,9 +11,8 @@ func DesiredLRPFromRequest(req receptor.DesiredLRPCreateRequest) models.DesiredL
 	return models.DesiredLRP{
 		ProcessGuid:          req.ProcessGuid,
 		Domain:               req.Domain,
-		RootFSPath:           req.RootFSPath,
+		RootFS:               req.RootFSPath,
 		Instances:            req.Instances,
-		Stack:                req.Stack,
 		EnvironmentVariables: EnvironmentVariablesToModel(req.EnvironmentVariables),
 		Setup:                req.Setup,
 		Action:               req.Action,
@@ -38,9 +37,8 @@ func DesiredLRPToResponse(lrp models.DesiredLRP) receptor.DesiredLRPResponse {
 	return receptor.DesiredLRPResponse{
 		ProcessGuid:          lrp.ProcessGuid,
 		Domain:               lrp.Domain,
-		RootFSPath:           lrp.RootFSPath,
+		RootFSPath:           lrp.RootFS,
 		Instances:            lrp.Instances,
-		Stack:                lrp.Stack,
 		EnvironmentVariables: EnvironmentVariablesFromModel(lrp.EnvironmentVariables),
 		Setup:                lrp.Setup,
 		Action:               lrp.Action,
