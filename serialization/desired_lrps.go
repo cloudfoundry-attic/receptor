@@ -61,31 +61,6 @@ func DesiredLRPToResponse(lrp models.DesiredLRP) receptor.DesiredLRPResponse {
 	}
 }
 
-func DesiredLRPFromResponse(resp receptor.DesiredLRPResponse) models.DesiredLRP {
-	return models.DesiredLRP{
-		ProcessGuid:          resp.ProcessGuid,
-		Domain:               resp.Domain,
-		RootFSPath:           resp.RootFSPath,
-		Instances:            resp.Instances,
-		Stack:                resp.Stack,
-		EnvironmentVariables: EnvironmentVariablesToModel(resp.EnvironmentVariables),
-		Setup:                resp.Setup,
-		Action:               resp.Action,
-		Monitor:              resp.Monitor,
-		StartTimeout:         resp.StartTimeout,
-		DiskMB:               resp.DiskMB,
-		MemoryMB:             resp.MemoryMB,
-		CPUWeight:            resp.CPUWeight,
-		Privileged:           resp.Privileged,
-		Ports:                resp.Ports,
-		Routes:               RoutingInfoToRawMessages(resp.Routes),
-		LogGuid:              resp.LogGuid,
-		LogSource:            resp.LogSource,
-		MetricsGuid:          resp.MetricsGuid,
-		Annotation:           resp.Annotation,
-	}
-}
-
 func DesiredLRPUpdateFromRequest(req receptor.DesiredLRPUpdateRequest) models.DesiredLRPUpdate {
 	return models.DesiredLRPUpdate{
 		Instances:  req.Instances,
