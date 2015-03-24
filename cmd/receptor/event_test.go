@@ -46,7 +46,7 @@ var _ = Describe("Event", func() {
 		primerLRP := models.DesiredLRP{
 			ProcessGuid: "primer-guid",
 			Domain:      "primer-domain",
-			RootFS:      "primer-rootfs",
+			RootFS:      "primer:rootfs",
 			Routes: map[string]*json.RawMessage{
 				"router": &rawMessage,
 			},
@@ -101,7 +101,7 @@ var _ = Describe("Event", func() {
 			desiredLRP = models.DesiredLRP{
 				ProcessGuid: "some-guid",
 				Domain:      "some-domain",
-				RootFS:      "some-rootfs",
+				RootFS:      "some:rootfs",
 				Routes:      routes,
 				Action: &models.RunAction{
 					Path: "true",
@@ -168,7 +168,7 @@ var _ = Describe("Event", func() {
 			desiredLRP = models.DesiredLRP{
 				ProcessGuid: processGuid,
 				Domain:      domain,
-				RootFS:      "some-rootfs",
+				RootFS:      "some:rootfs",
 				Instances:   1,
 				Action: &models.RunAction{
 					Path: "true",
