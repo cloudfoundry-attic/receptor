@@ -163,9 +163,8 @@ type RoutingInfo map[string]*json.RawMessage
 type DesiredLRPCreateRequest struct {
 	ProcessGuid          string                     `json:"process_guid"`
 	Domain               string                     `json:"domain"`
-	RootFSPath           string                     `json:"rootfs"`
+	RootFS               string                     `json:"rootfs"`
 	Instances            int                        `json:"instances"`
-	Stack                string                     `json:"stack"`
 	EnvironmentVariables []EnvironmentVariable      `json:"env,omitempty"`
 	Setup                models.Action              `json:"-"`
 	Action               models.Action              `json:"-"`
@@ -285,9 +284,8 @@ type DesiredLRPUpdateRequest struct {
 type DesiredLRPResponse struct {
 	ProcessGuid          string                     `json:"process_guid"`
 	Domain               string                     `json:"domain"`
-	RootFSPath           string                     `json:"rootfs"`
+	RootFS               string                     `json:"rootfs"`
 	Instances            int                        `json:"instances"`
-	Stack                string                     `json:"stack"`
 	EnvironmentVariables []EnvironmentVariable      `json:"env,omitempty"`
 	Setup                models.Action              `json:"setup"`
 	Action               models.Action              `json:"action"`

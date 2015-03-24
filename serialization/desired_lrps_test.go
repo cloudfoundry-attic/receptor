@@ -40,7 +40,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 			request = receptor.DesiredLRPCreateRequest{
 				ProcessGuid: "the-process-guid",
 				Domain:      "the-domain",
-				RootFSPath:  "the-rootfs",
+				RootFS:      "the-rootfs",
 				Annotation:  "foo",
 				Instances:   1,
 				Ports:       []uint16{2345, 6789},
@@ -99,7 +99,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 			desiredLRP = models.DesiredLRP{
 				ProcessGuid: "process-guid-0",
 				Domain:      "domain-0",
-				RootFS:      "root-fs-path-0",
+				RootFS:      "root-fs-0",
 				Instances:   127,
 				EnvironmentVariables: []models.EnvironmentVariable{
 					{Name: "ENV_VAR_NAME", Value: "value"},
@@ -132,7 +132,7 @@ var _ = Describe("DesiredLRP Serialization", func() {
 			expectedResponse := receptor.DesiredLRPResponse{
 				ProcessGuid: "process-guid-0",
 				Domain:      "domain-0",
-				RootFSPath:  "root-fs-path-0",
+				RootFS:      "root-fs-0",
 				Instances:   127,
 				EnvironmentVariables: []receptor.EnvironmentVariable{
 					{Name: "ENV_VAR_NAME", Value: "value"},

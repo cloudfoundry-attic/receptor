@@ -37,8 +37,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 		validCreateLRPRequest := receptor.DesiredLRPCreateRequest{
 			ProcessGuid: "the-process-guid",
 			Domain:      "the-domain",
-			Stack:       "the-stack",
-			RootFSPath:  "the-rootfs",
+			RootFS:      "the-rootfs",
 			Privileged:  true,
 			Instances:   1,
 			Action: &models.RunAction{
