@@ -38,9 +38,8 @@ type TaskCreateRequest struct {
 	MetricsGuid           string                     `json:"metrics_guid"`
 	MemoryMB              int                        `json:"memory_mb"`
 	ResultFile            string                     `json:"result_file"`
-	Stack                 string                     `json:"stack"`
 	TaskGuid              string                     `json:"task_guid"`
-	RootFSPath            string                     `json:"rootfs"`
+	RootFS                string                     `json:"rootfs"`
 	Privileged            bool                       `json:"privileged"`
 	EnvironmentVariables  []EnvironmentVariable      `json:"env,omitempty"`
 	EgressRules           []models.SecurityGroupRule `json:"egress_rules,omitempty"`
@@ -101,9 +100,8 @@ type TaskResponse struct {
 	MetricsGuid           string                     `json:"metrics_guid"`
 	MemoryMB              int                        `json:"memory_mb"`
 	ResultFile            string                     `json:"result_file"`
-	Stack                 string                     `json:"stack"`
 	TaskGuid              string                     `json:"task_guid"`
-	RootFSPath            string                     `json:"rootfs"`
+	RootFS                string                     `json:"rootfs"`
 	Privileged            bool                       `json:"privileged"`
 	EnvironmentVariables  []EnvironmentVariable      `json:"env,omitempty"`
 	CellID                string                     `json:"cell_id"`
