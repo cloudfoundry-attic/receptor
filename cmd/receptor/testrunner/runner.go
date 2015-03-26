@@ -13,6 +13,7 @@ type Args struct {
 	Address            string
 	TaskHandlerAddress string
 	EtcdCluster        string
+	ConsulCluster      string
 	Username           string
 	Password           string
 	NatsAddresses      string
@@ -34,6 +35,9 @@ func (args Args) ArgSlice() []string {
 		"-natsUsername", args.NatsUsername,
 		"-natsPassword", args.NatsPassword,
 		"-corsEnabled=" + strconv.FormatBool(args.CORSEnabled),
+		"-heartbeatRetryInterval", "1s",
+		"-consulCluster", args.ConsulCluster,
+		"-consulScheme", "http",
 	}
 }
 
