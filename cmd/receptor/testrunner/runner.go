@@ -37,7 +37,6 @@ func (args Args) ArgSlice() []string {
 		"-corsEnabled=" + strconv.FormatBool(args.CORSEnabled),
 		"-heartbeatRetryInterval", "1s",
 		"-consulCluster", args.ConsulCluster,
-		"-consulScheme", "http",
 	}
 }
 

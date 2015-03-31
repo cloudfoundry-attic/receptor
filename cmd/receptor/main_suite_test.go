@@ -44,8 +44,7 @@ var etcdUrl string
 var etcdRunner *etcdstorerunner.ETCDClusterRunner
 var etcdAdapter storeadapter.StoreAdapter
 
-var consulPort int
-var consulRunner consuladapter.ClusterRunner
+var consulRunner *consuladapter.ClusterRunner
 var consulAdapter consuladapter.Adapter
 
 var bbs *Bbs.BBS
@@ -79,9 +78,8 @@ var _ = SynchronizedBeforeSuite(
 		etcdUrl = fmt.Sprintf("http://127.0.0.1:%d", etcdPort)
 		etcdRunner = etcdstorerunner.NewETCDClusterRunner(etcdPort, 1)
 
-		consulPort = 9001 + config.GinkgoConfig.ParallelNode*consuladapter.PortOffsetLength
 		consulRunner = consuladapter.NewClusterRunner(
-			consulPort,
+			9001+config.GinkgoConfig.ParallelNode*consuladapter.PortOffsetLength,
 			1,
 			"http",
 		)
@@ -135,7 +133,7 @@ var _ = BeforeEach(func() {
 		NatsAddresses:      natsAddress,
 		NatsUsername:       "nats",
 		NatsPassword:       "nats",
-		ConsulCluster:      fmt.Sprintf("127.0.0.1:%d", consulPort+consuladapter.PortOffsetHTTP),
+		ConsulCluster:      consulRunner.ConsulCluster(),
 	}
 	receptorRunner = testrunner.New(receptorBinPath, receptorArgs)
 })

@@ -62,13 +62,7 @@ var taskHandlerAddress = flag.String(
 var consulCluster = flag.String(
 	"consulCluster",
 	"",
-	"comma-separated list of consul server addresses (ip:port)",
-)
-
-var consulScheme = flag.String(
-	"consulScheme",
-	"http",
-	"protocol scheme for communication with consul servers",
+	"comma-separated list of consul server URLs (scheme://ip:port)",
 )
 
 var lockTTL = flag.Duration(
@@ -86,7 +80,7 @@ var heartbeatRetryInterval = flag.Duration(
 var etcdCluster = flag.String(
 	"etcdCluster",
 	"http://127.0.0.1:4001",
-	"Comma-separated list of etcd addresses (http://ip:port).",
+	"Comma-separated list of etcd URLs (scheme://ip:port).",
 )
 
 var corsEnabled = flag.Bool(
@@ -252,10 +246,12 @@ func initializeReceptorBBS(logger lager.Logger) Bbs.ReceptorBBS {
 		logger.Fatal("failed-to-connect-to-etcd", err)
 	}
 
-	consulAdapter, err := consuladapter.NewAdapter(
-		strings.Split(*consulCluster, ","),
-		*consulScheme,
-	)
+	consulScheme, consulAddresses, err := consuladapter.Parse(*consulCluster)
+	if err != nil {
+		logger.Fatal("failed-parsing-consul-cluster", err)
+	}
+
+	consulAdapter, err := consuladapter.NewAdapter(consulAddresses, consulScheme)
 	if err != nil {
 		logger.Fatal("failed-building-consul-adapter", err)
 	}
