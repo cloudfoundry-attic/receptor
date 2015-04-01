@@ -20,12 +20,10 @@ import (
 	"github.com/cloudfoundry-incubator/receptor/watcher"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/lock_bbs"
-	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/cloudfoundry/dropsonde"
 	"github.com/cloudfoundry/gunk/diegonats"
 	"github.com/cloudfoundry/gunk/workpool"
 	"github.com/cloudfoundry/storeadapter/etcdstoreadapter"
-	"github.com/nu7hatch/gouuid"
 	"github.com/pivotal-golang/clock"
 	"github.com/pivotal-golang/lager"
 	"github.com/pivotal-golang/localip"
@@ -169,7 +167,6 @@ func main() {
 		{"server", http_server.New(*serverAddress, handler)},
 		{"worker", worker},
 		{"task-complete-handler", http_server.New(*taskHandlerAddress, taskHandler)},
-		{"heartbeater", initializeReceptorHeartbeat(logger, bbs, *taskHandlerAddress, *lockTTL, *heartbeatRetryInterval)},
 		{"hub-closer", closeHub(logger.Session("hub-closer"), hub)},
 	}
 
@@ -285,15 +282,4 @@ func initializeServerRegistration(logger lager.Logger) (registration natbeat.Reg
 		Host: host,
 		Port: port,
 	}
-}
-
-func initializeReceptorHeartbeat(logger lager.Logger, bbs Bbs.ReceptorBBS, taskHandlerAddress string, ttl, interval time.Duration) ifrit.Runner {
-	guid, err := uuid.NewV4()
-	if err != nil {
-		logger.Error("failed-to-generate-guid", err)
-		os.Exit(1)
-	}
-
-	presence := models.NewReceptorPresence(guid.String(), "http://"+taskHandlerAddress)
-	return bbs.NewReceptorHeartbeat(presence, ttl, interval)
 }

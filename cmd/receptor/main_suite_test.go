@@ -103,16 +103,16 @@ var _ = BeforeEach(func() {
 	etcdRunner.Reset()
 	consulRunner.Reset()
 
+	receptorAddress = fmt.Sprintf("127.0.0.1:%d", 6700+GinkgoParallelNode())
+	receptorTaskHandlerAddress = fmt.Sprintf("127.0.0.1:%d", 1169+GinkgoParallelNode())
+
 	etcdAdapter = etcdRunner.Adapter()
-	bbs = Bbs.NewBBS(etcdAdapter, consulAdapter, clock.NewClock(), logger)
+	bbs = Bbs.NewBBS(etcdAdapter, consulAdapter, "http://"+receptorTaskHandlerAddress, clock.NewClock(), logger)
 
 	natsPort = 4051 + GinkgoParallelNode()
 	natsAddress = fmt.Sprintf("127.0.0.1:%d", natsPort)
 	natsClient = diegonats.NewClient()
 	natsGroupProcess = ginkgomon.Invoke(newNatsGroup())
-
-	receptorAddress = fmt.Sprintf("127.0.0.1:%d", 6700+GinkgoParallelNode())
-	receptorTaskHandlerAddress = fmt.Sprintf("127.0.0.1:%d", 1169+GinkgoParallelNode())
 
 	receptorURL := &url.URL{
 		Scheme: "http",
