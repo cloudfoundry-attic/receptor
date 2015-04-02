@@ -45,7 +45,7 @@ var etcdRunner *etcdstorerunner.ETCDClusterRunner
 var etcdAdapter storeadapter.StoreAdapter
 
 var consulRunner *consuladapter.ClusterRunner
-var consulAdapter consuladapter.Adapter
+var consulAdapter *consuladapter.Adapter
 
 var bbs *Bbs.BBS
 
