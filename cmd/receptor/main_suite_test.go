@@ -101,6 +101,8 @@ var _ = BeforeEach(func() {
 	logger = lagertest.NewTestLogger("test")
 
 	etcdRunner.Reset()
+
+	consulRunner.WaitUntilReady()
 	consulRunner.Reset()
 
 	receptorAddress = fmt.Sprintf("127.0.0.1:%d", 6700+GinkgoParallelNode())
