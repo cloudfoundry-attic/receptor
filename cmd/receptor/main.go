@@ -254,7 +254,7 @@ func initializeReceptorBBS(logger lager.Logger) Bbs.ReceptorBBS {
 		logger.Fatal("consul-session-failed", err)
 	}
 
-	return Bbs.NewReceptorBBS(etcdAdapter, consulSession, clock.NewClock(), logger)
+	return Bbs.NewReceptorBBS(etcdAdapter, consulSession, *taskHandlerAddress, clock.NewClock(), logger)
 }
 
 func initializeServerRegistration(logger lager.Logger) (registration natbeat.RegistryMessage) {
