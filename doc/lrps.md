@@ -122,13 +122,13 @@ these are built to work with the Cloud Foundry buildpacks.
 It is possible to provide a custom root filesystem by specifying a Docker image for `rootfs`:
 
 ```
-"rootfs": "docker:///docker-org/docker-image#docker-tag"
+"rootfs": "docker:///docker-user/docker-image#docker-tag"
 ```
 
 To pull the image from a different registry than the default (Docker Hub), specify it as the host in the URI string, e.g.:
 
 ```
-"rootfs": "docker://index.myregistry.gov/docker-org/docker-image#docker-tag"
+"rootfs": "docker://index.myregistry.gov/docker-user/docker-image#docker-tag"
 ```
 
 > You *must* specify the dockerimage `rootfs` uri as specified, including the leading `docker://`!
