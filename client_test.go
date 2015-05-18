@@ -41,8 +41,8 @@ var _ = Describe("Receptor Client", func() {
 
 			fakeReceptorServer.AppendHandlers(ghttp.CombineHandlers(
 				ghttp.VerifyRequest("GET", "/v1/desired_lrps", "domain=diego"),
-				ghttp.VerifyContentType(receptor.JsonContentType),
-				ghttp.RespondWithJSONEncoded(http.StatusOK, lrpResponse, http.Header{"Content-Type": []string{receptor.JsonContentType}}),
+				ghttp.VerifyContentType(receptor.JSONContentType),
+				ghttp.RespondWithJSONEncoded(http.StatusOK, lrpResponse),
 			))
 		})
 
@@ -55,7 +55,6 @@ var _ = Describe("Receptor Client", func() {
 	})
 
 	Describe("Content Type Validation and Error Handling", func() {
-
 		var (
 			httpHeaders  http.Header
 			statusCode   int
@@ -70,14 +69,13 @@ var _ = Describe("Receptor Client", func() {
 		}
 
 		BeforeEach(func() {
-			httpHeaders = http.Header{receptor.ContentTypeHeader: []string{receptor.JsonContentType}}
+			httpHeaders = http.Header{receptor.ContentTypeHeader: []string{receptor.JSONContentType}}
 			fakeReceptorServer.AppendHandlers(
 				ghttp.RespondWithPtr(&statusCode, &responseBody, httpHeaders),
 			)
 		})
 
 		Context("when the client receives json content", func() {
-
 			Context("when the http status code is not successful", func() {
 				It("returns a json-encoded error from the server", func() {
 					statusCode = http.StatusNotFound
@@ -98,7 +96,8 @@ var _ = Describe("Receptor Client", func() {
 
 					_, err := client.GetDesiredLRP("unicorns")
 
-					verifyReceptorError(err, receptor.Error{receptor.InvalidJSON, responseBody})
+					Expect(err).To(HaveOccurred())
+					Expect(err.(receptor.Error).Type).To(Equal(receptor.InvalidJSON))
 				})
 			})
 
@@ -109,33 +108,33 @@ var _ = Describe("Receptor Client", func() {
 
 					_, err := client.GetDesiredLRP("unicorns")
 
-					verifyReceptorError(err, receptor.Error{receptor.InvalidJSON, responseBody})
+					Expect(err).To(HaveOccurred())
+					Expect(err.(receptor.Error).Type).To(Equal(receptor.InvalidJSON))
 				})
 			})
 		})
 
 		Context("when the client receives non-json content", func() {
-
 			Context("when the http status code is 404", func() {
 				It("returns a resource not found error", func() {
 					statusCode = http.StatusNotFound
 					responseBody = "404 page not found"
 
 					_, err := client.DesiredLRPs()
-
-					verifyReceptorError(err, receptor.Error{receptor.InvalidJSON, responseBody})
+					Expect(err).To(HaveOccurred())
+					Expect(err.(receptor.Error).Type).To(Equal(receptor.InvalidJSON))
 				})
 
 				Context("when there is an x-cf-routererror", func() {
 					It("returns a router error", func() {
 						statusCode = http.StatusNotFound
-						responseBody = "404 page not found"
+						expectedErrorMessage := "unknown_route"
 						httpHeaders[receptor.ContentTypeHeader] = []string{"text/plain; charset=utf-8"}
 						httpHeaders[receptor.XCfRouterErrorHeader] = []string{"unknown_route"}
 
 						_, err := client.DesiredLRPs()
 
-						verifyReceptorError(err, receptor.Error{receptor.RouterError, responseBody})
+						verifyReceptorError(err, receptor.Error{receptor.RouterError, expectedErrorMessage})
 					})
 				})
 			})
@@ -143,12 +142,12 @@ var _ = Describe("Receptor Client", func() {
 			Context("when the http status code is not successful and not 404", func() {
 				It("returns an invalid response error", func() {
 					statusCode = http.StatusGone
-					responseBody = "I'm so gone"
+					expectedErrorMessage := "Invalid Response with status code: 410"
 					httpHeaders[receptor.ContentTypeHeader] = []string{"image/gif"}
 
 					_, err := client.DesiredLRPs()
 
-					verifyReceptorError(err, receptor.Error{receptor.InvalidResponse, responseBody})
+					verifyReceptorError(err, receptor.Error{receptor.InvalidResponse, expectedErrorMessage})
 				})
 			})
 		})
@@ -185,7 +184,5 @@ var _ = Describe("Receptor Client", func() {
 				})
 			})
 		})
-
 	})
-
 })

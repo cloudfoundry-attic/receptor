@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"mime"
 	"net/http"
 	"net/url"
@@ -28,7 +27,7 @@ var ErrHubAlreadyClosed = errors.New("hub already closed")
 const (
 	ContentTypeHeader    = "Content-Type"
 	XCfRouterErrorHeader = "X-Cf-Routererror"
-	JsonContentType      = "application/json"
+	JSONContentType      = "application/json"
 )
 
 //go:generate counterfeiter -o fake_receptor/fake_client.go . Client
@@ -233,51 +232,52 @@ func (c *client) doRequest(requestName string, params rata.Params, queryParams u
 	return c.do(req, response)
 }
 
-func (c *client) do(req *http.Request, response interface{}) error {
+func (c *client) do(req *http.Request, responseObject interface{}) error {
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
 	defer res.Body.Close()
 
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		return Error{Type: UnknownError, Message: err.Error()}
-	}
-	bodyBuffer := bytes.NewBuffer(body)
-
 	var parsedContentType string
 	if contentType, ok := res.Header[ContentTypeHeader]; ok {
 		parsedContentType, _, _ = mime.ParseMediaType(contentType[0])
 	}
 
-	if _, ok := res.Header[XCfRouterErrorHeader]; ok {
-		return Error{Type: RouterError, Message: string(body)}
+	if routerError, ok := res.Header[XCfRouterErrorHeader]; ok {
+		return Error{Type: RouterError, Message: routerError[0]}
 	}
 
-	if parsedContentType == JsonContentType {
-		if res.StatusCode > 299 {
-			errResponse := Error{}
-			err := json.NewDecoder(bodyBuffer).Decode(&errResponse)
-			if err != nil {
-				return Error{Type: InvalidJSON, Message: string(body)}
-			}
-			return errResponse
-		}
-
-		err := json.NewDecoder(bodyBuffer).Decode(response)
-		if err != nil {
-			return Error{Type: InvalidJSON, Message: string(body)}
-		}
-		return nil
+	if parsedContentType == JSONContentType {
+		return handleJSONResponse(res, responseObject)
+	} else {
+		return handleNonJSONResponse(res)
 	}
+}
 
-	if res.StatusCode == http.StatusNotFound {
-		return Error{Type: ResourceNotFound, Message: string(body)}
-	}
-
+func handleJSONResponse(res *http.Response, responseObject interface{}) error {
 	if res.StatusCode > 299 {
-		return Error{Type: InvalidResponse, Message: string(body)}
+		errResponse := Error{}
+		err := json.NewDecoder(res.Body).Decode(&errResponse)
+		if err != nil {
+			return Error{Type: InvalidJSON, Message: err.Error()}
+		}
+		return errResponse
+	}
+
+	err := json.NewDecoder(res.Body).Decode(responseObject)
+	if err != nil {
+		return Error{Type: InvalidJSON, Message: err.Error()}
+	}
+	return nil
+}
+
+func handleNonJSONResponse(res *http.Response) error {
+	if res.StatusCode > 299 {
+		return Error{
+			Type:    InvalidResponse,
+			Message: fmt.Sprintf("Invalid Response with status code: %d", res.StatusCode),
+		}
 	}
 
 	return nil
