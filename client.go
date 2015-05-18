@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"mime"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -22,6 +24,12 @@ var ErrSlowConsumer = errors.New("slow consumer")
 
 var ErrSubscribedToClosedHub = errors.New("subscribed to closed hub")
 var ErrHubAlreadyClosed = errors.New("hub already closed")
+
+const (
+	ContentTypeHeader    = "Content-Type"
+	XCfRouterErrorHeader = "X-Cf-Routererror"
+	JsonContentType      = "application/json"
+)
 
 //go:generate counterfeiter -o fake_receptor/fake_client.go . Client
 
@@ -232,14 +240,44 @@ func (c *client) do(req *http.Request, response interface{}) error {
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode > 299 {
-		errResponse := Error{}
-		json.NewDecoder(res.Body).Decode(&errResponse)
-		return errResponse
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return Error{Type: UnknownError, Message: err.Error()}
+	}
+	bodyBuffer := bytes.NewBuffer(body)
+
+	var parsedContentType string
+	if contentType, ok := res.Header[ContentTypeHeader]; ok {
+		parsedContentType, _, _ = mime.ParseMediaType(contentType[0])
 	}
 
-	if response != nil {
-		return json.NewDecoder(res.Body).Decode(response)
+	if _, ok := res.Header[XCfRouterErrorHeader]; ok {
+		return Error{Type: RouterError, Message: string(body)}
+	}
+
+	if parsedContentType == JsonContentType {
+		if res.StatusCode > 299 {
+			errResponse := Error{}
+			err := json.NewDecoder(bodyBuffer).Decode(&errResponse)
+			if err != nil {
+				return Error{Type: InvalidJSON, Message: string(body)}
+			}
+			return errResponse
+		}
+
+		err := json.NewDecoder(bodyBuffer).Decode(response)
+		if err != nil {
+			return Error{Type: InvalidJSON, Message: string(body)}
+		}
+		return nil
+	}
+
+	if res.StatusCode == http.StatusNotFound {
+		return Error{Type: ResourceNotFound, Message: string(body)}
+	}
+
+	if res.StatusCode > 299 {
+		return Error{Type: InvalidResponse, Message: string(body)}
 	}
 
 	return nil
