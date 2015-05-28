@@ -6,7 +6,6 @@ import (
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/event"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs"
-	"github.com/cloudfoundry/dropsonde"
 	"github.com/pivotal-golang/lager"
 	"github.com/tedsuo/rata"
 )
@@ -68,7 +67,7 @@ func New(receptorBBS bbs.ReceptorBBS, hub event.Hub, logger lager.Logger, userna
 		handler = CORSWrapper(handler)
 	}
 
-	return dropsonde.InstrumentedHandler(handler)
+	return LogWrap(handler, logger)
 }
 
 func route(f func(w http.ResponseWriter, r *http.Request)) http.Handler {
