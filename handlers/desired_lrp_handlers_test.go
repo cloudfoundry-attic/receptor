@@ -200,7 +200,8 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 			It("calls DesiredLRPByProcessGuid on the BBS", func() {
 				Expect(fakeBBS.DesiredLRPByProcessGuidCallCount()).To(Equal(1))
-				Expect(fakeBBS.DesiredLRPByProcessGuidArgsForCall(0)).To(Equal("process-guid-0"))
+				_, actualProcessGuid := fakeBBS.DesiredLRPByProcessGuidArgsForCall(0)
+				Expect(actualProcessGuid).To(Equal("process-guid-0"))
 			})
 
 			It("responds with 200 Status OK", func() {
