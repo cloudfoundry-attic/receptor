@@ -112,7 +112,18 @@ func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	update := serialization.DesiredLRPUpdateFromRequest(desireLRPRequest)
 
-	err = h.bbs.UpdateDesiredLRP(log, processGuid, update)
+	updateAttempts := 0
+	for updateAttempts < 2 {
+		err = h.bbs.UpdateDesiredLRP(log, processGuid, update)
+		if err != bbserrors.ErrStoreComparisonFailed {
+			// we only want to retry on compare and swap errors
+			break
+		}
+
+		updateAttempts++
+		log.Error("failed-to-compare-and-swap", err, lager.Data{"Attempt": updateAttempts})
+	}
+
 	if err == bbserrors.ErrStoreResourceNotFound {
 		log.Error("desired-lrp-not-found", err)
 		writeDesiredLRPNotFoundResponse(w, processGuid)
@@ -120,7 +131,6 @@ func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err == bbserrors.ErrStoreComparisonFailed {
-		log.Error("failed-to-compare-and-swap", err)
 		writeCompareAndSwapFailedResponse(w, processGuid)
 		return
 	}
@@ -196,7 +206,7 @@ func writeDesiredLRPResponse(w http.ResponseWriter, logger lager.Logger, desired
 }
 
 func writeCompareAndSwapFailedResponse(w http.ResponseWriter, processGuid string) {
-	writeJSONResponse(w, http.StatusConflict, receptor.Error{
+	writeJSONResponse(w, http.StatusInternalServerError, receptor.Error{
 		Type:    receptor.ResourceConflict,
 		Message: fmt.Sprintf("Desired LRP with guid '%s' failed to update", processGuid),
 	})

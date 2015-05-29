@@ -384,11 +384,43 @@ var _ = Describe("Desired LRP Handlers", func() {
 			BeforeEach(func(done Done) {
 				defer close(done)
 				fakeBBS.UpdateDesiredLRPReturns(bbserrors.ErrStoreComparisonFailed)
+			})
+
+			JustBeforeEach(func() {
 				handler.Update(responseRecorder, req)
 			})
 
-			It("responds with a 409 Conflict error", func() {
-				Expect(responseRecorder.Code).To(Equal(http.StatusConflict))
+			It("retries up to one time", func() {
+				Eventually(fakeBBS.UpdateDesiredLRPCallCount).Should(Equal(2))
+				Consistently(fakeBBS.UpdateDesiredLRPCallCount).Should(Equal(2))
+			})
+
+			Context("when the second attempt succeeds", func() {
+				BeforeEach(func() {
+					fakeBBS.UpdateDesiredLRPStub = func(logger lager.Logger, processGuid string, update models.DesiredLRPUpdate) error {
+						if fakeBBS.UpdateDesiredLRPCallCount() == 1 {
+							return bbserrors.ErrStoreComparisonFailed
+						} else if fakeBBS.UpdateDesiredLRPCallCount() == 2 {
+							return nil
+						} else {
+							return errors.New("We shouldn't call this function more than twice")
+						}
+					}
+				})
+
+				It("returns a 204 No Content", func() {
+					Eventually(fakeBBS.UpdateDesiredLRPCallCount).Should(Equal(2))
+					Expect(responseRecorder.Code).To(Equal(http.StatusNoContent))
+					Consistently(fakeBBS.UpdateDesiredLRPCallCount).Should(Equal(2))
+				})
+			})
+
+			Context("when the second attempt fails", func() {
+				It("returns a 500 Internal Server Error", func() {
+					Eventually(fakeBBS.UpdateDesiredLRPCallCount).Should(Equal(2))
+					Expect(responseRecorder.Code).To(Equal(http.StatusInternalServerError))
+					Consistently(fakeBBS.UpdateDesiredLRPCallCount).Should(Equal(2))
+				})
 			})
 		})
 
