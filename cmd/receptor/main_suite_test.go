@@ -76,7 +76,7 @@ var _ = SynchronizedBeforeSuite(
 
 		etcdPort = 4001 + GinkgoParallelNode()
 		etcdUrl = fmt.Sprintf("http://127.0.0.1:%d", etcdPort)
-		etcdRunner = etcdstorerunner.NewETCDClusterRunner(etcdPort, 1)
+		etcdRunner = etcdstorerunner.NewETCDClusterRunner(etcdPort, 1, nil)
 
 		consulRunner = consuladapter.NewClusterRunner(
 			9001+config.GinkgoConfig.ParallelNode*consuladapter.PortOffsetLength,
@@ -108,7 +108,7 @@ var _ = BeforeEach(func() {
 	receptorAddress = fmt.Sprintf("127.0.0.1:%d", 6700+GinkgoParallelNode())
 	receptorTaskHandlerAddress = fmt.Sprintf("127.0.0.1:%d", 1169+GinkgoParallelNode())
 
-	etcdAdapter = etcdRunner.Adapter()
+	etcdAdapter = etcdRunner.Adapter(nil)
 	bbs = Bbs.NewBBS(etcdAdapter, consulSession, "http://"+receptorTaskHandlerAddress, clock.NewClock(), logger)
 
 	natsPort = 4051 + GinkgoParallelNode()
