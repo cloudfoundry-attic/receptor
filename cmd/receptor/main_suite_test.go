@@ -59,6 +59,8 @@ var receptorArgs testrunner.Args
 var receptorRunner *ginkgomon.Runner
 var receptorProcess ifrit.Process
 
+const assetsPath = "../../../../cloudfoundry/storeadapter/assets/"
+
 func TestReceptor(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Receptor Cmd Suite")
@@ -75,8 +77,13 @@ var _ = SynchronizedBeforeSuite(
 		SetDefaultEventuallyTimeout(15 * time.Second)
 
 		etcdPort = 4001 + GinkgoParallelNode()
-		etcdUrl = fmt.Sprintf("http://127.0.0.1:%d", etcdPort)
-		etcdRunner = etcdstorerunner.NewETCDClusterRunner(etcdPort, 1)
+		etcdUrl = fmt.Sprintf("https://127.0.0.1:%d", etcdPort)
+		etcdRunner = etcdstorerunner.NewETCDClusterRunner(etcdPort, 1,
+			&etcdstorerunner.SSLConfig{
+				CertFile: assetsPath + "server.crt",
+				KeyFile:  assetsPath + "server.key",
+				CAFile:   assetsPath + "ca.crt",
+			})
 
 		consulRunner = consuladapter.NewClusterRunner(
 			9001+config.GinkgoConfig.ParallelNode*consuladapter.PortOffsetLength,
@@ -108,7 +115,12 @@ var _ = BeforeEach(func() {
 	receptorAddress = fmt.Sprintf("127.0.0.1:%d", 6700+GinkgoParallelNode())
 	receptorTaskHandlerAddress = fmt.Sprintf("127.0.0.1:%d", 1169+GinkgoParallelNode())
 
-	etcdAdapter = etcdRunner.Adapter()
+	etcdAdapter = etcdRunner.Adapter(
+		&etcdstorerunner.SSLConfig{
+			CertFile: assetsPath + "client.crt",
+			KeyFile:  assetsPath + "client.key",
+			CAFile:   assetsPath + "ca.crt",
+		})
 	bbs = Bbs.NewBBS(etcdAdapter, consulSession, "http://"+receptorTaskHandlerAddress, clock.NewClock(), logger)
 
 	natsPort = 4051 + GinkgoParallelNode()
@@ -136,6 +148,9 @@ var _ = BeforeEach(func() {
 		NatsUsername:       "nats",
 		NatsPassword:       "nats",
 		ConsulCluster:      consulRunner.ConsulCluster(),
+		ClientCert:         assetsPath + "client.crt",
+		ClientKey:          assetsPath + "client.key",
+		CACert:             assetsPath + "ca.crt",
 	}
 	receptorRunner = testrunner.New(receptorBinPath, receptorArgs)
 })

@@ -117,6 +117,24 @@ var communicationTimeout = flag.Duration(
 	"Timeout applied to all HTTP requests.",
 )
 
+var certFile = flag.String(
+	"certFile",
+	"",
+	"Location of the client certificate for mutual auth",
+)
+
+var keyFile = flag.String(
+	"keyFile",
+	"",
+	"Location of the client key for mutual auth",
+)
+
+var caFile = flag.String(
+	"caFile",
+	"",
+	"Location of the CA certificate for mutual auth",
+)
+
 const (
 	dropsondeDestination = "localhost:3457"
 	dropsondeOrigin      = "receptor"
@@ -232,10 +250,16 @@ func initializeReceptorBBS(logger lager.Logger) Bbs.ReceptorBBS {
 		logger.Fatal("failed-to-construct-etcd-adapter-workpool", err, lager.Data{"num-workers": 100}) // should never happen
 	}
 
-	etcdAdapter := etcdstoreadapter.NewETCDStoreAdapter(
+	etcdAdapter, err := etcdstoreadapter.NewTLSClient(
 		strings.Split(*etcdCluster, ","),
+		*certFile,
+		*keyFile,
+		*caFile,
 		workPool,
 	)
+	if err != nil {
+		logger.Fatal("failed-to-construct-etcd-tls-client", err)
+	}
 
 	client, err := consuladapter.NewClient(*consulCluster)
 	if err != nil {
