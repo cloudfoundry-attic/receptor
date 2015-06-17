@@ -20,9 +20,9 @@ type Args struct {
 	NatsUsername       string
 	NatsPassword       string
 	CORSEnabled        bool
-	ClientCert         string
-	ClientKey          string
-	CACert             string
+	EtcdClientCert     string
+	EtcdClientKey      string
+	EtcdCACert         string
 }
 
 func (args Args) ArgSlice() []string {
@@ -39,9 +39,9 @@ func (args Args) ArgSlice() []string {
 		"-natsPassword", args.NatsPassword,
 		"-corsEnabled=" + strconv.FormatBool(args.CORSEnabled),
 		"-consulCluster", args.ConsulCluster,
-		"-certFile", args.ClientCert,
-		"-keyFile", args.ClientKey,
-		"-caFile", args.CACert,
+		"-etcdCertFile", args.EtcdClientCert,
+		"-etcdKeyFile", args.EtcdClientKey,
+		"-etcdCaFile", args.EtcdCACert,
 	}
 }
 
