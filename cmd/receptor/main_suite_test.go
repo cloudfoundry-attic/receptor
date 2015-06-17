@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/cloudfoundry-incubator/consuladapter"
+	"github.com/cloudfoundry-incubator/consuladapter/consulrunner"
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/cmd/receptor/testrunner"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
@@ -44,7 +45,7 @@ var etcdUrl string
 var etcdRunner *etcdstorerunner.ETCDClusterRunner
 var etcdAdapter storeadapter.StoreAdapter
 
-var consulRunner *consuladapter.ClusterRunner
+var consulRunner *consulrunner.ClusterRunner
 var consulSession *consuladapter.Session
 
 var bbs *Bbs.BBS
@@ -78,8 +79,8 @@ var _ = SynchronizedBeforeSuite(
 		etcdUrl = fmt.Sprintf("http://127.0.0.1:%d", etcdPort)
 		etcdRunner = etcdstorerunner.NewETCDClusterRunner(etcdPort, 1, nil)
 
-		consulRunner = consuladapter.NewClusterRunner(
-			9001+config.GinkgoConfig.ParallelNode*consuladapter.PortOffsetLength,
+		consulRunner = consulrunner.NewClusterRunner(
+			9001+config.GinkgoConfig.ParallelNode*consulrunner.PortOffsetLength,
 			1,
 			"http",
 		)
