@@ -11,6 +11,7 @@ import (
 	"github.com/cloudfoundry-incubator/receptor/cmd/receptor/testrunner"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry/gunk/diegonats"
+	"github.com/cloudfoundry/gunk/diegonats/gnatsdrunner"
 	"github.com/cloudfoundry/storeadapter"
 	"github.com/cloudfoundry/storeadapter/storerunner/etcdstorerunner"
 	. "github.com/onsi/ginkgo"
@@ -147,7 +148,7 @@ var _ = AfterEach(func() {
 })
 
 func newNatsGroup() ifrit.Runner {
-	natsServerRunner = diegonats.NewGnatsdTestRunner(natsPort)
+	natsServerRunner = gnatsdrunner.NewGnatsdTestRunner(natsPort)
 	natsClientRunner = diegonats.NewClientRunner(natsAddress, "", "", logger, natsClient)
 	return grouper.NewOrdered(os.Kill, grouper.Members{
 		{"natsServer", natsServerRunner},
