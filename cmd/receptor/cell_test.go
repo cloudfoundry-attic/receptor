@@ -35,7 +35,7 @@ var _ = Describe("Cell API", func() {
 
 		BeforeEach(func() {
 			Eventually(func() []models.CellPresence {
-				cellPresences, err := bbs.Cells()
+				cellPresences, err := legacyBBS.Cells()
 				Expect(err).NotTo(HaveOccurred())
 				return cellPresences
 			}).Should(HaveLen(1))
@@ -48,7 +48,7 @@ var _ = Describe("Cell API", func() {
 		})
 
 		It("has the correct data from the bbs", func() {
-			cellPresences, err := bbs.Cells()
+			cellPresences, err := legacyBBS.Cells()
 			Expect(err).NotTo(HaveOccurred())
 
 			expectedResponses := make([]receptor.CellResponse, 0, 1)
@@ -58,7 +58,5 @@ var _ = Describe("Cell API", func() {
 
 			Expect(cellResponses).To(ConsistOf(expectedResponses))
 		})
-
 	})
-
 })

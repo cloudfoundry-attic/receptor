@@ -7,9 +7,10 @@ import (
 	"net/http/httptest"
 	"net/url"
 
+	"github.com/cloudfoundry-incubator/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
-	"github.com/cloudfoundry-incubator/runtime-schema/bbs/fake_bbs"
+	fake_legacy_bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -19,17 +20,19 @@ import (
 var _ = Describe("Domain Handlers", func() {
 	var (
 		logger           lager.Logger
-		fakeBBS          *fake_bbs.FakeReceptorBBS
+		fakeLegacyBBS    *fake_legacy_bbs.FakeReceptorBBS
+		fakeBBS          *fake_bbs.FakeClient
 		responseRecorder *httptest.ResponseRecorder
 		handler          *handlers.DomainHandler
 	)
 
 	BeforeEach(func() {
-		fakeBBS = new(fake_bbs.FakeReceptorBBS)
+		fakeLegacyBBS = new(fake_legacy_bbs.FakeReceptorBBS)
+		fakeBBS = new(fake_bbs.FakeClient)
 		logger = lager.NewLogger("test")
 		logger.RegisterSink(lager.NewWriterSink(GinkgoWriter, lager.DEBUG))
 		responseRecorder = httptest.NewRecorder()
-		handler = handlers.NewDomainHandler(fakeBBS, logger)
+		handler = handlers.NewDomainHandler(fakeBBS, fakeLegacyBBS, logger)
 	})
 
 	Describe("Upsert", func() {
@@ -56,8 +59,8 @@ var _ = Describe("Domain Handlers", func() {
 
 			Context("when the call to the BBS succeeds", func() {
 				It("calls Upsert on the BBS", func() {
-					Expect(fakeBBS.UpsertDomainCallCount()).To(Equal(1))
-					d, ttl := fakeBBS.UpsertDomainArgsForCall(0)
+					Expect(fakeLegacyBBS.UpsertDomainCallCount()).To(Equal(1))
+					d, ttl := fakeLegacyBBS.UpsertDomainArgsForCall(0)
 					Expect(d).To(Equal(domain))
 					Expect(ttl).To(Equal(ttlInSeconds))
 				})
@@ -73,7 +76,7 @@ var _ = Describe("Domain Handlers", func() {
 
 			Context("when the call to the BBS fails", func() {
 				BeforeEach(func() {
-					fakeBBS.UpsertDomainReturns(errors.New("ka-boom"))
+					fakeLegacyBBS.UpsertDomainReturns(errors.New("ka-boom"))
 				})
 
 				It("responds with 500 INTERNAL ERROR", func() {
@@ -94,7 +97,7 @@ var _ = Describe("Domain Handlers", func() {
 				var validationError = models.ValidationError{}
 
 				BeforeEach(func() {
-					fakeBBS.UpsertDomainReturns(validationError)
+					fakeLegacyBBS.UpsertDomainReturns(validationError)
 				})
 
 				It("responds with 400 BAD REQUEST", func() {
@@ -117,8 +120,8 @@ var _ = Describe("Domain Handlers", func() {
 				})
 
 				It("sets the TTL to 0 (inifinite)", func() {
-					Expect(fakeBBS.UpsertDomainCallCount()).To(Equal(1))
-					d, ttl := fakeBBS.UpsertDomainArgsForCall(0)
+					Expect(fakeLegacyBBS.UpsertDomainCallCount()).To(Equal(1))
+					d, ttl := fakeLegacyBBS.UpsertDomainArgsForCall(0)
 					Expect(d).To(Equal(domain))
 					Expect(ttl).To(Equal(0))
 				})
