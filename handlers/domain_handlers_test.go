@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"time"
 
 	"github.com/cloudfoundry-incubator/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/receptor"
@@ -37,11 +38,11 @@ var _ = Describe("Domain Handlers", func() {
 
 	Describe("Upsert", func() {
 		var domain string
-		var ttlInSeconds int
+		var ttl time.Duration
 
 		BeforeEach(func() {
 			domain = "domain-1"
-			ttlInSeconds = 1000
+			ttl = 1000 * time.Second
 		})
 
 		Context("with a structured request", func() {
@@ -59,10 +60,10 @@ var _ = Describe("Domain Handlers", func() {
 
 			Context("when the call to the BBS succeeds", func() {
 				It("calls Upsert on the BBS", func() {
-					Expect(fakeLegacyBBS.UpsertDomainCallCount()).To(Equal(1))
-					d, ttl := fakeLegacyBBS.UpsertDomainArgsForCall(0)
+					Expect(fakeBBS.UpsertDomainCallCount()).To(Equal(1))
+					d, ttl := fakeBBS.UpsertDomainArgsForCall(0)
 					Expect(d).To(Equal(domain))
-					Expect(ttl).To(Equal(ttlInSeconds))
+					Expect(ttl).To(Equal(ttl))
 				})
 
 				It("responds with 204 Status NO CONTENT", func() {
@@ -76,7 +77,7 @@ var _ = Describe("Domain Handlers", func() {
 
 			Context("when the call to the BBS fails", func() {
 				BeforeEach(func() {
-					fakeLegacyBBS.UpsertDomainReturns(errors.New("ka-boom"))
+					fakeBBS.UpsertDomainReturns(errors.New("ka-boom"))
 				})
 
 				It("responds with 500 INTERNAL ERROR", func() {
@@ -97,7 +98,7 @@ var _ = Describe("Domain Handlers", func() {
 				var validationError = models.ValidationError{}
 
 				BeforeEach(func() {
-					fakeLegacyBBS.UpsertDomainReturns(validationError)
+					fakeBBS.UpsertDomainReturns(validationError)
 				})
 
 				It("responds with 400 BAD REQUEST", func() {
@@ -120,10 +121,10 @@ var _ = Describe("Domain Handlers", func() {
 				})
 
 				It("sets the TTL to 0 (inifinite)", func() {
-					Expect(fakeLegacyBBS.UpsertDomainCallCount()).To(Equal(1))
-					d, ttl := fakeLegacyBBS.UpsertDomainArgsForCall(0)
+					Expect(fakeBBS.UpsertDomainCallCount()).To(Equal(1))
+					d, ttl := fakeBBS.UpsertDomainArgsForCall(0)
 					Expect(d).To(Equal(domain))
-					Expect(ttl).To(Equal(0))
+					Expect(ttl).To(Equal(time.Duration(0)))
 				})
 			})
 

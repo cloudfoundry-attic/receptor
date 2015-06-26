@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/cloudfoundry-incubator/bbs"
 	"github.com/cloudfoundry-incubator/receptor"
@@ -72,7 +73,7 @@ func (h *DomainHandler) Upsert(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	err := h.legacyBBS.UpsertDomain(domain, ttl)
+	err := h.bbs.UpsertDomain(domain, time.Second*time.Duration(ttl))
 	if err != nil {
 		if _, ok := err.(models.ValidationError); ok {
 			logger.Error("failed-to-upsert-domain", err)
