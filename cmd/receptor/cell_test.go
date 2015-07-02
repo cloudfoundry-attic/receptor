@@ -16,7 +16,7 @@ var _ = Describe("Cell API", func() {
 
 	BeforeEach(func() {
 		capacity := models.NewCellCapacity(128, 1024, 6)
-		cellPresence = models.NewCellPresence("cell-0", "1.2.3.4", "the-zone", capacity)
+		cellPresence = models.NewCellPresence("cell-0", "1.2.3.4", "the-zone", capacity, []string{}, []string{})
 		value, err := models.ToJSON(cellPresence)
 
 		_, err = consulSession.SetPresence(shared.CellSchemaPath(cellPresence.CellID), value)
