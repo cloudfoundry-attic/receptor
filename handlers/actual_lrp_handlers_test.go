@@ -117,13 +117,13 @@ var _ = Describe("Actual LRP Handlers", func() {
 	Describe("GetAll", func() {
 		Context("when reading LRPs from BBS succeeds", func() {
 			BeforeEach(func() {
-				fakeBBS.ActualLRPGroupsStub = func(filter models.ActualLRPFilter) (models.ActualLRPGroups, error) {
+				fakeBBS.ActualLRPGroupsStub = func(filter models.ActualLRPFilter) ([]*models.ActualLRPGroup, error) {
 					groups := []*models.ActualLRPGroup{}
 					if filter.Domain == "" {
 						groups = append(groups, &models.ActualLRPGroup{Instance: &actualLRP1})
 					}
 					groups = append(groups, &models.ActualLRPGroup{Instance: &actualLRP2, Evacuating: &evacuatingLRP2})
-					return models.ActualLRPGroups{groups}, nil
+					return groups, nil
 				}
 			})
 
@@ -174,7 +174,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		Context("when the BBS returns no lrps", func() {
 			BeforeEach(func() {
-				fakeBBS.ActualLRPGroupsReturns(models.ActualLRPGroups{}, nil)
+				fakeBBS.ActualLRPGroupsReturns([]*models.ActualLRPGroup{}, nil)
 			})
 
 			It("call the BBS to retrieve the actual LRPs", func() {
@@ -195,7 +195,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		Context("when reading from the BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.ActualLRPGroupsReturns(models.ActualLRPGroups{}, errors.New("Something went wrong"))
+				fakeBBS.ActualLRPGroupsReturns([]*models.ActualLRPGroup{}, errors.New("Something went wrong"))
 			})
 
 			It("responds with an error", func() {

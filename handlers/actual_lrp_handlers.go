@@ -45,8 +45,8 @@ func (h *ActualLRPHandler) GetAll(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	responses := make([]receptor.ActualLRPResponse, 0, len(actualLRPGroups.GetActualLrpGroups()))
-	for _, actualLRPGroup := range actualLRPGroups.GetActualLrpGroups() {
+	responses := make([]receptor.ActualLRPResponse, 0, len(actualLRPGroups))
+	for _, actualLRPGroup := range actualLRPGroups {
 		lrp, evacuating, err := actualLRPGroup.Resolve()
 		if err != nil {
 			continue

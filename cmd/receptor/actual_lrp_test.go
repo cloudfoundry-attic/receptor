@@ -87,7 +87,7 @@ var _ = Describe("Actual LRP API", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			expectedResponses := make([]receptor.ActualLRPResponse, 0, lrpCount)
-			for _, actualLRPGroup := range actualLRPGroups.GetActualLrpGroups() {
+			for _, actualLRPGroup := range actualLRPGroups {
 				actualLRP, evacuating, _ := actualLRPGroup.Resolve()
 				if actualLRP.ActualLRPKey == evacuatingLRPKey {
 					continue
