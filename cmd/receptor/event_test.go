@@ -224,16 +224,20 @@ var _ = Describe("Event", func() {
 			_, err = legacyBBS.EvacuateRunningActualLRP(logger, key, instanceKey, netInfo, 0)
 			Expect(err).To(Equal(bbserrors.ErrServiceUnavailable))
 
-			evacuatingLRP, err := legacyBBS.EvacuatingActualLRPByProcessGuidAndIndex(logger, desiredLRP.ProcessGuid, 0)
+			evacuatingLRPGroup, err := bbsClient.ActualLRPGroupByProcessGuidAndIndex(desiredLRP.ProcessGuid, 0)
 			Expect(err).NotTo(HaveOccurred())
+			evacuatingLRP := *evacuatingLRPGroup.GetEvacuating()
 
 			Eventually(func() receptor.Event {
 				Eventually(events).Should(Receive(&event))
 				return event
 			}).Should(BeAssignableToTypeOf(receptor.ActualLRPCreatedEvent{}))
 
+			// this is a necessary hack until we migrate other things to protobufs or pointer structs
 			actualLRPCreatedEvent = event.(receptor.ActualLRPCreatedEvent)
-			Expect(actualLRPCreatedEvent.ActualLRPResponse).To(Equal(serialization.ActualLRPToResponse(evacuatingLRP, true)))
+			response := actualLRPCreatedEvent.ActualLRPResponse
+			response.Ports = nil
+			Expect(response).To(Equal(serialization.ActualLRPProtoToResponse(evacuatingLRP, true)))
 
 			// discard instance -> UNCLAIMED
 			Eventually(func() receptor.Event {
@@ -255,7 +259,10 @@ var _ = Describe("Event", func() {
 			_, err = legacyBBS.EvacuateRunningActualLRP(logger, key, newInstanceKey, netInfo, 0)
 			Expect(err).To(Equal(bbserrors.ErrServiceUnavailable))
 
-			evacuatingLRP, err = legacyBBS.EvacuatingActualLRPByProcessGuidAndIndex(logger, desiredLRP.ProcessGuid, 0)
+			evacuatingLRPGroup, err = bbsClient.ActualLRPGroupByProcessGuidAndIndex(desiredLRP.ProcessGuid, 0)
+			Expect(err).NotTo(HaveOccurred())
+			evacuatingLRP = *evacuatingLRPGroup.GetEvacuating()
+
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() receptor.Event {
@@ -264,8 +271,13 @@ var _ = Describe("Event", func() {
 			}).Should(BeAssignableToTypeOf(receptor.ActualLRPChangedEvent{}))
 
 			actualLRPChangedEvent = event.(receptor.ActualLRPChangedEvent)
-			Expect(actualLRPChangedEvent.Before).To(Equal(serialization.ActualLRPToResponse(evacuatingBefore, true)))
-			Expect(actualLRPChangedEvent.After).To(Equal(serialization.ActualLRPToResponse(evacuatingLRP, true)))
+			response = actualLRPChangedEvent.Before
+			response.Ports = nil
+			Expect(response).To(Equal(serialization.ActualLRPProtoToResponse(evacuatingBefore, true)))
+
+			response = actualLRPChangedEvent.After
+			response.Ports = nil
+			Expect(response).To(Equal(serialization.ActualLRPProtoToResponse(evacuatingLRP, true)))
 
 			// discard instance -> UNCLAIMED
 			Eventually(func() receptor.Event {
@@ -288,7 +300,7 @@ var _ = Describe("Event", func() {
 
 			// this is a necessary hack until we migrate other things to protobufs or pointer structs
 			actualLRPRemovedEvent := event.(receptor.ActualLRPRemovedEvent)
-			response := actualLRPRemovedEvent.ActualLRPResponse
+			response = actualLRPRemovedEvent.ActualLRPResponse
 			response.Ports = nil
 			Expect(response).To(Equal(serialization.ActualLRPProtoToResponse(actualLRP, false)))
 
@@ -302,9 +314,12 @@ var _ = Describe("Event", func() {
 			}).Should(BeAssignableToTypeOf(receptor.ActualLRPRemovedEvent{}))
 
 			Expect(event).To(BeAssignableToTypeOf(receptor.ActualLRPRemovedEvent{}))
+
+			// this is a necessary hack until we migrate other things to protobufs or pointer structs
 			actualLRPRemovedEvent = event.(receptor.ActualLRPRemovedEvent)
-			Expect(actualLRPRemovedEvent.ActualLRPResponse).To(Equal(serialization.ActualLRPToResponse(evacuatingLRP, true)))
+			response = actualLRPRemovedEvent.ActualLRPResponse
+			response.Ports = nil
+			Expect(response).To(Equal(serialization.ActualLRPProtoToResponse(evacuatingLRP, true)))
 		})
 	})
 })
-
