@@ -70,7 +70,7 @@ func (h *ActualLRPHandler) GetAllByProcessGuid(w http.ResponseWriter, req *http.
 		return
 	}
 
-	actualLRPGroupsByIndex, err := h.legacyBBS.ActualLRPGroupsByProcessGuid(logger, processGuid)
+	actualLRPGroupsByIndex, err := h.bbs.ActualLRPGroupsByProcessGuid(processGuid)
 	if err != nil {
 		logger.Error("failed-to-fetch-actual-lrp-groups-by-process-guid", err)
 		writeUnknownErrorResponse(w, err)
@@ -83,7 +83,7 @@ func (h *ActualLRPHandler) GetAllByProcessGuid(w http.ResponseWriter, req *http.
 		if err != nil {
 			continue
 		}
-		responses = append(responses, serialization.ActualLRPToResponse(*lrp, evacuating))
+		responses = append(responses, serialization.ActualLRPProtoToResponse(*lrp, evacuating))
 	}
 
 	writeJSONResponse(w, http.StatusOK, responses)

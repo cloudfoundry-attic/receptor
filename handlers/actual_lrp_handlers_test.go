@@ -232,14 +232,12 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		Context("when reading LRPs from BBS succeeds", func() {
 			BeforeEach(func() {
-				fakeLegacyBBS.ActualLRPGroupsByProcessGuidReturns(oldmodels.ActualLRPGroupsByIndex{
-					1: {Instance: &oldActualLRP1, Evacuating: nil},
-				}, nil)
+				fakeBBS.ActualLRPGroupsByProcessGuidReturns([]*models.ActualLRPGroup{&models.ActualLRPGroup{Instance: &actualLRP1}}, nil)
 			})
 
 			It("calls the BBS to retrieve the actual LRPs", func() {
-				Expect(fakeLegacyBBS.ActualLRPGroupsByProcessGuidCallCount()).To(Equal(1))
-				_, actualProcessGuid := fakeLegacyBBS.ActualLRPGroupsByProcessGuidArgsForCall(0)
+				Expect(fakeBBS.ActualLRPGroupsByProcessGuidCallCount()).To(Equal(1))
+				actualProcessGuid := fakeBBS.ActualLRPGroupsByProcessGuidArgsForCall(0)
 				Expect(actualProcessGuid).To(Equal("process-guid-0"))
 			})
 
@@ -260,15 +258,12 @@ var _ = Describe("Actual LRP Handlers", func() {
 				BeforeEach(func() {
 					req.Form = url.Values{":process_guid": []string{"process-guid-1"}}
 
-					fakeLegacyBBS.ActualLRPGroupsByProcessGuidReturns(
-						oldmodels.ActualLRPGroupsByIndex{2: {Instance: &oldActualLRP2, Evacuating: &oldEvacuatingLRP2}},
-						nil,
-					)
+					fakeBBS.ActualLRPGroupsByProcessGuidReturns([]*models.ActualLRPGroup{&models.ActualLRPGroup{Instance: &actualLRP2, Evacuating: &evacuatingLRP2}}, nil)
 				})
 
 				It("calls the BBS to retrieve the actual LRPs", func() {
-					Expect(fakeLegacyBBS.ActualLRPGroupsByProcessGuidCallCount()).To(Equal(1))
-					_, actualProcessGuid := fakeLegacyBBS.ActualLRPGroupsByProcessGuidArgsForCall(0)
+					Expect(fakeBBS.ActualLRPGroupsByProcessGuidCallCount()).To(Equal(1))
+					actualProcessGuid := fakeBBS.ActualLRPGroupsByProcessGuidArgsForCall(0)
 					Expect(actualProcessGuid).To(Equal("process-guid-1"))
 				})
 
@@ -289,7 +284,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		Context("when reading LRP groups from BBS fails", func() {
 			BeforeEach(func() {
-				fakeLegacyBBS.ActualLRPGroupsByProcessGuidReturns(nil, errors.New("Something went wrong"))
+				fakeBBS.ActualLRPGroupsByProcessGuidReturns(nil, errors.New("Something went wrong"))
 			})
 
 			It("responds with a 500 Internal Error", func() {
@@ -308,7 +303,7 @@ var _ = Describe("Actual LRP Handlers", func() {
 
 		Context("when the BBS does not return any actual LRPs", func() {
 			BeforeEach(func() {
-				fakeLegacyBBS.ActualLRPGroupsByProcessGuidReturns(oldmodels.ActualLRPGroupsByIndex{}, nil)
+				fakeBBS.ActualLRPGroupsByProcessGuidReturns([]*models.ActualLRPGroup{}, nil)
 			})
 
 			It("responds with 200 Status OK", func() {
