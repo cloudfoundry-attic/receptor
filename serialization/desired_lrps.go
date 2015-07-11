@@ -110,6 +110,9 @@ func RoutingInfoToRawMessages(r receptor.RoutingInfo) map[string]*json.RawMessag
 }
 
 func EgressRulesFromProto(securityGroupRules []*models.SecurityGroupRule) []oldmodels.SecurityGroupRule {
+	if securityGroupRules == nil {
+		return nil
+	}
 	result := []oldmodels.SecurityGroupRule{}
 	for _, v := range securityGroupRules {
 		s := oldmodels.SecurityGroupRule{

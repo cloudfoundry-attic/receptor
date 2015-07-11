@@ -77,8 +77,8 @@ func (h *DesiredLRPHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	desiredLRP, err := h.legacyBBS.DesiredLRPByProcessGuid(logger, processGuid)
-	if err == bbserrors.ErrStoreResourceNotFound {
+	desiredLRP, err := h.bbs.DesiredLRPByProcessGuid(processGuid)
+	if e, ok := err.(*bbs.Error); ok && e.Equal(bbs.ErrResourceNotFound) {
 		writeDesiredLRPNotFoundResponse(w, processGuid)
 		return
 	}
@@ -89,7 +89,7 @@ func (h *DesiredLRPHandler) Get(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	writeJSONResponse(w, http.StatusOK, serialization.DesiredLRPToResponse(desiredLRP))
+	writeJSONResponse(w, http.StatusOK, serialization.DesiredLRPProtoToResponse(desiredLRP))
 }
 
 func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
@@ -199,21 +199,6 @@ func writeDesiredLRPProtoResponse(w http.ResponseWriter, logger lager.Logger, de
 	responses := make([]receptor.DesiredLRPResponse, 0, len(desiredLRPs))
 	for _, desiredLRP := range desiredLRPs {
 		responses = append(responses, serialization.DesiredLRPProtoToResponse(desiredLRP))
-	}
-
-	writeJSONResponse(w, http.StatusOK, responses)
-}
-
-func writeDesiredLRPResponse(w http.ResponseWriter, logger lager.Logger, desiredLRPs []oldmodels.DesiredLRP, err error) {
-	if err != nil {
-		logger.Error("failed-to-fetch-desired-lrps", err)
-		writeUnknownErrorResponse(w, err)
-		return
-	}
-
-	responses := make([]receptor.DesiredLRPResponse, 0, len(desiredLRPs))
-	for _, desiredLRP := range desiredLRPs {
-		responses = append(responses, serialization.DesiredLRPToResponse(desiredLRP))
 	}
 
 	writeJSONResponse(w, http.StatusOK, responses)

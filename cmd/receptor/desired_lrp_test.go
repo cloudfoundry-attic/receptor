@@ -57,14 +57,14 @@ var _ = Describe("Desired LRP API", func() {
 		var lrpRequest receptor.DesiredLRPCreateRequest
 		var lrpResponse receptor.DesiredLRPResponse
 		var getErr error
-		var desiredLRP oldmodels.DesiredLRP
+		var desiredLRP *models.DesiredLRP
 
 		BeforeEach(func() {
 			lrpRequest = newValidDesiredLRPCreateRequest()
 			err := client.CreateDesiredLRP(lrpRequest)
 			Expect(err).NotTo(HaveOccurred())
 
-			desiredLRP, err = legacyBBS.DesiredLRPByProcessGuid(logger, lrpRequest.ProcessGuid)
+			desiredLRP, err = bbsClient.DesiredLRPByProcessGuid(lrpRequest.ProcessGuid)
 			Expect(err).NotTo(HaveOccurred())
 
 			lrpResponse, getErr = client.GetDesiredLRP(lrpRequest.ProcessGuid)
@@ -75,8 +75,12 @@ var _ = Describe("Desired LRP API", func() {
 		})
 
 		It("fetches the desired lrp with the matching process guid", func() {
-			expectedLRPResponse := serialization.DesiredLRPToResponse(desiredLRP)
-			Expect(lrpResponse).To(Equal(expectedLRPResponse))
+			expectedLRPResponse := serialization.DesiredLRPProtoToResponse(desiredLRP)
+			actualJSON, err := json.Marshal(lrpResponse)
+			Expect(err).NotTo(HaveOccurred())
+			expectedJSON, err := json.Marshal(expectedLRPResponse)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(actualJSON).To(MatchJSON(expectedJSON))
 		})
 	})
 

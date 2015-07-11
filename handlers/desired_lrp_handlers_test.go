@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 
+	"github.com/cloudfoundry-incubator/bbs"
 	"github.com/cloudfoundry-incubator/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/bbs/models"
 	"github.com/cloudfoundry-incubator/receptor"
@@ -196,19 +197,19 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when reading tasks from BBS succeeds", func() {
 			BeforeEach(func() {
-				fakeLegacyBBS.DesiredLRPByProcessGuidReturns(oldmodels.DesiredLRP{
-					ProcessGuid: "process-guid-0",
-					Domain:      "domain-1",
-					Action: &oldmodels.RunAction{
-						User: "me",
-						Path: "the-path",
-					},
+				fakeBBS.DesiredLRPByProcessGuidReturns(&models.DesiredLRP{
+					ProcessGuid: proto.String("process-guid-0"),
+					Domain:      proto.String("domain-1"),
+					Action: models.WrapAction(&models.RunAction{
+						User: proto.String("me"),
+						Path: proto.String("the-path"),
+					}),
 				}, nil)
 			})
 
 			It("calls DesiredLRPByProcessGuid on the BBS", func() {
-				Expect(fakeLegacyBBS.DesiredLRPByProcessGuidCallCount()).To(Equal(1))
-				_, actualProcessGuid := fakeLegacyBBS.DesiredLRPByProcessGuidArgsForCall(0)
+				Expect(fakeBBS.DesiredLRPByProcessGuidCallCount()).To(Equal(1))
+				actualProcessGuid := fakeBBS.DesiredLRPByProcessGuidArgsForCall(0)
 				Expect(actualProcessGuid).To(Equal("process-guid-0"))
 			})
 
@@ -226,7 +227,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when reading from the BBS fails", func() {
 			BeforeEach(func() {
-				fakeLegacyBBS.DesiredLRPByProcessGuidReturns(oldmodels.DesiredLRP{}, errors.New("Something went wrong"))
+				fakeBBS.DesiredLRPByProcessGuidReturns(&models.DesiredLRP{}, bbs.ErrUnknownError)
 			})
 
 			It("responds with an error", func() {
@@ -236,7 +237,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when the BBS reports no lrp found", func() {
 			BeforeEach(func() {
-				fakeLegacyBBS.DesiredLRPByProcessGuidReturns(oldmodels.DesiredLRP{}, bbserrors.ErrStoreResourceNotFound)
+				fakeBBS.DesiredLRPByProcessGuidReturns(&models.DesiredLRP{}, bbs.ErrResourceNotFound)
 			})
 
 			It("responds with 404 Status NOT FOUND", func() {
@@ -262,7 +263,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 			})
 
 			It("does not call DesiredLRPByProcessGuid on the BBS", func() {
-				Expect(fakeLegacyBBS.DesiredLRPByProcessGuidCallCount()).To(Equal(0))
+				Expect(fakeBBS.DesiredLRPByProcessGuidCallCount()).To(Equal(0))
 			})
 
 			It("responds with 400 BAD REQUEST", func() {
