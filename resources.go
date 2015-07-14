@@ -160,23 +160,23 @@ type RoutingInfo map[string]*json.RawMessage
 
 type DesiredLRPCreateRequest struct {
 	ProcessGuid          string                     `json:"process_guid"`
-	Domain               string                     `json:"domain"`
-	RootFS               string                     `json:"rootfs"`
-	Instances            int                        `json:"instances"`
+	Domain               string                     `json:"domain,omitempty"`
+	RootFS               string                     `json:"rootfs,omitempty"`
+	Instances            int                        `json:"instances,omitempty"`
 	EnvironmentVariables []EnvironmentVariable      `json:"env,omitempty"`
-	Setup                models.Action              `json:"-"`
-	Action               models.Action              `json:"-"`
-	Monitor              models.Action              `json:"-"`
-	StartTimeout         uint                       `json:"start_timeout"`
-	DiskMB               int                        `json:"disk_mb"`
-	MemoryMB             int                        `json:"memory_mb"`
-	CPUWeight            uint                       `json:"cpu_weight"`
-	Privileged           bool                       `json:"privileged"`
-	Ports                []uint16                   `json:"ports"`
+	Setup                models.Action              `json:"-,omitempty"`
+	Action               models.Action              `json:"-,omitempty"`
+	Monitor              models.Action              `json:"-,omitempty"`
+	StartTimeout         uint                       `json:"start_timeout,omitempty"`
+	DiskMB               int                        `json:"disk_mb,omitempty"`
+	MemoryMB             int                        `json:"memory_mb,omitempty"`
+	CPUWeight            uint                       `json:"cpu_weight,omitempty"`
+	Privileged           bool                       `json:"privileged,omitempty"`
+	Ports                []uint16                   `json:"ports,omitempty"`
 	Routes               RoutingInfo                `json:"routes,omitempty"`
-	LogGuid              string                     `json:"log_guid"`
-	LogSource            string                     `json:"log_source"`
-	MetricsGuid          string                     `json:"metrics_guid"`
+	LogGuid              string                     `json:"log_guid,omitempty"`
+	LogSource            string                     `json:"log_source,omitempty"`
+	MetricsGuid          string                     `json:"metrics_guid,omitempty"`
 	Annotation           string                     `json:"annotation,omitempty"`
 	EgressRules          []models.SecurityGroupRule `json:"egress_rules,omitempty"`
 }
