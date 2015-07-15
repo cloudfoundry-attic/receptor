@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/cloudfoundry-incubator/bbs"
 	"github.com/cloudfoundry-incubator/bbs/models"
@@ -184,9 +185,16 @@ func (h *DesiredLRPHandler) GetAll(w http.ResponseWriter, req *http.Request) {
 	})
 
 	filter := models.DesiredLRPFilter{Domain: domain}
+	start := time.Now()
 	desiredLRPs, err := h.bbs.DesiredLRPs(filter)
+	end := time.Now()
 
+	logger.Info("bbs desiredLrps: " + end.Sub(start).String())
+
+	start = time.Now()
 	writeDesiredLRPProtoResponse(w, logger, desiredLRPs, err)
+	end = time.Now()
+	logger.Info("receptor proto->json: " + end.Sub(start).String())
 }
 
 func writeDesiredLRPProtoResponse(w http.ResponseWriter, logger lager.Logger, desiredLRPs []*models.DesiredLRP, err error) {
