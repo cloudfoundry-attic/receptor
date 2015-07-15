@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"strconv"
 	"time"
@@ -26,7 +27,7 @@ func main() {
 	//	var doraPre = `{"action":{"run":{"path":"/tmp/lifecycle/launcher"}},"process_guid":"`
 	//	var guidPrefix = "184aa517-b519-4e45-9c02-6bb126cbe9c5-fa1b700c-a58a-45b3-b1c2-3a670c"
 	//	var doraPost = `","domain":"cf-apps","rootfs":"preloaded:cflinuxfs2","instances":1,"start_timeout":60,"disk_mb":1024,"memory_mb":256,"cpu_weight":1,"privileged":true,"ports":[8080],"routes":{"cf-router":[{"hostnames":["dora.10.244.0.34.xip.io"],"port":8080}]},"log_guid":"184aa517-b519-4e45-9c02-6bb126cbe9c5","log_source":"CELL","metrics_guid":"184aa517-b519-4e45-9c02-6bb126cbe9c5","annotation":"1436275647.3182652","modification_tag":{"epoch":"97395e67-5a9b-4562-6965-43453388f371","index":1}}`
-
+	println("wat")
 	var u64 uint64 = 10
 	cfrouter := json.RawMessage([]byte(`[{"hostnames":["dora.10.244.0.34.xip.io"],"port":8080}]`))
 	diegossh := json.RawMessage([]byte(`{"container_port": 2222, "host_fingerprint": "50:28:aa:56:a3:03:3f:e0:19:32:03:c7:a2:f5:25:b2", "private_key": "-----BEGIN RSA PRIVATE KEY-----\nMIICXQIBAAKBgQDECyl47KFsOqn1oAhvW+URsqi2yluvX+RAVqDveg2RQ/jlyoEn\nZ/jZnQiwmSw3rW4bOBO8vNJ2I3RYjfwWVRLMSlwNnjIgX3eV3rz+Zxc62neoKeCm\nRl1wb7XHeGDnWaq7prlkEk3glY9VPY9p6j/YkpNQDo7pdu6TgNXkLY142wIDAQAB\nAoGBALkg0UkgLE/IFjedqFmArhDIZgo3jd1O8HzRUajT2XwUdDaLxOsxhA37/PjH\nrLnnTNLnYbwZk6V8VaJKcoOkUtpu+BWEVP26eIlnKk/fqQcGMklphqnKhAkzohwj\n3vAjKaVzvwfmEJm79Ctmh41iHheTU4/s10+7+JdcOlfxAKgBAkEA+JGMjTcTfoa6\nEaQPl9SdlMxklQToQoI3i8Yd8av9yYfWUH9E23YerfX0B96X5LcApAfJmaoBvQln\nbzRFJF6UCwJBAMnnm0pAqty+zrKssVl7X2SrupkHFD9/RvSzPLHhCmGzZ/62kOW7\nbnX4QdxDiMgzXBh1q8hjdpqfM6j8vU0eYHECQA3LXgZ0OQO7jFXwSeE+LmSUlzxh\n4lXWjiiWnRDNX68wd6dN+M9JFdjHnnxVUQ6jTUjNGdYKRkBsZi4Ys4GaMhMCQQCZ\njhcRwtrv5gIn66U6K9ViKCVTSwoAPNmHM2Ye1sthgOO/2bObtRAOko/saER4Fm+d\nfqj2T4cdk6TjicyjAU5RAkBnH3rVeZTfiLluRYtECbheKzehuCKhFgQwOTW4upXd\nCtQravNMn86Dsvztz7daSvnziqHvPSHCPixxMwDlyd9E\n-----END RSA PRIVATE KEY-----\n"}`))
@@ -221,9 +222,9 @@ func main() {
 
 	// NOTE: Modify your /etc/hosts -- 10.244.16.130 database-z1-0.etcd.service.consul
 	options := &etcdstoreadapter.ETCDOptions{
-		CertFile:    "/Users/fraenkel/workspace/diego-release/manifest-generation/bosh-lite-stubs/etcd-certs/client.crt",
-		KeyFile:     "/Users/fraenkel/workspace/diego-release/manifest-generation/bosh-lite-stubs/etcd-certs/client.key",
-		CAFile:      "/Users/fraenkel/workspace/diego-release/manifest-generation/bosh-lite-stubs/etcd-certs/diego-ca.crt",
+		CertFile:    "/Users/pivotal/workspace/diego-release/manifest-generation/bosh-lite-stubs/etcd-certs/client.crt",
+		KeyFile:     "/Users/pivotal/workspace/diego-release/manifest-generation/bosh-lite-stubs/etcd-certs/client.key",
+		CAFile:      "/Users/pivotal/workspace/diego-release/manifest-generation/bosh-lite-stubs/etcd-certs/diego-ca.crt",
 		IsSSL:       true,
 		ClusterUrls: []string{"https://database-z1-0.etcd.service.consul:4001"},
 	}
@@ -235,12 +236,14 @@ func main() {
 
 	start := time.Now()
 	for i := 0; i < count; i++ {
+		println(i)
 		mutable.ProcessGuid = proto.String(guidPrefix + strconv.Itoa(i))
 		m, err := proto.Marshal(&mutable)
 		if err != nil {
 			logger.Fatal("mutable", err)
 		}
 
+		m = []byte(base64.StdEncoding.EncodeToString(m))
 		err = etcdAdapter.Create(storeadapter.StoreNode{
 			Key:   shared.DesiredLRPSchemaPathByProcessGuid(mutable.GetProcessGuid()),
 			Value: m,
