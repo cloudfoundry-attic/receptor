@@ -153,7 +153,7 @@ var _ = Describe("Event", func() {
 
 			desiredLRPRemovedEvent, ok := event.(receptor.DesiredLRPRemovedEvent)
 			Expect(ok).To(BeTrue())
-			Expect(desiredLRPRemovedEvent.DesiredLRPResponse.ProcessGuid).To(Equal(desiredLRP.GetProcessGuid()))
+			Expect(desiredLRPRemovedEvent.DesiredLRPResponse.ProcessGuid).To(Equal(desiredLRP.ProcessGuid))
 		})
 	})
 
@@ -195,7 +195,7 @@ var _ = Describe("Event", func() {
 
 			actualLRPGroup, err := bbsClient.ActualLRPGroupByProcessGuidAndIndex(oldDesiredLRP.ProcessGuid, 0)
 			Expect(err).NotTo(HaveOccurred())
-			actualLRP := actualLRPGroup.GetInstance()
+			actualLRP := actualLRPGroup.Instance
 
 			var event receptor.Event
 			Eventually(func() receptor.Event {
@@ -213,7 +213,7 @@ var _ = Describe("Event", func() {
 			before := actualLRP
 			actualLRPGroup, err = bbsClient.ActualLRPGroupByProcessGuidAndIndex(oldDesiredLRP.ProcessGuid, 0)
 			Expect(err).NotTo(HaveOccurred())
-			actualLRP = actualLRPGroup.GetInstance()
+			actualLRP = actualLRPGroup.Instance
 
 			Eventually(func() receptor.Event {
 				Eventually(events).Should(Receive(&event))
@@ -230,7 +230,7 @@ var _ = Describe("Event", func() {
 
 			evacuatingLRPGroup, err := bbsClient.ActualLRPGroupByProcessGuidAndIndex(oldDesiredLRP.ProcessGuid, 0)
 			Expect(err).NotTo(HaveOccurred())
-			evacuatingLRP := evacuatingLRPGroup.GetEvacuating()
+			evacuatingLRP := evacuatingLRPGroup.Evacuating
 
 			Eventually(func() receptor.Event {
 				Eventually(events).Should(Receive(&event))
@@ -265,7 +265,7 @@ var _ = Describe("Event", func() {
 
 			evacuatingLRPGroup, err = bbsClient.ActualLRPGroupByProcessGuidAndIndex(oldDesiredLRP.ProcessGuid, 0)
 			Expect(err).NotTo(HaveOccurred())
-			evacuatingLRP = evacuatingLRPGroup.GetEvacuating()
+			evacuatingLRP = evacuatingLRPGroup.Evacuating
 
 			Expect(err).NotTo(HaveOccurred())
 

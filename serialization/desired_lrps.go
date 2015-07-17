@@ -10,25 +10,25 @@ import (
 
 func DesiredLRPProtoToResponse(lrp *models.DesiredLRP) receptor.DesiredLRPResponse {
 	return receptor.DesiredLRPResponse{
-		ProcessGuid:          lrp.GetProcessGuid(),
-		Domain:               lrp.GetDomain(),
-		RootFS:               lrp.GetRootFs(),
-		Instances:            int(lrp.GetInstances()),
-		EnvironmentVariables: EnvironmentVariablesFromProto(lrp.GetEnvironmentVariables()),
-		Setup:                models.UnwrapAction(lrp.GetSetup()),
-		Action:               models.UnwrapAction(lrp.GetAction()),
-		Monitor:              models.UnwrapAction(lrp.GetMonitor()),
-		StartTimeout:         uint(lrp.GetStartTimeout()),
-		DiskMB:               int(lrp.GetDiskMb()),
-		MemoryMB:             int(lrp.GetMemoryMb()),
-		CPUWeight:            uint(lrp.GetCpuWeight()),
-		Privileged:           lrp.GetPrivileged(),
+		ProcessGuid:          lrp.ProcessGuid,
+		Domain:               lrp.Domain,
+		RootFS:               lrp.RootFs,
+		Instances:            int(lrp.Instances),
+		EnvironmentVariables: EnvironmentVariablesFromProto(lrp.EnvironmentVariables),
+		Setup:                models.UnwrapAction(lrp.Setup),
+		Action:               models.UnwrapAction(lrp.Action),
+		Monitor:              models.UnwrapAction(lrp.Monitor),
+		StartTimeout:         uint(lrp.StartTimeout),
+		DiskMB:               int(lrp.DiskMb),
+		MemoryMB:             int(lrp.MemoryMb),
+		CPUWeight:            uint(lrp.CpuWeight),
+		Privileged:           lrp.Privileged,
 		Ports:                PortsFromProto(lrp.Ports),
 		Routes:               RoutingInfoFromProto(lrp.Routes),
-		LogGuid:              lrp.GetLogGuid(),
-		LogSource:            lrp.GetLogSource(),
-		MetricsGuid:          lrp.GetMetricsGuid(),
-		Annotation:           lrp.GetAnnotation(),
+		LogGuid:              lrp.LogGuid,
+		LogSource:            lrp.LogSource,
+		MetricsGuid:          lrp.MetricsGuid,
+		Annotation:           lrp.Annotation,
 		EgressRules:          EgressRulesFromProto(lrp.EgressRules),
 		ModificationTag:      desiredLRPModificationTagProtoToResponseModificationTag(lrp.ModificationTag),
 	}
@@ -116,18 +116,18 @@ func EgressRulesFromProto(securityGroupRules []*models.SecurityGroupRule) []oldm
 	result := []oldmodels.SecurityGroupRule{}
 	for _, v := range securityGroupRules {
 		s := oldmodels.SecurityGroupRule{
-			Protocol:     oldmodels.ProtocolName(v.GetProtocol()),
-			Destinations: v.GetDestinations(),
+			Protocol:     oldmodels.ProtocolName(v.Protocol),
+			Destinations: v.Destinations,
 			Ports:        PortsFromProto(v.Ports),
 			PortRange: &oldmodels.PortRange{
-				Start: uint16(v.GetPortRange().GetStart()),
-				End:   uint16(v.GetPortRange().GetEnd()),
+				Start: uint16(v.PortRange.Start),
+				End:   uint16(v.PortRange.End),
 			},
 			IcmpInfo: &oldmodels.ICMPInfo{
-				Type: v.GetIcmpInfo().GetType(),
-				Code: v.GetIcmpInfo().GetCode(),
+				Type: v.IcmpInfo.Type,
+				Code: v.IcmpInfo.Code,
 			},
-			Log: v.GetLog(),
+			Log: v.Log,
 		}
 		result = append(result, s)
 	}
@@ -167,9 +167,12 @@ func RoutingInfoFromRawMessages(raw map[string]*json.RawMessage) receptor.Routin
 }
 
 func desiredLRPModificationTagProtoToResponseModificationTag(modificationTag *models.ModificationTag) receptor.ModificationTag {
+	if modificationTag == nil {
+		return receptor.ModificationTag{}
+	}
 	return receptor.ModificationTag{
-		Epoch: modificationTag.GetEpoch(),
-		Index: uint(modificationTag.GetIndex()),
+		Epoch: modificationTag.Epoch,
+		Index: uint(modificationTag.Index),
 	}
 }
 

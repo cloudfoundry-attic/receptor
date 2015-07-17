@@ -8,20 +8,20 @@ import (
 
 func ActualLRPProtoToResponse(actualLRP *models.ActualLRP, evacuating bool) receptor.ActualLRPResponse {
 	return receptor.ActualLRPResponse{
-		ProcessGuid:     actualLRP.GetProcessGuid(),
-		InstanceGuid:    actualLRP.GetInstanceGuid(),
-		CellID:          actualLRP.GetCellId(),
-		Domain:          actualLRP.GetDomain(),
-		Index:           int(actualLRP.GetIndex()),
-		Address:         actualLRP.GetAddress(),
-		Ports:           PortMappingFromProto(actualLRP.GetPorts()),
-		State:           actualLRPProtoStateToResponseState(actualLRP.GetState()),
-		PlacementError:  actualLRP.GetPlacementError(),
-		Since:           actualLRP.GetSince(),
-		CrashCount:      int(actualLRP.GetCrashCount()),
-		CrashReason:     actualLRP.GetCrashReason(),
+		ProcessGuid:     actualLRP.ProcessGuid,
+		InstanceGuid:    actualLRP.InstanceGuid,
+		CellID:          actualLRP.CellId,
+		Domain:          actualLRP.Domain,
+		Index:           int(actualLRP.Index),
+		Address:         actualLRP.Address,
+		Ports:           PortMappingFromProto(actualLRP.Ports),
+		State:           actualLRPProtoStateToResponseState(actualLRP.State),
+		PlacementError:  actualLRP.PlacementError,
+		Since:           actualLRP.Since,
+		CrashCount:      int(actualLRP.CrashCount),
+		CrashReason:     actualLRP.CrashReason,
 		Evacuating:      evacuating,
-		ModificationTag: actualLRPProtoModificationTagToResponseModificationTag(actualLRP.GetModificationTag()),
+		ModificationTag: actualLRPProtoModificationTagToResponseModificationTag(actualLRP.ModificationTag),
 	}
 }
 
@@ -41,9 +41,12 @@ func actualLRPProtoStateToResponseState(state string) receptor.ActualLRPState {
 }
 
 func actualLRPProtoModificationTagToResponseModificationTag(modificationTag *models.ModificationTag) receptor.ModificationTag {
+	if modificationTag == nil {
+		return receptor.ModificationTag{}
+	}
 	return receptor.ModificationTag{
-		Epoch: modificationTag.GetEpoch(),
-		Index: uint(modificationTag.GetIndex()),
+		Epoch: modificationTag.Epoch,
+		Index: uint(modificationTag.Index),
 	}
 }
 

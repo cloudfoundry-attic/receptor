@@ -24,8 +24,8 @@ func EnvironmentVariablesFromProto(envVars []*models.EnvironmentVariable) []rece
 	}
 	out := make([]receptor.EnvironmentVariable, len(envVars))
 	for i, val := range envVars {
-		out[i].Name = val.GetName()
-		out[i].Value = val.GetValue()
+		out[i].Name = val.Name
+		out[i].Value = val.Value
 	}
 	return out
 }
@@ -48,8 +48,8 @@ func PortMappingFromProto(ports []*models.PortMapping) []receptor.PortMapping {
 	}
 	out := make([]receptor.PortMapping, len(ports))
 	for i, val := range ports {
-		out[i].ContainerPort = uint16(val.GetContainerPort())
-		out[i].HostPort = uint16(val.GetHostPort())
+		out[i].ContainerPort = uint16(val.ContainerPort)
+		out[i].HostPort = uint16(val.HostPort)
 	}
 	return out
 }

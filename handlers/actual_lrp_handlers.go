@@ -178,7 +178,7 @@ func (h *ActualLRPHandler) KillByProcessGuidAndIndex(w http.ResponseWriter, req 
 	}
 
 	actualLRP, _ := actualLRPGroup.Resolve()
-	actualLRPKey := oldmodels.NewActualLRPKey(actualLRP.GetProcessGuid(), int(actualLRP.GetIndex()), actualLRP.GetDomain())
+	actualLRPKey := oldmodels.NewActualLRPKey(actualLRP.ProcessGuid, int(actualLRP.Index), actualLRP.Domain)
 	h.legacyBBS.RetireActualLRPs(logger, []oldmodels.ActualLRPKey{actualLRPKey})
 
 	w.WriteHeader(http.StatusNoContent)
