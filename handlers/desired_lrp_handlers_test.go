@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 	"net/url"
 
-	"github.com/cloudfoundry-incubator/bbs"
 	"github.com/cloudfoundry-incubator/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/bbs/models"
 	"github.com/cloudfoundry-incubator/receptor"
@@ -227,7 +226,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when reading from the BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.DesiredLRPByProcessGuidReturns(&models.DesiredLRP{}, bbs.ErrUnknownError)
+				fakeBBS.DesiredLRPByProcessGuidReturns(&models.DesiredLRP{}, models.ErrUnknownError)
 			})
 
 			It("responds with an error", func() {
@@ -237,7 +236,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 
 		Context("when the BBS reports no lrp found", func() {
 			BeforeEach(func() {
-				fakeBBS.DesiredLRPByProcessGuidReturns(&models.DesiredLRP{}, bbs.ErrResourceNotFound)
+				fakeBBS.DesiredLRPByProcessGuidReturns(&models.DesiredLRP{}, models.ErrResourceNotFound)
 			})
 
 			It("responds with 404 Status NOT FOUND", func() {

@@ -6,7 +6,7 @@ import (
 	oldmodels "github.com/cloudfoundry-incubator/runtime-schema/models"
 )
 
-func ActualLRPProtoToResponse(actualLRP models.ActualLRP, evacuating bool) receptor.ActualLRPResponse {
+func ActualLRPProtoToResponse(actualLRP *models.ActualLRP, evacuating bool) receptor.ActualLRPResponse {
 	return receptor.ActualLRPResponse{
 		ProcessGuid:     actualLRP.GetProcessGuid(),
 		InstanceGuid:    actualLRP.GetInstanceGuid(),

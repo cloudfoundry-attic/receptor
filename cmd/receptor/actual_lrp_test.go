@@ -88,12 +88,12 @@ var _ = Describe("Actual LRP API", func() {
 
 			expectedResponses := make([]receptor.ActualLRPResponse, 0, lrpCount)
 			for _, actualLRPGroup := range actualLRPGroups {
-				actualLRP, evacuating, _ := actualLRPGroup.Resolve()
+				actualLRP, evacuating := actualLRPGroup.Resolve()
 				if actualLRP.ActualLRPKey == evacuatingLRPKey {
 					continue
 				}
 
-				expectedResponses = append(expectedResponses, serialization.ActualLRPProtoToResponse(*actualLRP, evacuating))
+				expectedResponses = append(expectedResponses, serialization.ActualLRPProtoToResponse(actualLRP, evacuating))
 			}
 
 			Expect(actualLRPResponses).To(ConsistOf(expectedResponses))
@@ -121,11 +121,11 @@ var _ = Describe("Actual LRP API", func() {
 
 			instanceLRPGroup, err := bbsClient.ActualLRPGroupByProcessGuidAndIndex("process-guid-1", 1)
 			Expect(err).NotTo(HaveOccurred())
-			expectedResponses = append(expectedResponses, serialization.ActualLRPProtoToResponse(*instanceLRPGroup.GetInstance(), false))
+			expectedResponses = append(expectedResponses, serialization.ActualLRPProtoToResponse(instanceLRPGroup.GetInstance(), false))
 
 			evacuatingLRPGroup, err := bbsClient.ActualLRPGroupByProcessGuidAndIndex(evacuatingLRPKey.GetProcessGuid(), int(evacuatingLRPKey.GetIndex()))
 			Expect(err).NotTo(HaveOccurred())
-			expectedResponses = append(expectedResponses, serialization.ActualLRPProtoToResponse(*evacuatingLRPGroup.GetEvacuating(), true))
+			expectedResponses = append(expectedResponses, serialization.ActualLRPProtoToResponse(evacuatingLRPGroup.GetEvacuating(), true))
 
 			Expect(actualLRPResponses).To(ConsistOf(expectedResponses))
 		})
@@ -150,7 +150,7 @@ var _ = Describe("Actual LRP API", func() {
 		It("has the correct data from the bbs", func() {
 			evacuatingLRPGroup, err := bbsClient.ActualLRPGroupByProcessGuidAndIndex(evacuatingLRPKey.GetProcessGuid(), int(evacuatingLRPKey.GetIndex()))
 			Expect(err).NotTo(HaveOccurred())
-			Expect(actualLRPResponses).To(ConsistOf(serialization.ActualLRPProtoToResponse(*evacuatingLRPGroup.GetEvacuating(), true)))
+			Expect(actualLRPResponses).To(ConsistOf(serialization.ActualLRPProtoToResponse(evacuatingLRPGroup.GetEvacuating(), true)))
 		})
 	})
 
@@ -184,7 +184,7 @@ var _ = Describe("Actual LRP API", func() {
 		It("has the correct data from the bbs", func() {
 			actualLRPGroup, err := bbsClient.ActualLRPGroupByProcessGuidAndIndex(processGuid, index)
 			Expect(err).NotTo(HaveOccurred())
-			Expect(actualLRPResponse).To(Equal(serialization.ActualLRPProtoToResponse(*actualLRPGroup.Instance, false)))
+			Expect(actualLRPResponse).To(Equal(serialization.ActualLRPProtoToResponse(actualLRPGroup.Instance, false)))
 		})
 	})
 })
