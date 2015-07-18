@@ -15,9 +15,9 @@ func DesiredLRPProtoToResponse(lrp *models.DesiredLRP) receptor.DesiredLRPRespon
 		RootFS:               lrp.RootFs,
 		Instances:            int(lrp.Instances),
 		EnvironmentVariables: EnvironmentVariablesFromProto(lrp.EnvironmentVariables),
-		Setup:                models.UnwrapAction(lrp.Setup),
-		Action:               models.UnwrapAction(lrp.Action),
-		Monitor:              models.UnwrapAction(lrp.Monitor),
+		Setup:                lrp.Setup,
+		Action:               lrp.Action,
+		Monitor:              lrp.Monitor,
 		StartTimeout:         uint(lrp.StartTimeout),
 		DiskMB:               int(lrp.DiskMb),
 		MemoryMB:             int(lrp.MemoryMb),
@@ -29,7 +29,7 @@ func DesiredLRPProtoToResponse(lrp *models.DesiredLRP) receptor.DesiredLRPRespon
 		LogSource:            lrp.LogSource,
 		MetricsGuid:          lrp.MetricsGuid,
 		Annotation:           lrp.Annotation,
-		EgressRules:          EgressRulesFromProto(lrp.EgressRules),
+		EgressRules:          lrp.EgressRules,
 		ModificationTag:      desiredLRPModificationTagProtoToResponseModificationTag(lrp.ModificationTag),
 	}
 }
@@ -59,32 +59,6 @@ func DesiredLRPFromRequest(req receptor.DesiredLRPCreateRequest) oldmodels.Desir
 		Annotation:           req.Annotation,
 		EgressRules:          req.EgressRules,
 		ModificationTag:      oldmodels.ModificationTag{},
-	}
-}
-
-func DesiredLRPToResponse(lrp oldmodels.DesiredLRP) receptor.DesiredLRPResponse {
-	return receptor.DesiredLRPResponse{
-		ProcessGuid:          lrp.ProcessGuid,
-		Domain:               lrp.Domain,
-		RootFS:               lrp.RootFS,
-		Instances:            lrp.Instances,
-		EnvironmentVariables: EnvironmentVariablesFromModel(lrp.EnvironmentVariables),
-		Setup:                lrp.Setup,
-		Action:               lrp.Action,
-		Monitor:              lrp.Monitor,
-		StartTimeout:         lrp.StartTimeout,
-		DiskMB:               lrp.DiskMB,
-		MemoryMB:             lrp.MemoryMB,
-		CPUWeight:            lrp.CPUWeight,
-		Privileged:           lrp.Privileged,
-		Ports:                lrp.Ports,
-		Routes:               RoutingInfoFromRawMessages(lrp.Routes),
-		LogGuid:              lrp.LogGuid,
-		LogSource:            lrp.LogSource,
-		MetricsGuid:          lrp.MetricsGuid,
-		Annotation:           lrp.Annotation,
-		EgressRules:          lrp.EgressRules,
-		ModificationTag:      desiredLRPModificationTagToResponseModificationTag(lrp.ModificationTag),
 	}
 }
 
