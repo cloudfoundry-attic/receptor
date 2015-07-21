@@ -130,7 +130,15 @@ var _ = Describe("Event Stream Handlers", func() {
 				Eventually(responseChan).Should(Receive(&response))
 				reader := sse.NewReadCloser(response.Body)
 
-				desiredLRP := models.NewDesiredLRP("some-guid", "some-domain", "some-rootfs", models.Run("true", "user"))
+				desiredLRP := &models.DesiredLRP{
+					ProcessGuid: "some-guid",
+					Domain:      "some-domain",
+					RootFs:      "some-rootfs",
+					Action: models.WrapAction(&models.RunAction{
+						Path: "true",
+						User: "user",
+					}),
+				}
 				eventChannel <- models.NewDesiredLRPCreatedEvent(desiredLRP)
 
 				data, err := json.Marshal(receptor.NewDesiredLRPCreatedEvent(serialization.DesiredLRPProtoToResponse(desiredLRP)))
