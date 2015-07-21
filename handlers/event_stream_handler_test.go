@@ -97,13 +97,13 @@ var _ = Describe("Event Stream Handlers", func() {
 				}
 			})
 
-			It("returns an internal server error", func(done Done) {
+			It("returns an internal server error", func() {
 				Eventually(fakeBBS.SubscribeToEventsCallCount).Should(Equal(1))
 				http.DefaultTransport.(*http.Transport).CancelRequest(request)
 
 				// should not timeout
 				server.Close()
-				close(done)
+				Eventually(responseChan).Should(Receive())
 			})
 		})
 
@@ -199,7 +199,6 @@ var _ = Describe("Event Stream Handlers", func() {
 					response := &http.Response{}
 					Eventually(responseChan).Should(Receive(&response))
 					reader := sse.NewReadCloser(response.Body)
-					eventSource.NextReturns(eventfakes.FakeEvent{"A"}, nil)
 					err := reader.Close()
 					Expect(err).NotTo(HaveOccurred())
 					Eventually(eventStreamDone, 10).Should(BeClosed())
