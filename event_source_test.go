@@ -9,7 +9,6 @@ import (
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/fake_receptor"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
-	oldmodels "github.com/cloudfoundry-incubator/runtime-schema/models"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/vito/go-sse/sse"
@@ -134,10 +133,10 @@ var _ = Describe("EventSource", func() {
 			var actualLRPResponse receptor.ActualLRPResponse
 
 			BeforeEach(func() {
-				actualLRPResponse = serialization.ActualLRPToResponse(
-					oldmodels.ActualLRP{
-						ActualLRPKey: oldmodels.NewActualLRPKey("some-guid", 0, "some-domain"),
-						State:        oldmodels.ActualLRPStateUnclaimed,
+				actualLRPResponse = serialization.ActualLRPProtoToResponse(
+					&models.ActualLRP{
+						ActualLRPKey: models.NewActualLRPKey("some-guid", 0, "some-domain"),
+						State:        models.ActualLRPStateUnclaimed,
 						Since:        1,
 					},
 					false,

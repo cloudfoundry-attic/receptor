@@ -35,7 +35,6 @@ func (h *EventStreamHandler) EventStream(w http.ResponseWriter, req *http.Reques
 
 	flusher := w.(http.Flusher)
 
-
 	go func() {
 		source, err := h.bbs.SubscribeToEvents()
 		if err != nil {

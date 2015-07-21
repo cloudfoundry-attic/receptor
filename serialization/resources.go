@@ -53,27 +53,3 @@ func PortMappingFromProto(ports []*models.PortMapping) []receptor.PortMapping {
 	}
 	return out
 }
-
-func PortMappingFromModel(ports []oldmodels.PortMapping) []receptor.PortMapping {
-	if ports == nil {
-		return nil
-	}
-	out := make([]receptor.PortMapping, len(ports))
-	for i, val := range ports {
-		out[i].ContainerPort = val.ContainerPort
-		out[i].HostPort = val.HostPort
-	}
-	return out
-}
-
-func PortMappingToModel(ports []receptor.PortMapping) []oldmodels.PortMapping {
-	if ports == nil {
-		return nil
-	}
-	out := make([]oldmodels.PortMapping, len(ports))
-	for i, val := range ports {
-		out[i].ContainerPort = val.ContainerPort
-		out[i].HostPort = val.HostPort
-	}
-	return out
-}

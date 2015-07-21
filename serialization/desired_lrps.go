@@ -34,6 +34,28 @@ func DesiredLRPProtoToResponse(lrp *models.DesiredLRP) receptor.DesiredLRPRespon
 	}
 }
 
+func RoutingInfoFromProto(routes *models.Routes) receptor.RoutingInfo {
+	if routes == nil {
+		return nil
+	}
+
+	info := receptor.RoutingInfo{}
+	for key, value := range *routes {
+		info[key] = value
+	}
+	return info
+}
+
+func desiredLRPModificationTagProtoToResponseModificationTag(modificationTag *models.ModificationTag) receptor.ModificationTag {
+	if modificationTag == nil {
+		return receptor.ModificationTag{}
+	}
+	return receptor.ModificationTag{
+		Epoch: modificationTag.Epoch,
+		Index: uint(modificationTag.Index),
+	}
+}
+
 // old code -- delete when BBS server is done
 
 func DesiredLRPFromRequest(req receptor.DesiredLRPCreateRequest) oldmodels.DesiredLRP {
@@ -83,76 +105,10 @@ func RoutingInfoToRawMessages(r receptor.RoutingInfo) map[string]*json.RawMessag
 	return messages
 }
 
-func EgressRulesFromProto(securityGroupRules []*models.SecurityGroupRule) []oldmodels.SecurityGroupRule {
-	if securityGroupRules == nil {
-		return nil
-	}
-	result := []oldmodels.SecurityGroupRule{}
-	for _, v := range securityGroupRules {
-		s := oldmodels.SecurityGroupRule{
-			Protocol:     oldmodels.ProtocolName(v.Protocol),
-			Destinations: v.Destinations,
-			Ports:        PortsFromProto(v.Ports),
-			PortRange: &oldmodels.PortRange{
-				Start: uint16(v.PortRange.Start),
-				End:   uint16(v.PortRange.End),
-			},
-			IcmpInfo: &oldmodels.ICMPInfo{
-				Type: v.IcmpInfo.Type,
-				Code: v.IcmpInfo.Code,
-			},
-			Log: v.Log,
-		}
-		result = append(result, s)
-	}
-	return result
-}
-
 func PortsFromProto(ports []uint32) []uint16 {
 	result := []uint16{}
 	for _, v := range ports {
 		result = append(result, uint16(v))
 	}
 	return result
-}
-
-func RoutingInfoFromProto(routes *models.Routes) receptor.RoutingInfo {
-	if routes == nil {
-		return nil
-	}
-
-	info := receptor.RoutingInfo{}
-	for key, value := range *routes {
-		info[key] = value
-	}
-	return info
-}
-
-func RoutingInfoFromRawMessages(raw map[string]*json.RawMessage) receptor.RoutingInfo {
-	if raw == nil {
-		return nil
-	}
-
-	info := receptor.RoutingInfo{}
-	for key, value := range raw {
-		info[key] = value
-	}
-	return info
-}
-
-func desiredLRPModificationTagProtoToResponseModificationTag(modificationTag *models.ModificationTag) receptor.ModificationTag {
-	if modificationTag == nil {
-		return receptor.ModificationTag{}
-	}
-	return receptor.ModificationTag{
-		Epoch: modificationTag.Epoch,
-		Index: uint(modificationTag.Index),
-	}
-}
-
-func desiredLRPModificationTagToResponseModificationTag(modificationTag oldmodels.ModificationTag) receptor.ModificationTag {
-	return receptor.ModificationTag{
-		Epoch: modificationTag.Epoch,
-		Index: modificationTag.Index,
-	}
 }
