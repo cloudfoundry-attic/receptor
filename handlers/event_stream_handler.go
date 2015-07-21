@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/cloudfoundry-incubator/bbs"
+	"github.com/cloudfoundry-incubator/bbs/events"
 	"github.com/cloudfoundry-incubator/bbs/models"
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
@@ -30,13 +31,30 @@ func (h *EventStreamHandler) EventStream(w http.ResponseWriter, req *http.Reques
 	logger := h.logger.Session("event-stream-handler")
 
 	closeNotifier := w.(http.CloseNotifier).CloseNotify()
+	sourceChan := make(chan events.EventSource)
 
 	flusher := w.(http.Flusher)
 
-	source, err := h.bbs.SubscribeToEvents()
-	if err != nil {
-		logger.Error("failed-to-subscribe-to-events", err)
-		w.WriteHeader(http.StatusInternalServerError)
+
+	go func() {
+		source, err := h.bbs.SubscribeToEvents()
+		if err != nil {
+			logger.Error("failed-to-subscribe-to-events", err)
+			close(sourceChan)
+			return
+		}
+		sourceChan <- source
+	}()
+
+	var source events.EventSource
+
+	select {
+	case source = <-sourceChan:
+		if source == nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+	case <-closeNotifier:
 		return
 	}
 

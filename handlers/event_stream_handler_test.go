@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"time"
 
+	"github.com/cloudfoundry-incubator/bbs/events"
 	"github.com/cloudfoundry-incubator/bbs/events/eventfakes"
 	"github.com/cloudfoundry-incubator/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/bbs/models"
@@ -39,19 +40,22 @@ var _ = Describe("Event Stream Handlers", func() {
 		handler = handlers.NewEventStreamHandler(fakeBBS, logger)
 	})
 
-	AfterEach(func() {
+	AfterEach(func(done Done) {
 		if server != nil {
 			server.Close()
 		}
+		close(done)
 	})
 
 	Describe("EventStream", func() {
 		var (
-			response        *http.Response
+			request         *http.Request
+			responseChan    chan *http.Response
 			eventStreamDone chan struct{}
 		)
 
 		BeforeEach(func() {
+			responseChan = make(chan *http.Response)
 			eventStreamDone = make(chan struct{})
 			server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				handler.EventStream(w, r)
@@ -61,8 +65,13 @@ var _ = Describe("Event Stream Handlers", func() {
 
 		JustBeforeEach(func() {
 			var err error
-			response, err = http.Get(server.URL)
+			request, err = http.NewRequest("GET", server.URL, nil)
 			Expect(err).NotTo(HaveOccurred())
+			go func() {
+				defer GinkgoRecover()
+				response, _ := http.DefaultClient.Do(request)
+				responseChan <- response
+			}()
 		})
 
 		Context("when failing to subscribe to the event stream", func() {
@@ -71,7 +80,30 @@ var _ = Describe("Event Stream Handlers", func() {
 			})
 
 			It("returns an internal server error", func() {
+				response := &http.Response{}
+				Eventually(responseChan).Should(Receive(&response))
 				Expect(response.StatusCode).To(Equal(http.StatusInternalServerError))
+			})
+		})
+
+		Context("when connection is closed before subscription is complete", func() {
+			var subscribe chan bool
+
+			BeforeEach(func() {
+				subscribe = make(chan bool)
+				fakeBBS.SubscribeToEventsStub = func() (events.EventSource, error) {
+					<-subscribe
+					return nil, errors.New("broken")
+				}
+			})
+
+			It("returns an internal server error", func(done Done) {
+				Eventually(fakeBBS.SubscribeToEventsCallCount).Should(Equal(1))
+				http.DefaultTransport.(*http.Transport).CancelRequest(request)
+
+				// should not timeout
+				server.Close()
+				close(done)
 			})
 		})
 
@@ -94,6 +126,8 @@ var _ = Describe("Event Stream Handlers", func() {
 			})
 
 			It("emits events from the stream to the connection", func(done Done) {
+				response := &http.Response{}
+				Eventually(responseChan).Should(Receive(&response))
 				reader := sse.NewReadCloser(response.Body)
 
 				desiredLRP := models.NewDesiredLRP("some-guid", "some-domain", "some-rootfs", models.Run("true", "user"))
@@ -126,6 +160,8 @@ var _ = Describe("Event Stream Handlers", func() {
 			})
 
 			It("returns Content-Type as text/event-stream", func() {
+				response := &http.Response{}
+				Eventually(responseChan).Should(Receive(&response))
 				Expect(response.Header.Get("Content-Type")).To(Equal("text/event-stream; charset=utf-8"))
 				Expect(response.Header.Get("Cache-Control")).To(Equal("no-cache, no-store, must-revalidate"))
 				Expect(response.Header.Get("Connection")).To(Equal("keep-alive"))
@@ -133,6 +169,8 @@ var _ = Describe("Event Stream Handlers", func() {
 
 			Context("when the source provides an unmarshalable event", func() {
 				It("closes the event stream to the client", func(done Done) {
+					response := &http.Response{}
+					Eventually(responseChan).Should(Receive(&response))
 					eventChannel <- eventfakes.UnmarshalableEvent{Fn: func() {}}
 
 					reader := sse.NewReadCloser(response.Body)
@@ -148,6 +186,8 @@ var _ = Describe("Event Stream Handlers", func() {
 				})
 
 				It("closes the client event stream", func() {
+					response := &http.Response{}
+					Eventually(responseChan).Should(Receive(&response))
 					reader := sse.NewReadCloser(response.Body)
 					_, err := reader.Next()
 					Expect(err).To(Equal(io.EOF))
@@ -156,6 +196,8 @@ var _ = Describe("Event Stream Handlers", func() {
 
 			Context("when the client closes the response body", func() {
 				It("returns early", func() {
+					response := &http.Response{}
+					Eventually(responseChan).Should(Receive(&response))
 					reader := sse.NewReadCloser(response.Body)
 					eventSource.NextReturns(eventfakes.FakeEvent{"A"}, nil)
 					err := reader.Close()
