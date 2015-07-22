@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/cloudfoundry-incubator/bbs/models"
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/bbserrors"
@@ -165,9 +166,11 @@ var _ = Describe("Event", func() {
 
 		var (
 			key            oldmodels.ActualLRPKey
-			instanceKey    oldmodels.ActualLRPInstanceKey
+			oldInstanceKey oldmodels.ActualLRPInstanceKey
 			newInstanceKey oldmodels.ActualLRPInstanceKey
 			netInfo        oldmodels.ActualLRPNetInfo
+
+			instanceKey models.ActualLRPInstanceKey
 		)
 
 		BeforeEach(func() {
@@ -183,9 +186,11 @@ var _ = Describe("Event", func() {
 			}
 
 			key = oldmodels.NewActualLRPKey(processGuid, 0, domain)
-			instanceKey = oldmodels.NewActualLRPInstanceKey("instance-guid", "cell-id")
+			oldInstanceKey = oldmodels.NewActualLRPInstanceKey("instance-guid", "cell-id")
 			newInstanceKey = oldmodels.NewActualLRPInstanceKey("other-instance-guid", "other-cell-id")
 			netInfo = oldmodels.NewActualLRPNetInfo("1.1.1.1", []oldmodels.PortMapping{})
+
+			instanceKey = models.NewActualLRPInstanceKey("instance-guid", "cell-id")
 		})
 
 		It("receives events", func() {
@@ -206,8 +211,8 @@ var _ = Describe("Event", func() {
 			actualLRPCreatedEvent := event.(receptor.ActualLRPCreatedEvent)
 			Expect(actualLRPCreatedEvent.ActualLRPResponse).To(Equal(serialization.ActualLRPProtoToResponse(actualLRP, false)))
 
-			By("updating the existing ActualLR")
-			err = legacyBBS.ClaimActualLRP(logger, key, instanceKey)
+			By("updating the existing ActualLRP")
+			_, err = bbsClient.ClaimActualLRP(processGuid, 0, instanceKey)
 			Expect(err).NotTo(HaveOccurred())
 
 			before := actualLRP
@@ -225,7 +230,7 @@ var _ = Describe("Event", func() {
 			Expect(actualLRPChangedEvent.After).To(Equal(serialization.ActualLRPProtoToResponse(actualLRP, false)))
 
 			By("evacuating the ActualLRP")
-			_, err = legacyBBS.EvacuateRunningActualLRP(logger, key, instanceKey, netInfo, 0)
+			_, err = legacyBBS.EvacuateRunningActualLRP(logger, key, oldInstanceKey, netInfo, 0)
 			Expect(err).To(Equal(bbserrors.ErrServiceUnavailable))
 
 			evacuatingLRPGroup, err := bbsClient.ActualLRPGroupByProcessGuidAndIndex(oldDesiredLRP.ProcessGuid, 0)

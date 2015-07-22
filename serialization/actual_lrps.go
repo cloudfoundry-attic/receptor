@@ -39,10 +39,7 @@ func actualLRPProtoStateToResponseState(state string) receptor.ActualLRPState {
 	}
 }
 
-func actualLRPProtoModificationTagToResponseModificationTag(modificationTag *models.ModificationTag) receptor.ModificationTag {
-	if modificationTag == nil {
-		return receptor.ModificationTag{}
-	}
+func actualLRPProtoModificationTagToResponseModificationTag(modificationTag models.ModificationTag) receptor.ModificationTag {
 	return receptor.ModificationTag{
 		Epoch: modificationTag.Epoch,
 		Index: uint(modificationTag.Index),

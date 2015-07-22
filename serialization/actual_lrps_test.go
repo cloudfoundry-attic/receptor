@@ -31,7 +31,7 @@ var _ = Describe("ActualLRP Serialization", func() {
 				State:      models.ActualLRPStateRunning,
 				CrashCount: 42,
 				Since:      99999999999,
-				ModificationTag: &models.ModificationTag{
+				ModificationTag: models.ModificationTag{
 					Epoch: "some-guid",
 					Index: 50,
 				},
