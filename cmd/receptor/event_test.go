@@ -299,7 +299,7 @@ var _ = Describe("Event", func() {
 			Expect(err).NotTo(HaveOccurred())
 			actualLRP = actualLRPGroup.Instance
 
-			err = legacyBBS.RemoveActualLRP(logger, key, oldmodels.ActualLRPInstanceKey{})
+			err = bbsClient.RemoveActualLRP(key.ProcessGuid, key.Index)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() receptor.Event {
