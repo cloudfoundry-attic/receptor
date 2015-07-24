@@ -122,8 +122,7 @@ var _ = SynchronizedBeforeSuite(
 		}
 		bbsRunner = bbstestrunner.New(bbsBinPath, bbsArgs)
 		bbsProcess = ginkgomon.Invoke(bbsRunner)
-	},
-)
+	})
 
 var _ = SynchronizedAfterSuite(func() {
 	ginkgomon.Kill(bbsProcess)
