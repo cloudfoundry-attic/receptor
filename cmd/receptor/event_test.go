@@ -165,12 +165,17 @@ var _ = Describe("Event", func() {
 		)
 
 		var (
-			key            oldmodels.ActualLRPKey
-			oldInstanceKey oldmodels.ActualLRPInstanceKey
-			newInstanceKey oldmodels.ActualLRPInstanceKey
-			netInfo        oldmodels.ActualLRPNetInfo
+			key            models.ActualLRPKey
+			oldInstanceKey models.ActualLRPInstanceKey
+			newInstanceKey models.ActualLRPInstanceKey
+			netInfo        models.ActualLRPNetInfo
+		)
 
-			instanceKey models.ActualLRPInstanceKey
+		var (
+			legacyKey            oldmodels.ActualLRPKey
+			legacyOldInstanceKey oldmodels.ActualLRPInstanceKey
+			legacyNewInstanceKey oldmodels.ActualLRPInstanceKey
+			legacyNetInfo        oldmodels.ActualLRPNetInfo
 		)
 
 		BeforeEach(func() {
@@ -185,12 +190,15 @@ var _ = Describe("Event", func() {
 				},
 			}
 
-			key = oldmodels.NewActualLRPKey(processGuid, 0, domain)
-			oldInstanceKey = oldmodels.NewActualLRPInstanceKey("instance-guid", "cell-id")
-			newInstanceKey = oldmodels.NewActualLRPInstanceKey("other-instance-guid", "other-cell-id")
-			netInfo = oldmodels.NewActualLRPNetInfo("1.1.1.1", []oldmodels.PortMapping{})
+			legacyKey = oldmodels.NewActualLRPKey(processGuid, 0, domain)
+			legacyOldInstanceKey = oldmodels.NewActualLRPInstanceKey("instance-guid", "cell-id")
+			legacyNewInstanceKey = oldmodels.NewActualLRPInstanceKey("other-instance-guid", "other-cell-id")
+			legacyNetInfo = oldmodels.NewActualLRPNetInfo("1.1.1.1", []oldmodels.PortMapping{})
 
-			instanceKey = models.NewActualLRPInstanceKey("instance-guid", "cell-id")
+			key = models.NewActualLRPKey(processGuid, 0, domain)
+			oldInstanceKey = models.NewActualLRPInstanceKey("instance-guid", "cell-id")
+			newInstanceKey = models.NewActualLRPInstanceKey("other-instance-guid", "other-cell-id")
+			netInfo = models.NewActualLRPNetInfo("1.1.1.1")
 		})
 
 		It("receives events", func() {
@@ -212,7 +220,7 @@ var _ = Describe("Event", func() {
 			Expect(actualLRPCreatedEvent.ActualLRPResponse).To(Equal(serialization.ActualLRPProtoToResponse(actualLRP, false)))
 
 			By("updating the existing ActualLRP")
-			_, err = bbsClient.ClaimActualLRP(processGuid, 0, instanceKey)
+			_, err = bbsClient.ClaimActualLRP(processGuid, 0, oldInstanceKey)
 			Expect(err).NotTo(HaveOccurred())
 
 			before := actualLRP
@@ -230,7 +238,7 @@ var _ = Describe("Event", func() {
 			Expect(actualLRPChangedEvent.After).To(Equal(serialization.ActualLRPProtoToResponse(actualLRP, false)))
 
 			By("evacuating the ActualLRP")
-			_, err = legacyBBS.EvacuateRunningActualLRP(logger, key, oldInstanceKey, netInfo, 0)
+			_, err = legacyBBS.EvacuateRunningActualLRP(logger, legacyKey, legacyOldInstanceKey, legacyNetInfo, 0)
 			Expect(err).To(Equal(bbserrors.ErrServiceUnavailable))
 
 			evacuatingLRPGroup, err := bbsClient.ActualLRPGroupByProcessGuidAndIndex(oldDesiredLRP.ProcessGuid, 0)
@@ -255,7 +263,7 @@ var _ = Describe("Event", func() {
 			}).Should(BeAssignableToTypeOf(receptor.ActualLRPChangedEvent{}))
 
 			By("starting and then evacuating the ActualLRP on another cell")
-			err = legacyBBS.StartActualLRP(logger, key, newInstanceKey, netInfo)
+			_, err = bbsClient.StartActualLRP(&key, &newInstanceKey, &netInfo)
 			Expect(err).NotTo(HaveOccurred())
 
 			// discard instance -> RUNNING
@@ -265,7 +273,7 @@ var _ = Describe("Event", func() {
 			}).Should(BeAssignableToTypeOf(receptor.ActualLRPChangedEvent{}))
 
 			evacuatingBefore := evacuatingLRP
-			_, err = legacyBBS.EvacuateRunningActualLRP(logger, key, newInstanceKey, netInfo, 0)
+			_, err = legacyBBS.EvacuateRunningActualLRP(logger, legacyKey, legacyNewInstanceKey, legacyNetInfo, 0)
 			Expect(err).To(Equal(bbserrors.ErrServiceUnavailable))
 
 			evacuatingLRPGroup, err = bbsClient.ActualLRPGroupByProcessGuidAndIndex(oldDesiredLRP.ProcessGuid, 0)
@@ -299,7 +307,7 @@ var _ = Describe("Event", func() {
 			Expect(err).NotTo(HaveOccurred())
 			actualLRP = actualLRPGroup.Instance
 
-			err = bbsClient.RemoveActualLRP(key.ProcessGuid, key.Index)
+			err = bbsClient.RemoveActualLRP(key.ProcessGuid, legacyKey.Index)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() receptor.Event {
@@ -314,7 +322,7 @@ var _ = Describe("Event", func() {
 			Expect(response).To(Equal(serialization.ActualLRPProtoToResponse(actualLRP, false)))
 
 			By("removing the evacuating ActualLRP")
-			err = legacyBBS.RemoveEvacuatingActualLRP(logger, key, newInstanceKey)
+			err = legacyBBS.RemoveEvacuatingActualLRP(logger, legacyKey, legacyNewInstanceKey)
 			Expect(err).NotTo(HaveOccurred())
 
 			Eventually(func() receptor.Event {

@@ -28,17 +28,17 @@ var _ = Describe("Actual LRP API", func() {
 
 		for i := 0; i < lrpCount; i++ {
 			index := strconv.Itoa(i)
-			lrpKey := oldmodels.NewActualLRPKey(
+			lrpKey := models.NewActualLRPKey(
 				"process-guid-"+index,
-				i,
+				int32(i),
 				fmt.Sprintf("domain-%d", i/2),
 			)
-			instanceKey := oldmodels.NewActualLRPInstanceKey(
+			instanceKey := models.NewActualLRPInstanceKey(
 				"instance-guid-"+index,
 				"cell-id",
 			)
-			netInfo := oldmodels.NewActualLRPNetInfo("the-host", []oldmodels.PortMapping{{ContainerPort: 80, HostPort: uint16(1000 + i)}})
-			err := legacyBBS.StartActualLRP(logger, lrpKey, instanceKey, netInfo)
+			netInfo := models.NewActualLRPNetInfo("the-host", models.NewPortMapping(uint32(1000+i), 80))
+			_, err := bbsClient.StartActualLRP(&lrpKey, &instanceKey, &netInfo)
 			Expect(err).NotTo(HaveOccurred())
 		}
 
@@ -164,17 +164,17 @@ var _ = Describe("Actual LRP API", func() {
 			processGuid = "process-guid-0"
 			index = 1
 
-			lrpKey := oldmodels.NewActualLRPKey(
+			lrpKey := models.NewActualLRPKey(
 				processGuid,
-				index,
+				int32(index),
 				"domain-0",
 			)
-			instanceKey := oldmodels.NewActualLRPInstanceKey(
+			instanceKey := models.NewActualLRPInstanceKey(
 				"instance-guid-0",
 				"cell-id",
 			)
-			netInfo := oldmodels.NewActualLRPNetInfo("the-host", []oldmodels.PortMapping{{ContainerPort: 80, HostPort: 2345}})
-			err := legacyBBS.StartActualLRP(logger, lrpKey, instanceKey, netInfo)
+			netInfo := models.NewActualLRPNetInfo("the-host", models.NewPortMapping(2345, 80))
+			_, err := bbsClient.StartActualLRP(&lrpKey, &instanceKey, &netInfo)
 			Expect(err).NotTo(HaveOccurred())
 
 			actualLRPResponse, getErr = client.ActualLRPByProcessGuidAndIndex(processGuid, index)
