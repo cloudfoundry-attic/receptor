@@ -220,7 +220,7 @@ var _ = Describe("Event", func() {
 			Expect(actualLRPCreatedEvent.ActualLRPResponse).To(Equal(serialization.ActualLRPProtoToResponse(actualLRP, false)))
 
 			By("updating the existing ActualLRP")
-			_, err = bbsClient.ClaimActualLRP(processGuid, 0, oldInstanceKey)
+			_, err = bbsClient.ClaimActualLRP(processGuid, 0, &oldInstanceKey)
 			Expect(err).NotTo(HaveOccurred())
 
 			before := actualLRP
