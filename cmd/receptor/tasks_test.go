@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/cloudfoundry-incubator/bbs"
 	"github.com/cloudfoundry-incubator/bbs/models"
 	"github.com/cloudfoundry-incubator/receptor"
 	oldmodels "github.com/cloudfoundry-incubator/runtime-schema/models"
@@ -66,8 +67,8 @@ var _ = Describe("Task API", func() {
 		})
 
 		It("desires the task in the BBS", func() {
-			Eventually(func() ([]oldmodels.Task, error) {
-				return legacyBBS.PendingTasks(logger)
+			Eventually(func() []*models.Task {
+				return getTasksByState(bbsClient, models.Task_Pending)
 			}).Should(HaveLen(1))
 		})
 
@@ -323,3 +324,16 @@ var _ = Describe("Task API", func() {
 		})
 	})
 })
+
+func getTasksByState(client bbs.Client, state models.Task_State) []*models.Task {
+	tasks, err := client.Tasks()
+	Expect(err).NotTo(HaveOccurred())
+
+	filteredTasks := make([]*models.Task, 0)
+	for _, task := range tasks {
+		if task.State == state {
+			filteredTasks = append(filteredTasks, task)
+		}
+	}
+	return filteredTasks
+}
