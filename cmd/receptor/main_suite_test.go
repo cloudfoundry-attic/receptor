@@ -117,8 +117,9 @@ var _ = SynchronizedBeforeSuite(
 		bbsClient = bbs.NewClient(bbsURL.String())
 
 		bbsArgs = bbstestrunner.Args{
-			Address:     bbsAddress,
-			EtcdCluster: etcdUrl,
+			Address:           bbsAddress,
+			AuctioneerAddress: "some-address",
+			EtcdCluster:       etcdUrl,
 		}
 		bbsRunner = bbstestrunner.New(bbsBinPath, bbsArgs)
 		bbsProcess = ginkgomon.Invoke(bbsRunner)
