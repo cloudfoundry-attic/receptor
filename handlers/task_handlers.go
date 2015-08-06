@@ -13,7 +13,6 @@ import (
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 	legacybbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/bbserrors"
-	oldmodels "github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/pivotal-golang/lager"
 )
 
@@ -61,38 +60,26 @@ func (h *TaskHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Debug("creating-task", lager.Data{"task-guid": task.TaskGuid})
-	b, err := task.MarshalJSON()
-	var oldTask oldmodels.Task
-	err = json.Unmarshal(b, &oldTask)
-	if err != nil {
-		log.Error("failed-to-unmarshal-task", err)
-		writeUnknownErrorResponse(w, err)
-		return
-	}
-	if task.CompletionCallbackUrl == "" {
-		oldTask.CompletionCallbackURL = nil
-	}
 
-	err = h.legacyBBS.DesireTask(log, oldTask)
+	err = h.bbs.DesireTask(task.TaskGuid, task.Domain, task.TaskDefinition)
 	if err != nil {
 		log.Error("failed-to-desire-task", err)
-
-		if _, ok := err.(oldmodels.ValidationError); ok {
-			writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
-				Type:    receptor.InvalidTask,
-				Message: err.Error(),
-			})
-			return
+		if mErr, ok := err.(*models.Error); ok {
+			if mErr.Equal(models.ErrBadRequest) {
+				writeJSONResponse(w, http.StatusBadRequest, receptor.Error{
+					Type:    receptor.InvalidTask,
+					Message: err.Error(),
+				})
+				return
+			} else if mErr.Equal(models.ErrResourceExists) {
+				writeJSONResponse(w, http.StatusConflict, receptor.Error{
+					Type:    receptor.TaskGuidAlreadyExists,
+					Message: "task already exists",
+				})
+				return
+			}
 		}
-
-		if err == bbserrors.ErrStoreResourceExists {
-			writeJSONResponse(w, http.StatusConflict, receptor.Error{
-				Type:    receptor.TaskGuidAlreadyExists,
-				Message: "task already exists",
-			})
-		} else {
-			writeUnknownErrorResponse(w, err)
-		}
+		writeUnknownErrorResponse(w, err)
 		return
 	}
 

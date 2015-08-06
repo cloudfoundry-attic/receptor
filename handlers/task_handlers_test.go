@@ -15,7 +15,6 @@ import (
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/bbserrors"
 	fake_legacybbs "github.com/cloudfoundry-incubator/runtime-schema/bbs/fake_bbs"
-	oldmodels "github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/pivotal-golang/lager"
 
 	. "github.com/onsi/ginkgo"
@@ -43,7 +42,7 @@ var _ = Describe("TaskHandler", func() {
 
 	Describe("Create", func() {
 		var validCreateRequest receptor.TaskCreateRequest
-		var expectedTask oldmodels.Task
+		var expectedTask *models.Task
 
 		BeforeEach(func() {
 			validCreateRequest = receptor.TaskCreateRequest{
@@ -61,20 +60,22 @@ var _ = Describe("TaskHandler", func() {
 				Privileged: true,
 			}
 
-			expectedTask = oldmodels.Task{
-				TaskGuid:   "task-guid-1",
-				Domain:     "test-domain",
-				RootFS:     "docker://docker",
-				Action:     &oldmodels.RunAction{User: "me", Path: "/bin/bash", Args: []string{"echo", "hi"}, ResourceLimits: oldmodels.ResourceLimits{Nofile: nil}},
-				MemoryMB:   24,
-				DiskMB:     12,
-				CPUWeight:  10,
-				LogGuid:    "guid",
-				LogSource:  "source-name",
-				ResultFile: "result-file",
-				Annotation: "some annotation",
-				Privileged: true,
-			}
+			expectedTask = model_helpers.NewValidTask("task-guid-1")
+			expectedTask.Domain = "test-domain"
+			expectedTask.TaskDefinition.RootFs = "docker://docker"
+			expectedTask.TaskDefinition.Action = models.WrapAction(&models.RunAction{User: "me", Path: "/bin/bash", Args: []string{"echo", "hi"}})
+			expectedTask.TaskDefinition.MemoryMb = 24
+			expectedTask.TaskDefinition.DiskMb = 12
+			expectedTask.TaskDefinition.CpuWeight = 10
+			expectedTask.TaskDefinition.LogGuid = "guid"
+			expectedTask.TaskDefinition.LogSource = "source-name"
+			expectedTask.TaskDefinition.ResultFile = "result-file"
+			expectedTask.TaskDefinition.Annotation = "some annotation"
+			expectedTask.TaskDefinition.Privileged = true
+			expectedTask.TaskDefinition.EgressRules = nil
+			expectedTask.TaskDefinition.MetricsGuid = ""
+			expectedTask.TaskDefinition.EnvironmentVariables = nil
+
 		})
 
 		Context("when everything succeeds", func() {
@@ -83,9 +84,9 @@ var _ = Describe("TaskHandler", func() {
 			})
 
 			It("calls DesireTask on the BBS with the correct task", func() {
-				Expect(fakeLegacyBBS.DesireTaskCallCount()).To(Equal(1))
-				_, task := fakeLegacyBBS.DesireTaskArgsForCall(0)
-				Expect(task).To(Equal(expectedTask))
+				Expect(fakeClient.DesireTaskCallCount()).To(Equal(1))
+				_, _, def := fakeClient.DesireTaskArgsForCall(0)
+				Expect(def).To(Equal(expectedTask.TaskDefinition))
 			})
 
 			It("responds with 201 CREATED", func() {
@@ -109,9 +110,9 @@ var _ = Describe("TaskHandler", func() {
 				})
 
 				It("passes them to the BBS", func() {
-					Expect(fakeLegacyBBS.DesireTaskCallCount()).To(Equal(1))
-					_, task := fakeLegacyBBS.DesireTaskArgsForCall(0)
-					Expect(task.EnvironmentVariables).To(Equal([]oldmodels.EnvironmentVariable{
+					Expect(fakeClient.DesireTaskCallCount()).To(Equal(1))
+					_, _, def := fakeClient.DesireTaskArgsForCall(0)
+					Expect(def.EnvironmentVariables).To(Equal([]*models.EnvironmentVariable{
 						{Name: "var1", Value: "val1"},
 						{Name: "var2", Value: "val2"},
 					}))
@@ -121,9 +122,9 @@ var _ = Describe("TaskHandler", func() {
 
 			Context("when no env vars are specified", func() {
 				It("passes a nil slice to the BBS", func() {
-					Expect(fakeLegacyBBS.DesireTaskCallCount()).To(Equal(1))
-					_, task := fakeLegacyBBS.DesireTaskArgsForCall(0)
-					Expect(task.EnvironmentVariables).To(BeNil())
+					Expect(fakeClient.DesireTaskCallCount()).To(Equal(1))
+					_, _, def := fakeClient.DesireTaskArgsForCall(0)
+					Expect(def.EnvironmentVariables).To(BeNil())
 				})
 			})
 
@@ -140,14 +141,14 @@ var _ = Describe("TaskHandler", func() {
 
 		Context("when the BBS responds with an error", func() {
 			BeforeEach(func() {
-				fakeLegacyBBS.DesireTaskReturns(errors.New("ka-boom"))
+				fakeClient.DesireTaskReturns(errors.New("ka-boom"))
 				handler.Create(responseRecorder, newTestRequest(validCreateRequest))
 			})
 
 			It("calls DesireTask on the BBS with the correct task", func() {
-				Expect(fakeLegacyBBS.DesireTaskCallCount()).To(Equal(1))
-				_, task := fakeLegacyBBS.DesireTaskArgsForCall(0)
-				Expect(task.TaskGuid).To(Equal("task-guid-1"))
+				Expect(fakeClient.DesireTaskCallCount()).To(Equal(1))
+				taskGuid, _, _ := fakeClient.DesireTaskArgsForCall(0)
+				Expect(taskGuid).To(Equal("task-guid-1"))
 			})
 
 			It("responds with 500 INTERNAL ERROR", func() {
@@ -165,10 +166,10 @@ var _ = Describe("TaskHandler", func() {
 		})
 
 		Context("when the requested task is invalid", func() {
-			var validationError = oldmodels.ValidationError{}
+			var validationError = models.ErrBadRequest
 
 			BeforeEach(func() {
-				fakeLegacyBBS.DesireTaskReturns(validationError)
+				fakeClient.DesireTaskReturns(validationError)
 				handler.Create(responseRecorder, newTestRequest(validCreateRequest))
 			})
 
@@ -193,7 +194,7 @@ var _ = Describe("TaskHandler", func() {
 			})
 
 			It("does not call DesireTask on the BBS", func() {
-				Expect(fakeLegacyBBS.DesireTaskCallCount()).To(Equal(0))
+				Expect(fakeClient.DesireTaskCallCount()).To(Equal(0))
 			})
 
 			It("responds with 400 BAD REQUEST", func() {
