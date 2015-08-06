@@ -9,8 +9,10 @@ import (
 
 	"github.com/cloudfoundry-incubator/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/bbs/models"
+	"github.com/cloudfoundry-incubator/bbs/models/internal/model_helpers"
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
+	"github.com/cloudfoundry-incubator/receptor/serialization"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/bbserrors"
 	fake_legacybbs "github.com/cloudfoundry-incubator/runtime-schema/bbs/fake_bbs"
 	oldmodels "github.com/cloudfoundry-incubator/runtime-schema/models"
@@ -225,25 +227,10 @@ var _ = Describe("TaskHandler", func() {
 			var domain1Task, domain2Task *models.Task
 
 			BeforeEach(func() {
-				domain1Task = &models.Task{
-					TaskGuid: "task-guid-1",
-					Domain:   "domain-1",
-					Action: models.WrapAction(&models.RunAction{
-						User: "me",
-						Path: "the-path",
-					}),
-					State: models.Task_Pending,
-				}
-
-				domain2Task = &models.Task{
-					TaskGuid: "task-guid-2",
-					Domain:   "domain-2",
-					Action: models.WrapAction(&models.RunAction{
-						User: "me",
-						Path: "the-path",
-					}),
-					State: models.Task_Pending,
-				}
+				domain1Task = model_helpers.NewValidTask("task-guid-1")
+				domain1Task.Domain = "domain-1"
+				domain2Task = model_helpers.NewValidTask("task-guid-2")
+				domain2Task.Domain = "domain-2"
 
 				fakeClient.TasksReturns([]*models.Task{
 					domain1Task,
@@ -257,51 +244,39 @@ var _ = Describe("TaskHandler", func() {
 
 			Context("when a domain query param is provided", func() {
 				It("gets all tasks", func() {
-					var tasks []receptor.TaskResponse
-
 					request, err := http.NewRequest("", "http://example.com?domain=domain-1", nil)
 					Expect(err).NotTo(HaveOccurred())
 
 					handler.GetAll(responseRecorder, request)
 					Expect(responseRecorder.Code).To(Equal(http.StatusOK))
+
+					var tasks []receptor.TaskResponse
 					err = json.Unmarshal(responseRecorder.Body.Bytes(), &tasks)
 					Expect(err).NotTo(HaveOccurred())
 
+					Expect(fakeClient.TasksByDomainCallCount()).To(Equal(1))
 					actualDomain := fakeClient.TasksByDomainArgsForCall(0)
 					Expect(actualDomain).To(Equal("domain-1"))
+
 					expectedTasks := []receptor.TaskResponse{
-						{
-							TaskGuid: domain1Task.TaskGuid,
-							Domain:   domain1Task.Domain,
-							Action:   domain1Task.Action,
-							State:    receptor.TaskStatePending,
-						},
+						serialization.TaskToResponse(domain1Task),
 					}
-					Expect(tasks).To(Equal(expectedTasks))
+					Expect(tasks).To(ConsistOf(expectedTasks))
 				})
 			})
 
 			Context("when a domain query param is not provided", func() {
 				It("gets all tasks", func() {
-					var tasks []receptor.TaskResponse
-
 					handler.GetAll(responseRecorder, newTestRequest(""))
 					Expect(responseRecorder.Code).To(Equal(http.StatusOK))
+
+					var tasks []receptor.TaskResponse
 					err := json.Unmarshal(responseRecorder.Body.Bytes(), &tasks)
 					Expect(err).NotTo(HaveOccurred())
+
 					expectedTasks := []receptor.TaskResponse{
-						{
-							TaskGuid: domain1Task.TaskGuid,
-							Domain:   domain1Task.Domain,
-							Action:   domain1Task.Action,
-							State:    receptor.TaskStatePending,
-						},
-						{
-							TaskGuid: domain2Task.TaskGuid,
-							Domain:   domain2Task.Domain,
-							Action:   domain2Task.Action,
-							State:    receptor.TaskStatePending,
-						},
+						serialization.TaskToResponse(domain1Task),
+						serialization.TaskToResponse(domain2Task),
 					}
 					Expect(tasks).To(ConsistOf(expectedTasks))
 				})
@@ -383,32 +358,17 @@ var _ = Describe("TaskHandler", func() {
 		})
 
 		Context("when the task is successfully found in the BBS", func() {
-			var expectedTask receptor.TaskResponse
+			var task *models.Task
 
 			BeforeEach(func() {
-				task := &models.Task{
-					TaskGuid: "task-guid-1",
-					Domain:   "domain-1",
-					Action: models.WrapAction(&models.RunAction{
-						User: "me",
-						Path: "the-path",
-					}),
-					State: models.Task_Running,
-				}
-
+				task = model_helpers.NewValidTask("the-task-guid")
+				task.State = models.Task_Running
 				fakeClient.TaskByGuidReturns(task, nil)
-
-				expectedTask = receptor.TaskResponse{
-					TaskGuid: task.TaskGuid,
-					Domain:   task.Domain,
-					Action:   task.Action,
-					State:    receptor.TaskStateRunning,
-				}
 			})
 
 			It("retrieves the task by the given guid", func() {
 				guid := fakeClient.TaskByGuidArgsForCall(0)
-				Expect(guid).To(Equal("the-task-guid"))
+				Expect(guid).To(Equal(task.TaskGuid))
 			})
 
 			It("gets the task", func() {
@@ -417,7 +377,8 @@ var _ = Describe("TaskHandler", func() {
 				var actualTask receptor.TaskResponse
 				err := json.Unmarshal(responseRecorder.Body.Bytes(), &actualTask)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(expectedTask).To(Equal(actualTask))
+
+				Expect(actualTask).To(Equal(serialization.TaskToResponse(task)))
 			})
 		})
 	})

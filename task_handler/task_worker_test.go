@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-incubator/bbs/models"
+	"github.com/cloudfoundry-incubator/bbs/models/internal/model_helpers"
 	"github.com/cloudfoundry-incubator/cf_http"
 	"github.com/cloudfoundry-incubator/receptor/task_handler"
 	"github.com/cloudfoundry-incubator/runtime-schema/bbs/fake_bbs"
@@ -98,14 +99,9 @@ var _ = Describe("TaskWorker", func() {
 		})
 
 		simulateTaskCompleting := func() {
-			enqueue <- &models.Task{
-				TaskGuid:              "the-task-guid",
-				CompletionCallbackUrl: callbackURL,
-				Action: models.WrapAction(&models.RunAction{
-					User: "me",
-					Path: "lol",
-				}),
-			}
+			task := model_helpers.NewValidTask("the-task-guid")
+			task.CompletionCallbackUrl = callbackURL
+			enqueue <- task
 		}
 
 		Context("when the task has a completion callback URL", func() {
