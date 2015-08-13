@@ -57,6 +57,7 @@ var _ = Describe("Task API", func() {
 				RootFS:                "some:rootfs",
 				CompletionCallbackURL: testServer.URL() + "/the/callback/path",
 				Action:                models.WrapAction(&models.RunAction{User: "me", Path: "/bin/bash", Args: []string{"echo", "hi"}}),
+				Annotation:            "the-annotation",
 			}
 
 			err = client.CreateTask(taskToCreate)
@@ -97,19 +98,16 @@ var _ = Describe("Task API", func() {
 						Expect(err).NotTo(HaveOccurred())
 
 						Expect(taskResponse.TaskGuid).To(Equal("task-guid-1"))
-						Expect(taskResponse.Domain).To(Equal("test-domain"))
-						Expect(taskResponse.RootFS).To(Equal("some:rootfs"))
-						Expect(taskResponse.State).To(Equal(receptor.TaskStateCompleted))
 						Expect(taskResponse.Result).To(Equal("the-result"))
 						Expect(taskResponse.Failed).To(Equal(true))
 						Expect(taskResponse.FailureReason).To(Equal("the-failure-reason"))
-						Expect(taskResponse.Action).To(Equal(models.WrapAction(&models.RunAction{User: "me", Path: "/bin/bash", Args: []string{"echo", "hi"}, ResourceLimits: &models.ResourceLimits{}})))
+						Expect(taskResponse.Annotation).To(Equal("the-annotation"))
 					},
 				))
 
 				Expect(testServer.ReceivedRequests()).To(HaveLen(0))
 
-				err = legacyBBS.CompleteTask(logger, "task-guid-1", "the-cell-id", true, "the-failure-reason", "the-result")
+				err = bbsClient.CompleteTask("task-guid-1", "the-cell-id", true, "the-failure-reason", "the-result")
 				Expect(err).NotTo(HaveOccurred())
 
 				Eventually(testServer.ReceivedRequests).Should(HaveLen(1))
@@ -196,7 +194,7 @@ var _ = Describe("Task API", func() {
 		It("includes all of the task's publicly-visible fields", func() {
 			_, err := bbsClient.StartTask("task-guid-1", "the-cell-id")
 			Expect(err).NotTo(HaveOccurred())
-			err = legacyBBS.CompleteTask(logger, "task-guid-1", "the-cell-id", true, "the-failure-reason", "the-task-result")
+			err = bbsClient.CompleteTask("task-guid-1", "the-cell-id", true, "the-failure-reason", "the-task-result")
 			Expect(err).NotTo(HaveOccurred())
 
 			task, err := client.GetTask("task-guid-1")
@@ -229,7 +227,7 @@ var _ = Describe("Task API", func() {
 
 		Context("when the task is in the COMPLETED state", func() {
 			BeforeEach(func() {
-				err := legacyBBS.CompleteTask(logger, "task-guid-1", "the-cell-id", false, "", "the-task-result")
+				err := bbsClient.CompleteTask("task-guid-1", "the-cell-id", false, "", "the-task-result")
 				Expect(err).NotTo(HaveOccurred())
 			})
 
