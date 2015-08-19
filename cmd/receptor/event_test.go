@@ -207,7 +207,7 @@ var _ = Describe("Event", func() {
 			Expect(actualLRPCreatedEvent.ActualLRPResponse).To(Equal(serialization.ActualLRPProtoToResponse(actualLRP, false)))
 
 			By("updating the existing ActualLRP")
-			_, bbsErr := bbsClient.ClaimActualLRP(processGuid, 0, &oldInstanceKey)
+			bbsErr := bbsClient.ClaimActualLRP(processGuid, 0, &oldInstanceKey)
 			Expect(err).NotTo(HaveOccurred())
 
 			before := actualLRP
@@ -252,7 +252,7 @@ var _ = Describe("Event", func() {
 			}).Should(BeAssignableToTypeOf(receptor.ActualLRPChangedEvent{}))
 
 			By("starting and then evacuating the ActualLRP on another cell")
-			_, bbsErr = bbsClient.StartActualLRP(&key, &newInstanceKey, &netInfo)
+			bbsErr = bbsClient.StartActualLRP(&key, &newInstanceKey, &netInfo)
 			Expect(bbsErr).NotTo(HaveOccurred())
 
 			// discard instance -> RUNNING

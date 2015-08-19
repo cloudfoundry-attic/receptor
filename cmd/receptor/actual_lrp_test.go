@@ -36,7 +36,7 @@ var _ = Describe("Actual LRP API", func() {
 				"cell-id",
 			)
 			netInfo := models.NewActualLRPNetInfo("the-host", models.NewPortMapping(uint32(1000+i), 80))
-			_, err := bbsClient.StartActualLRP(&lrpKey, &instanceKey, &netInfo)
+			err := bbsClient.StartActualLRP(&lrpKey, &instanceKey, &netInfo)
 			Expect(err).NotTo(HaveOccurred())
 		}
 
@@ -171,7 +171,7 @@ var _ = Describe("Actual LRP API", func() {
 				"cell-id",
 			)
 			netInfo := models.NewActualLRPNetInfo("the-host", models.NewPortMapping(2345, 80))
-			_, err := bbsClient.StartActualLRP(&lrpKey, &instanceKey, &netInfo)
+			err := bbsClient.StartActualLRP(&lrpKey, &instanceKey, &netInfo)
 			Expect(err).NotTo(HaveOccurred())
 
 			actualLRPResponse, getErr = client.ActualLRPByProcessGuidAndIndex(processGuid, index)
