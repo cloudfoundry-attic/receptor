@@ -12,7 +12,7 @@ To create a DesiredLRP submit a valid [`DesiredLRPCreateRequest`](lrps.md#descri
 POST /v1/desired_lrps
 ```
 
-Diego responds by spinning up ActualLRPs
+Diego responds by creating ActualLRPs for the new DesiredLRP.
 
 ## Modifying DesiredLRPs
 
