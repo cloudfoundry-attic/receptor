@@ -10,21 +10,18 @@ import (
 	"github.com/cloudfoundry-incubator/bbs/models"
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
-	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/pivotal-golang/lager"
 )
 
 type ActualLRPHandler struct {
-	legacyBBS Bbs.ReceptorBBS
-	bbs       bbs.Client
-	logger    lager.Logger
+	bbs    bbs.Client
+	logger lager.Logger
 }
 
-func NewActualLRPHandler(bbs bbs.Client, legacyBBS Bbs.ReceptorBBS, logger lager.Logger) *ActualLRPHandler {
+func NewActualLRPHandler(bbs bbs.Client, logger lager.Logger) *ActualLRPHandler {
 	return &ActualLRPHandler{
-		bbs:       bbs,
-		legacyBBS: legacyBBS,
-		logger:    logger.Session("actual-lrp-handler"),
+		bbs:    bbs,
+		logger: logger.Session("actual-lrp-handler"),
 	}
 }
 
