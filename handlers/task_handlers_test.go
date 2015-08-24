@@ -9,7 +9,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/bbs/models"
-	"github.com/cloudfoundry-incubator/bbs/models/internal/model_helpers"
+	"github.com/cloudfoundry-incubator/bbs/models/test/model_helpers"
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
