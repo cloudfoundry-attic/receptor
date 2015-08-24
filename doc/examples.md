@@ -4,7 +4,7 @@ We provide some full examples of `DesiredLRPCreateRequest` JSON payloads for dif
 
 ### Web server via `bash` and `nc`
 
-This LRP runs an extremely simple HTTP server on port 8080 via `bash` and `nc`, in the preloaded `cflinuxfs2` as its distinguished unprivileged user, `vcap`:
+This DesiredLRP runs an extremely simple HTTP server on port 8080 via `bash` and `nc`, in the preloaded `cflinuxfs2` as its distinguished unprivileged user, `vcap`:
 
 ```
 {
@@ -33,7 +33,7 @@ This example is based on an LRP used in Diego's [inigo integration test suite](h
 
 ### Redis docker image
 
-The payload below will run one instance of a Redis server when submitted as the body 
+This DesiredLRP runs one instance of a Redis server via the [official Redis Docker image](https://hub.docker.com/_/redis/):
 
 ```
 {
