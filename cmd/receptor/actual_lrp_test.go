@@ -7,7 +7,6 @@ import (
 	"github.com/cloudfoundry-incubator/bbs/models"
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
-	oldmodels "github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/tedsuo/ifrit/ginkgomon"
 
 	. "github.com/onsi/ginkgo"
@@ -40,16 +39,16 @@ var _ = Describe("Actual LRP API", func() {
 			Expect(err).NotTo(HaveOccurred())
 		}
 
-		desiredLRP := oldmodels.DesiredLRP{
+		desiredLRP := &models.DesiredLRP{
 			ProcessGuid: "process-guid-0",
 			Domain:      "domain-0",
 			Instances:   1,
-			RootFS:      "some:rootfs",
-			Ports:       []uint16{80},
-			Action:      &oldmodels.RunAction{User: "me", Path: "/bin/true"},
+			RootFs:      "some:rootfs",
+			Ports:       []uint32{80},
+			Action:      models.WrapAction(&models.RunAction{User: "me", Path: "/bin/true"}),
 		}
 
-		err := legacyBBS.DesireLRP(logger, desiredLRP)
+		err := bbsClient.DesireLRP(desiredLRP)
 		Expect(err).NotTo(HaveOccurred())
 
 		evacuatingLRPKey = models.NewActualLRPKey("process-guid-0", 0, "domain-0")
