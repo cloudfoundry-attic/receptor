@@ -155,9 +155,9 @@ func (h *TaskHandler) Delete(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	err = h.bbs.ResolveTask(guid)
+	err = h.bbs.DeleteTask(guid)
 	if err != nil {
-		h.logger.Error("failed-to-resolve-task", err)
+		h.logger.Error("failed-to-delete-task", err)
 		writeUnknownErrorResponse(w, err)
 	}
 }
