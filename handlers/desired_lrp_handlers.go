@@ -40,15 +40,16 @@ func (h *DesiredLRPHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	err = h.bbs.DesireLRP(desiredLRP)
 	if err != nil {
-		if _, ok := err.(models.ValidationError); ok {
-			log.Error("lrp-request-invalid", err)
-			writeBadRequestResponse(w, receptor.InvalidLRP, err)
-			return
-		}
-
-		if e, ok := err.(*models.Error); ok && e.Equal(models.ErrResourceExists) {
-			writeDesiredLRPAlreadyExistsResponse(w, desiredLRP.ProcessGuid)
-			return
+		if e, ok := err.(*models.Error); ok {
+			if e.Equal(models.ErrBadRequest) {
+				log.Error("lrp-request-invalid", err)
+				writeBadRequestResponse(w, receptor.InvalidLRP, err)
+				return
+			} else if e.Equal(models.ErrResourceExists) {
+				log.Error("lrp-request-invalid", err)
+				writeDesiredLRPAlreadyExistsResponse(w, desiredLRP.ProcessGuid)
+				return
+			}
 		}
 
 		log.Error("desire-lrp-failed", err)
@@ -124,13 +125,13 @@ func (h *DesiredLRPHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if e, ok := err.(*models.Error); ok {
-		if e == models.ErrResourceNotFound {
+		if e.Equal(models.ErrResourceNotFound) {
 			logger.Error("desired-lrp-not-found", err)
 			writeDesiredLRPNotFoundResponse(w, processGuid)
 			return
 		}
 
-		if e == models.ErrResourceConflict {
+		if e.Equal(models.ErrResourceConflict) {
 			logger.Error("failed-to-compare-and-swap", err)
 			writeCompareAndSwapFailedResponse(w, processGuid)
 			return

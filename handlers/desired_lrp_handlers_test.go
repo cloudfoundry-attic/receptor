@@ -110,10 +110,8 @@ var _ = Describe("Desired LRP Handlers", func() {
 		})
 
 		Context("when the desired LRP is invalid", func() {
-			var validationError = models.ValidationError{}
-
 			BeforeEach(func(done Done) {
-				fakeBBS.DesireLRPReturns(validationError)
+				fakeBBS.DesireLRPReturns(models.ErrBadRequest)
 
 				defer close(done)
 				handler.Create(responseRecorder, newTestRequest(validCreateLRPRequest))
@@ -126,7 +124,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 			It("responds with a relevant error message", func() {
 				expectedBody, _ := json.Marshal(receptor.Error{
 					Type:    receptor.InvalidLRP,
-					Message: validationError.Error(),
+					Message: models.ErrBadRequest.Message,
 				})
 				Expect(responseRecorder.Body.String()).To(Equal(string(expectedBody)))
 			})
