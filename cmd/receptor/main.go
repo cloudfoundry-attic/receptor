@@ -49,12 +49,6 @@ var serverAddress = flag.String(
 	"The host:port that the server is bound to.",
 )
 
-var taskHandlerAddress = flag.String(
-	"taskHandlerAddress",
-	"127.0.0.1:1169", // "taskhandler".each_char.collect(&:ord).inject(:+)
-	"The host:port for the internal task completion callback",
-)
-
 var consulCluster = flag.String(
 	"consulCluster",
 	"",
@@ -235,7 +229,7 @@ func initializeReceptorBBS(etcdOptions *etcdstoreadapter.ETCDOptions, logger lag
 		logger.Fatal("consul-session-failed", err)
 	}
 
-	return Bbs.NewReceptorBBS(etcdAdapter, consulSession, *taskHandlerAddress, clock.NewClock(), logger)
+	return Bbs.NewReceptorBBS(etcdAdapter, consulSession, clock.NewClock(), logger)
 }
 
 func initializeServerRegistration(logger lager.Logger) (registration natbeat.RegistryMessage) {
