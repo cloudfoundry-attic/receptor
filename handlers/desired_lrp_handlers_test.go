@@ -57,7 +57,7 @@ var _ = Describe("Desired LRP Handlers", func() {
 				User: "me",
 				Path: "the-path",
 			}),
-			Routes:          &models.Routes{},
+			Routes:          nil,
 			ModificationTag: &models.ModificationTag{},
 		}
 
