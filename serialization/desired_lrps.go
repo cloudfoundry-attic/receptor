@@ -94,13 +94,13 @@ func DesiredLRPUpdateFromRequest(req receptor.DesiredLRPUpdateRequest) *models.D
 }
 
 func RoutingInfoToRawMessages(r receptor.RoutingInfo) *models.Routes {
-	var routes models.Routes
+	if r == nil {
+		return nil
+	}
 
-	if r != nil {
-		routes = models.Routes{}
-		for key, value := range r {
-			routes[key] = value
-		}
+	routes := models.Routes{}
+	for key, value := range r {
+		routes[key] = value
 	}
 
 	return &routes
