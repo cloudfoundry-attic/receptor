@@ -136,14 +136,14 @@ func (h *TaskHandler) Delete(w http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		if modelErr, ok := err.(*models.Error); ok {
 			switch modelErr.Type {
-			case models.InvalidStateTransition:
+			case models.Error_InvalidStateTransition:
 				h.logger.Error("invalid-task-state-transition", modelErr)
 				writeJSONResponse(w, http.StatusConflict, receptor.Error{
 					Type:    receptor.TaskNotDeletable,
 					Message: "This task has not been completed. Please retry when it is completed.",
 				})
 				return
-			case models.ResourceNotFound:
+			case models.Error_ResourceNotFound:
 				h.logger.Error("task-not-found", modelErr)
 				writeTaskNotFoundResponse(w, guid)
 				return
