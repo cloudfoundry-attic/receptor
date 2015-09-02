@@ -122,12 +122,9 @@ var _ = SynchronizedBeforeSuite(
 			EtcdCluster:       etcdUrl,
 			ConsulCluster:     consulRunner.ConsulCluster(),
 		}
-		bbsRunner = bbstestrunner.New(bbsBinPath, bbsArgs)
-		bbsProcess = ginkgomon.Invoke(bbsRunner)
 	})
 
 var _ = SynchronizedAfterSuite(func() {
-	ginkgomon.Kill(bbsProcess)
 	etcdRunner.Stop()
 	consulRunner.Stop()
 }, func() {
@@ -151,6 +148,9 @@ var _ = BeforeEach(func() {
 	natsAddress = fmt.Sprintf("127.0.0.1:%d", natsPort)
 	natsClient = diegonats.NewClient()
 	natsGroupProcess = ginkgomon.Invoke(newNatsGroup())
+
+	bbsRunner = bbstestrunner.New(bbsBinPath, bbsArgs)
+	bbsProcess = ginkgomon.Invoke(bbsRunner)
 
 	receptorURL := &url.URL{
 		Scheme: "http",
@@ -179,6 +179,7 @@ var _ = BeforeEach(func() {
 var _ = AfterEach(func() {
 	etcdAdapter.Disconnect()
 	ginkgomon.Kill(natsGroupProcess)
+	ginkgomon.Kill(bbsProcess)
 })
 
 func newNatsGroup() ifrit.Runner {
