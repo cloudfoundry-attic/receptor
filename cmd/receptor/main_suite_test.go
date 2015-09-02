@@ -117,6 +117,7 @@ var _ = SynchronizedBeforeSuite(
 
 		bbsArgs = bbstestrunner.Args{
 			Address:           bbsAddress,
+			AdvertiseURL:      bbsURL.String(),
 			AuctioneerAddress: "some-address",
 			EtcdCluster:       etcdUrl,
 			ConsulCluster:     consulRunner.ConsulCluster(),
