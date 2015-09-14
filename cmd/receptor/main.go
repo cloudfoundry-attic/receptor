@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -106,6 +107,24 @@ var bbsAddress = flag.String(
 	"Address to the BBS Server",
 )
 
+var bbsCACert = flag.String(
+	"bbsCACert",
+	"",
+	"path to certificate authority cert used for mutually authenticated TLS BBS communication",
+)
+
+var bbsClientCert = flag.String(
+	"bbsClientCert",
+	"",
+	"path to client cert used for mutually authenticated TLS BBS communication",
+)
+
+var bbsClientKey = flag.String(
+	"bbsClientKey",
+	"",
+	"path to client key used for mutually authenticated TLS BBS communication",
+)
+
 const (
 	dropsondeDestination = "localhost:3457"
 	dropsondeOrigin      = "receptor"
@@ -133,9 +152,8 @@ func main() {
 	}
 
 	locketClient := initializeLocketClient(logger)
-	bbs := bbs.NewClient(*bbsAddress)
 
-	handler := handlers.New(bbs, locketClient, logger, *username, *password, *corsEnabled)
+	handler := handlers.New(initializeBBSClient(logger), locketClient, logger, *username, *password, *corsEnabled)
 
 	members := grouper.Members{
 		{"server", http_server.New(*serverAddress, handler)},
@@ -235,4 +253,21 @@ func initializeServerRegistration(logger lager.Logger) (registration natbeat.Reg
 		Host: host,
 		Port: port,
 	}
+}
+
+func initializeBBSClient(logger lager.Logger) bbs.Client {
+	bbsURL, err := url.Parse(*bbsAddress)
+	if err != nil {
+		logger.Fatal("Invalid BBS URL", err)
+	}
+
+	if bbsURL.Scheme != "https" {
+		return bbs.NewClient(*bbsAddress)
+	}
+
+	bbsClient, err := bbs.NewSecureClient(*bbsAddress, *bbsCACert, *bbsClientCert, *bbsClientKey)
+	if err != nil {
+		logger.Fatal("Failed to configure secure BBS client", err)
+	}
+	return bbsClient
 }
