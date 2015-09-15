@@ -17,7 +17,6 @@ import (
 	"github.com/cloudfoundry-incubator/natbeat"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
 	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
-	"github.com/cloudfoundry-incubator/runtime-schema/bbs/lock_bbs"
 	"github.com/cloudfoundry/dropsonde"
 	"github.com/cloudfoundry/gunk/diegonats"
 	"github.com/cloudfoundry/gunk/workpool"
@@ -57,8 +56,8 @@ var consulCluster = flag.String(
 
 var lockTTL = flag.Duration(
 	"lockTTL",
-	lock_bbs.LockTTL,
-	"TTL for service lock",
+	10*time.Second,
+	"Consul TTL",
 )
 
 var corsEnabled = flag.Bool(
