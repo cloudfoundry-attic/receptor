@@ -11,7 +11,6 @@ type Args struct {
 	RegisterWithRouter bool
 	DomainNames        string
 	Address            string
-	EtcdCluster        string
 	ConsulCluster      string
 	Username           string
 	Password           string
@@ -19,9 +18,6 @@ type Args struct {
 	NatsUsername       string
 	NatsPassword       string
 	CORSEnabled        bool
-	EtcdClientCert     string
-	EtcdClientKey      string
-	EtcdCACert         string
 	BBSAddress         string
 }
 
@@ -30,7 +26,6 @@ func (args Args) ArgSlice() []string {
 		"-registerWithRouter=" + strconv.FormatBool(args.RegisterWithRouter),
 		"-domainNames", args.DomainNames,
 		"-address", args.Address,
-		"-etcdCluster", args.EtcdCluster,
 		"-username", args.Username,
 		"-password", args.Password,
 		"-natsAddresses", args.NatsAddresses,
@@ -38,9 +33,6 @@ func (args Args) ArgSlice() []string {
 		"-natsPassword", args.NatsPassword,
 		"-corsEnabled=" + strconv.FormatBool(args.CORSEnabled),
 		"-consulCluster", args.ConsulCluster,
-		"-etcdCertFile", args.EtcdClientCert,
-		"-etcdKeyFile", args.EtcdClientKey,
-		"-etcdCaFile", args.EtcdCACert,
 		"-bbsAddress", args.BBSAddress,
 	}
 }

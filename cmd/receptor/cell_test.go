@@ -1,9 +1,9 @@
 package main_test
 
 import (
+	"github.com/cloudfoundry-incubator/locket"
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
-	"github.com/cloudfoundry-incubator/runtime-schema/bbs/shared"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/tedsuo/ifrit/ginkgomon"
 
@@ -19,7 +19,7 @@ var _ = Describe("Cell API", func() {
 		cellPresence = models.NewCellPresence("cell-0", "1.2.3.4", "the-zone", capacity, []string{}, []string{})
 		value, err := models.ToJSON(cellPresence)
 
-		_, err = consulSession.SetPresence(shared.CellSchemaPath(cellPresence.CellID), value)
+		_, err = consulSession.SetPresence(locket.CellSchemaPath(cellPresence.CellID), value)
 		Expect(err).NotTo(HaveOccurred())
 
 		receptorProcess = ginkgomon.Invoke(receptorRunner)
@@ -35,7 +35,7 @@ var _ = Describe("Cell API", func() {
 
 		BeforeEach(func() {
 			Eventually(func() []models.CellPresence {
-				cellPresences, err := legacyBBS.Cells()
+				cellPresences, err := locketClient.Cells()
 				Expect(err).NotTo(HaveOccurred())
 				return cellPresences
 			}).Should(HaveLen(1))
@@ -48,7 +48,7 @@ var _ = Describe("Cell API", func() {
 		})
 
 		It("has the correct data from the bbs", func() {
-			cellPresences, err := legacyBBS.Cells()
+			cellPresences, err := locketClient.Cells()
 			Expect(err).NotTo(HaveOccurred())
 
 			expectedResponses := make([]receptor.CellResponse, 0, 1)

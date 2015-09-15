@@ -9,11 +9,11 @@ import (
 	"github.com/cloudfoundry-incubator/bbs"
 	"github.com/cloudfoundry-incubator/consuladapter"
 	"github.com/cloudfoundry-incubator/consuladapter/consulrunner"
+	"github.com/cloudfoundry-incubator/locket"
 	"github.com/cloudfoundry-incubator/receptor"
 
 	bbstestrunner "github.com/cloudfoundry-incubator/bbs/cmd/bbs/testrunner"
 	"github.com/cloudfoundry-incubator/receptor/cmd/receptor/testrunner"
-	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry/gunk/diegonats"
 	"github.com/cloudfoundry/gunk/diegonats/gnatsdrunner"
 	"github.com/cloudfoundry/storeadapter"
@@ -60,7 +60,7 @@ var bbsRunner *ginkgomon.Runner
 var bbsProcess ifrit.Process
 var bbsClient bbs.Client
 
-var legacyBBS *Bbs.BBS
+var locketClient locket.Client
 
 var logger lager.Logger
 
@@ -142,7 +142,7 @@ var _ = BeforeEach(func() {
 	receptorAddress = fmt.Sprintf("127.0.0.1:%d", 6700+GinkgoParallelNode())
 
 	etcdAdapter = etcdRunner.Adapter(nil)
-	legacyBBS = Bbs.NewBBS(etcdAdapter, consulSession, clock.NewClock(), logger)
+	locketClient = locket.NewClient(consulSession, clock.NewClock(), logger)
 
 	natsPort = 4051 + GinkgoParallelNode()
 	natsAddress = fmt.Sprintf("127.0.0.1:%d", natsPort)
@@ -164,7 +164,6 @@ var _ = BeforeEach(func() {
 		RegisterWithRouter: true,
 		DomainNames:        "example.com",
 		Address:            receptorAddress,
-		EtcdCluster:        etcdUrl,
 		Username:           username,
 		Password:           password,
 		NatsAddresses:      natsAddress,

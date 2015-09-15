@@ -4,17 +4,17 @@ import (
 	"net/http"
 
 	"github.com/cloudfoundry-incubator/bbs"
+	"github.com/cloudfoundry-incubator/locket"
 	"github.com/cloudfoundry-incubator/receptor"
-	legacybbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/pivotal-golang/lager"
 	"github.com/tedsuo/rata"
 )
 
-func New(bbs bbs.Client, receptorBBS legacybbs.ReceptorBBS, logger lager.Logger, username, password string, corsEnabled bool) http.Handler {
+func New(bbs bbs.Client, locketClient locket.Client, logger lager.Logger, username, password string, corsEnabled bool) http.Handler {
 	taskHandler := NewTaskHandler(bbs, logger)
 	desiredLRPHandler := NewDesiredLRPHandler(bbs, logger)
 	actualLRPHandler := NewActualLRPHandler(bbs, logger)
-	cellHandler := NewCellHandler(receptorBBS, logger)
+	cellHandler := NewCellHandler(locketClient, logger)
 	domainHandler := NewDomainHandler(bbs, logger)
 	eventStreamHandler := NewEventStreamHandler(bbs, logger)
 	authCookieHandler := NewAuthCookieHandler(logger)

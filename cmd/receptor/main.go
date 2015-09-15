@@ -14,13 +14,11 @@ import (
 	cf_lager "github.com/cloudfoundry-incubator/cf-lager"
 	"github.com/cloudfoundry-incubator/cf_http"
 	"github.com/cloudfoundry-incubator/consuladapter"
+	"github.com/cloudfoundry-incubator/locket"
 	"github.com/cloudfoundry-incubator/natbeat"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
-	Bbs "github.com/cloudfoundry-incubator/runtime-schema/bbs"
 	"github.com/cloudfoundry/dropsonde"
 	"github.com/cloudfoundry/gunk/diegonats"
-	"github.com/cloudfoundry/gunk/workpool"
-	"github.com/cloudfoundry/storeadapter/etcdstoreadapter"
 	"github.com/pivotal-golang/clock"
 	"github.com/pivotal-golang/lager"
 	"github.com/pivotal-golang/localip"
@@ -111,14 +109,11 @@ var bbsAddress = flag.String(
 const (
 	dropsondeDestination = "localhost:3457"
 	dropsondeOrigin      = "receptor"
-
-	bbsWatchRetryWaitDuration = 3 * time.Second
 )
 
 func main() {
 	cf_debug_server.AddFlags(flag.CommandLine)
 	cf_lager.AddFlags(flag.CommandLine)
-	etcdFlags := etcdstoreadapter.AddFlags(flag.CommandLine)
 	flag.Parse()
 
 	cf_http.Initialize(*communicationTimeout)
@@ -127,11 +122,6 @@ func main() {
 	logger.Info("starting")
 
 	initializeDropsonde(logger)
-
-	etcdOptions, err := etcdFlags.Validate()
-	if err != nil {
-		logger.Fatal("etcd-validation-failed", err)
-	}
 
 	if err := validateNatsArguments(); err != nil {
 		logger.Error("invalid-nats-flags", err)
@@ -142,11 +132,10 @@ func main() {
 		logger.Fatal("invalid-bbs-address", err)
 	}
 
-	legacyBBS := initializeReceptorBBS(etcdOptions, logger)
-
+	locketClient := initializeLocketClient(logger)
 	bbs := bbs.NewClient(*bbsAddress)
 
-	handler := handlers.New(bbs, legacyBBS, logger, *username, *password, *corsEnabled)
+	handler := handlers.New(bbs, locketClient, logger, *username, *password, *corsEnabled)
 
 	members := grouper.Members{
 		{"server", http_server.New(*serverAddress, handler)},
@@ -173,7 +162,7 @@ func main() {
 
 	logger.Info("started")
 
-	err = <-monitor.Wait()
+	err := <-monitor.Wait()
 	if err != nil {
 		logger.Error("exited-with-failure", err)
 		os.Exit(1)
@@ -205,18 +194,7 @@ func initializeDropsonde(logger lager.Logger) {
 	}
 }
 
-func initializeReceptorBBS(etcdOptions *etcdstoreadapter.ETCDOptions, logger lager.Logger) Bbs.ReceptorBBS {
-	workPool, err := workpool.NewWorkPool(100)
-	if err != nil {
-		logger.Fatal("failed-to-construct-etcd-adapter-workpool", err, lager.Data{"num-workers": 100}) // should never happen
-	}
-
-	etcdAdapter, err := etcdstoreadapter.New(etcdOptions, workPool)
-
-	if err != nil {
-		logger.Fatal("failed-to-construct-etcd-tls-client", err)
-	}
-
+func initializeLocketClient(logger lager.Logger) locket.Client {
 	client, err := consuladapter.NewClient(*consulCluster)
 	if err != nil {
 		logger.Fatal("new-client-failed", err)
@@ -228,7 +206,7 @@ func initializeReceptorBBS(etcdOptions *etcdstoreadapter.ETCDOptions, logger lag
 		logger.Fatal("consul-session-failed", err)
 	}
 
-	return Bbs.NewReceptorBBS(etcdAdapter, consulSession, clock.NewClock(), logger)
+	return locket.NewClient(consulSession, clock.NewClock(), logger)
 }
 
 func initializeServerRegistration(logger lager.Logger) (registration natbeat.RegistryMessage) {

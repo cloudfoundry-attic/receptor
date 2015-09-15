@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"net/http/httptest"
 
+	"github.com/cloudfoundry-incubator/locket/locketfakes"
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
-	"github.com/cloudfoundry-incubator/runtime-schema/bbs/fake_bbs"
 	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -19,17 +19,17 @@ import (
 var _ = Describe("Cell Handlers", func() {
 	var (
 		logger           lager.Logger
-		fakeBBS          *fake_bbs.FakeReceptorBBS
+		locketClient     *locketfakes.FakeClient
 		responseRecorder *httptest.ResponseRecorder
 		handler          *handlers.CellHandler
 	)
 
 	BeforeEach(func() {
-		fakeBBS = new(fake_bbs.FakeReceptorBBS)
+		locketClient = new(locketfakes.FakeClient)
 		logger = lager.NewLogger("test")
 		logger.RegisterSink(lager.NewWriterSink(GinkgoWriter, lager.DEBUG))
 		responseRecorder = httptest.NewRecorder()
-		handler = handlers.NewCellHandler(fakeBBS, logger)
+		handler = handlers.NewCellHandler(locketClient, logger)
 	})
 
 	Describe("GetAll", func() {
@@ -49,11 +49,11 @@ var _ = Describe("Cell Handlers", func() {
 
 		Context("when reading Cells from BBS succeeds", func() {
 			BeforeEach(func() {
-				fakeBBS.CellsReturns(cellPresences, nil)
+				locketClient.CellsReturns(cellPresences, nil)
 			})
 
 			It("call the BBS to retrieve the actual LRPs", func() {
-				Expect(fakeBBS.CellsCallCount()).To(Equal(1))
+				Expect(locketClient.CellsCallCount()).To(Equal(1))
 			})
 
 			It("responds with 200 Status OK", func() {
@@ -74,7 +74,7 @@ var _ = Describe("Cell Handlers", func() {
 
 		Context("when the BBS returns no cells", func() {
 			BeforeEach(func() {
-				fakeBBS.CellsReturns([]models.CellPresence{}, nil)
+				locketClient.CellsReturns([]models.CellPresence{}, nil)
 			})
 
 			It("responds with 200 Status OK", func() {
@@ -88,7 +88,7 @@ var _ = Describe("Cell Handlers", func() {
 
 		Context("when reading from the BBS fails", func() {
 			BeforeEach(func() {
-				fakeBBS.CellsReturns([]models.CellPresence{}, errors.New("Something went wrong"))
+				locketClient.CellsReturns([]models.CellPresence{}, errors.New("Something went wrong"))
 			})
 
 			It("responds with an error", func() {
