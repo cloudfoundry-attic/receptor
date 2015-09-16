@@ -7,10 +7,10 @@ import (
 	"net/http/httptest"
 
 	"github.com/cloudfoundry-incubator/locket/locketfakes"
+	"github.com/cloudfoundry-incubator/locket/presence"
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
-	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/pivotal-golang/lager"
@@ -33,13 +33,13 @@ var _ = Describe("Cell Handlers", func() {
 	})
 
 	Describe("GetAll", func() {
-		var cellPresences []models.CellPresence
+		var cellPresences []presence.CellPresence
 
 		BeforeEach(func() {
-			capacity := models.NewCellCapacity(128, 1024, 6)
-			cellPresences = []models.CellPresence{
-				models.NewCellPresence("cell-id-0", "1.2.3.4", "the-zone", capacity, []string{"provider-0"}, []string{"stack-0"}),
-				models.NewCellPresence("cell-id-1", "4.5.6.7", "the-zone", capacity, []string{"provider-1"}, []string{"stack-1"}),
+			capacity := presence.NewCellCapacity(128, 1024, 6)
+			cellPresences = []presence.CellPresence{
+				presence.NewCellPresence("cell-id-0", "1.2.3.4", "the-zone", capacity, []string{"provider-0"}, []string{"stack-0"}),
+				presence.NewCellPresence("cell-id-1", "4.5.6.7", "the-zone", capacity, []string{"provider-1"}, []string{"stack-1"}),
 			}
 		})
 
@@ -74,7 +74,7 @@ var _ = Describe("Cell Handlers", func() {
 
 		Context("when the BBS returns no cells", func() {
 			BeforeEach(func() {
-				locketClient.CellsReturns([]models.CellPresence{}, nil)
+				locketClient.CellsReturns([]presence.CellPresence{}, nil)
 			})
 
 			It("responds with 200 Status OK", func() {
@@ -88,7 +88,7 @@ var _ = Describe("Cell Handlers", func() {
 
 		Context("when reading from the BBS fails", func() {
 			BeforeEach(func() {
-				locketClient.CellsReturns([]models.CellPresence{}, errors.New("Something went wrong"))
+				locketClient.CellsReturns([]presence.CellPresence{}, errors.New("Something went wrong"))
 			})
 
 			It("responds with an error", func() {

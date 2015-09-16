@@ -1,11 +1,11 @@
 package serialization
 
 import (
+	"github.com/cloudfoundry-incubator/locket/presence"
 	"github.com/cloudfoundry-incubator/receptor"
-	"github.com/cloudfoundry-incubator/runtime-schema/models"
 )
 
-func CellPresenceToCellResponse(cellPresence models.CellPresence) receptor.CellResponse {
+func CellPresenceToCellResponse(cellPresence presence.CellPresence) receptor.CellResponse {
 	return receptor.CellResponse{
 		CellID: cellPresence.CellID,
 		Zone:   cellPresence.Zone,

@@ -3,7 +3,6 @@ package serialization
 import (
 	"github.com/cloudfoundry-incubator/bbs/models"
 	"github.com/cloudfoundry-incubator/receptor"
-	oldmodels "github.com/cloudfoundry-incubator/runtime-schema/models"
 )
 
 func EnvironmentVariablesToModel(envVars []receptor.EnvironmentVariable) []*models.EnvironmentVariable {
@@ -33,18 +32,6 @@ func EnvironmentVariablesFromProto(envVars []*models.EnvironmentVariable) []rece
 }
 
 func EnvironmentVariablesFromModel(envVars []*models.EnvironmentVariable) []receptor.EnvironmentVariable {
-	if envVars == nil {
-		return nil
-	}
-	out := make([]receptor.EnvironmentVariable, len(envVars))
-	for i, val := range envVars {
-		out[i].Name = val.Name
-		out[i].Value = val.Value
-	}
-	return out
-}
-
-func EnvironmentVariablesFromOldModel(envVars []oldmodels.EnvironmentVariable) []receptor.EnvironmentVariable {
 	if envVars == nil {
 		return nil
 	}

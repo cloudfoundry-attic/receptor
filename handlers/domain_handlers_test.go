@@ -9,9 +9,9 @@ import (
 	"time"
 
 	"github.com/cloudfoundry-incubator/bbs/fake_bbs"
+	"github.com/cloudfoundry-incubator/bbs/models"
 	"github.com/cloudfoundry-incubator/receptor"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
-	"github.com/cloudfoundry-incubator/runtime-schema/models"
 	"github.com/pivotal-golang/lager"
 
 	. "github.com/onsi/ginkgo"
