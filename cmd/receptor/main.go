@@ -265,7 +265,7 @@ func initializeBBSClient(logger lager.Logger) bbs.Client {
 		return bbs.NewClient(*bbsAddress)
 	}
 
-	bbsClient, err := bbs.NewSecureClient(*bbsAddress, *bbsCACert, *bbsClientCert, *bbsClientKey)
+	bbsClient, err := bbs.NewSecureClient(*bbsAddress, *bbsCACert, *bbsClientCert, *bbsClientKey, 0, 0)
 	if err != nil {
 		logger.Fatal("Failed to configure secure BBS client", err)
 	}
