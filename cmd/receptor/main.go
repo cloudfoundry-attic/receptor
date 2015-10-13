@@ -4,8 +4,10 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -125,10 +127,24 @@ var bbsClientKey = flag.String(
 	"path to client key used for mutually authenticated TLS BBS communication",
 )
 
+var artifactPath = flag.String(
+	"artifactPath",
+	"",
+	"path to the directory which contains ARCH/ltc",
+)
+
 const (
 	dropsondeDestination = "localhost:3457"
 	dropsondeOrigin      = "receptor"
 )
+
+type artifactLocator struct {
+	basePath string
+}
+
+func (l *artifactLocator) LocateArtifact(arch, name string) (io.ReadSeeker, error) {
+	return os.Open(filepath.Join(l.basePath, arch, name))
+}
 
 func main() {
 	cf_debug_server.AddFlags(flag.CommandLine)
@@ -153,7 +169,7 @@ func main() {
 
 	locketClient := initializeLocketClient(logger)
 
-	handler := handlers.New(initializeBBSClient(logger), locketClient, logger, *username, *password, *corsEnabled)
+	handler := handlers.New(initializeBBSClient(logger), locketClient, logger, *username, *password, *corsEnabled, &artifactLocator{*artifactPath})
 
 	members := grouper.Members{
 		{"server", http_server.New(*serverAddress, handler)},

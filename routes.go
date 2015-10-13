@@ -30,6 +30,9 @@ const (
 	UpsertDomainRoute = "UpsertDomain"
 	DomainsRoute      = "Domains"
 
+	// Sync
+	DownloadRoute = "Download"
+
 	// Event Streaming
 	EventStream = "EventStream"
 
@@ -64,6 +67,9 @@ var Routes = rata.Routes{
 	// Domains
 	{Path: "/v1/domains/:domain", Method: "PUT", Name: UpsertDomainRoute},
 	{Path: "/v1/domains", Method: "GET", Name: DomainsRoute},
+
+	// Sync
+	{Path: "/v1/sync/:arch/ltc", Method: "GET", Name: DownloadRoute},
 
 	// Event Streaming
 	{Path: "/v1/events", Method: "GET", Name: EventStream},

@@ -10,12 +10,13 @@ import (
 	"github.com/tedsuo/rata"
 )
 
-func New(bbs bbs.Client, locketClient locket.Client, logger lager.Logger, username, password string, corsEnabled bool) http.Handler {
+func New(bbs bbs.Client, locketClient locket.Client, logger lager.Logger, username, password string, corsEnabled bool, artifactLocator ArtifactLocator) http.Handler {
 	taskHandler := NewTaskHandler(bbs, logger)
 	desiredLRPHandler := NewDesiredLRPHandler(bbs, logger)
 	actualLRPHandler := NewActualLRPHandler(bbs, logger)
 	cellHandler := NewCellHandler(locketClient, logger)
 	domainHandler := NewDomainHandler(bbs, logger)
+	syncHandler := NewSyncHandler(artifactLocator, logger)
 	eventStreamHandler := NewEventStreamHandler(bbs, logger)
 	authCookieHandler := NewAuthCookieHandler(logger)
 
@@ -46,6 +47,9 @@ func New(bbs bbs.Client, locketClient locket.Client, logger lager.Logger, userna
 		// Domains
 		receptor.UpsertDomainRoute: route(domainHandler.Upsert),
 		receptor.DomainsRoute:      route(domainHandler.GetAll),
+
+		// Sync
+		receptor.DownloadRoute: route(syncHandler.Download),
 
 		// Event Streaming
 		receptor.EventStream: route(eventStreamHandler.EventStream),
