@@ -28,7 +28,7 @@ var _ = Describe("Basic Auth", func() {
 
 		BeforeEach(func() {
 			var err error
-			req, err = http.NewRequest("GET", "http://"+receptorAddress, nil)
+			req, err = http.NewRequest("GET", "http://"+receptorAddress+"/v1/events", nil)
 			Expect(err).NotTo(HaveOccurred())
 		})
 
@@ -42,7 +42,14 @@ var _ = Describe("Basic Auth", func() {
 		})
 
 		Context("when the username and password have been set", func() {
-			It("returns 401 for all requests", func() {
+			It("returns 401 for all authenticated requests", func() {
+				Expect(res.StatusCode).To(Equal(http.StatusUnauthorized))
+			})
+
+			It("does not return 401 for unauthenticated requests", func() {
+				var err error
+				req, err = http.NewRequest("GET", "http://"+receptorAddress+"/v1/sync/linux/ltc", nil)
+				Expect(err).NotTo(HaveOccurred())
 				Expect(res.StatusCode).To(Equal(http.StatusUnauthorized))
 			})
 		})
@@ -56,7 +63,7 @@ var _ = Describe("Basic Auth", func() {
 			})
 
 			It("does not return 401", func() {
-				Expect(res.StatusCode).To(Equal(http.StatusNotFound))
+				Expect(res.StatusCode).To(Equal(http.StatusOK))
 			})
 		})
 
@@ -68,7 +75,7 @@ var _ = Describe("Basic Auth", func() {
 			})
 
 			It("does not return 401", func() {
-				Expect(res.StatusCode).To(Equal(http.StatusNotFound))
+				Expect(res.StatusCode).To(Equal(http.StatusOK))
 			})
 		})
 

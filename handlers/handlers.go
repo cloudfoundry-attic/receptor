@@ -20,42 +20,49 @@ func New(bbs bbs.Client, locketClient locket.Client, logger lager.Logger, userna
 	eventStreamHandler := NewEventStreamHandler(bbs, logger)
 	authCookieHandler := NewAuthCookieHandler(logger)
 
+	auth := func(handler func(http.ResponseWriter, *http.Request)) http.Handler {
+		if username == "" {
+			return http.HandlerFunc(handler)
+		}
+		return CookieAuthWrap(BasicAuthWrap(http.HandlerFunc(handler), username, password), receptor.AuthorizationCookieName)
+	}
+
 	actions := rata.Handlers{
 		// Tasks
-		receptor.CreateTaskRoute: route(taskHandler.Create),
-		receptor.TasksRoute:      route(taskHandler.GetAll),
-		receptor.GetTaskRoute:    route(taskHandler.GetByGuid),
-		receptor.DeleteTaskRoute: route(taskHandler.Delete),
-		receptor.CancelTaskRoute: route(taskHandler.Cancel),
+		receptor.CreateTaskRoute: auth(taskHandler.Create),
+		receptor.TasksRoute:      auth(taskHandler.GetAll),
+		receptor.GetTaskRoute:    auth(taskHandler.GetByGuid),
+		receptor.DeleteTaskRoute: auth(taskHandler.Delete),
+		receptor.CancelTaskRoute: auth(taskHandler.Cancel),
 
 		// DesiredLRPs
-		receptor.CreateDesiredLRPRoute: route(desiredLRPHandler.Create),
-		receptor.GetDesiredLRPRoute:    route(desiredLRPHandler.Get),
-		receptor.UpdateDesiredLRPRoute: route(desiredLRPHandler.Update),
-		receptor.DeleteDesiredLRPRoute: route(desiredLRPHandler.Delete),
-		receptor.DesiredLRPsRoute:      route(desiredLRPHandler.GetAll),
+		receptor.CreateDesiredLRPRoute: auth(desiredLRPHandler.Create),
+		receptor.GetDesiredLRPRoute:    auth(desiredLRPHandler.Get),
+		receptor.UpdateDesiredLRPRoute: auth(desiredLRPHandler.Update),
+		receptor.DeleteDesiredLRPRoute: auth(desiredLRPHandler.Delete),
+		receptor.DesiredLRPsRoute:      auth(desiredLRPHandler.GetAll),
 
 		// ActualLRPs
-		receptor.ActualLRPsRoute:                         route(actualLRPHandler.GetAll),
-		receptor.ActualLRPsByProcessGuidRoute:            route(actualLRPHandler.GetAllByProcessGuid),
-		receptor.ActualLRPByProcessGuidAndIndexRoute:     route(actualLRPHandler.GetByProcessGuidAndIndex),
-		receptor.KillActualLRPByProcessGuidAndIndexRoute: route(actualLRPHandler.KillByProcessGuidAndIndex),
+		receptor.ActualLRPsRoute:                         auth(actualLRPHandler.GetAll),
+		receptor.ActualLRPsByProcessGuidRoute:            auth(actualLRPHandler.GetAllByProcessGuid),
+		receptor.ActualLRPByProcessGuidAndIndexRoute:     auth(actualLRPHandler.GetByProcessGuidAndIndex),
+		receptor.KillActualLRPByProcessGuidAndIndexRoute: auth(actualLRPHandler.KillByProcessGuidAndIndex),
 
 		// Cells
-		receptor.CellsRoute: route(cellHandler.GetAll),
+		receptor.CellsRoute: auth(cellHandler.GetAll),
 
 		// Domains
-		receptor.UpsertDomainRoute: route(domainHandler.Upsert),
-		receptor.DomainsRoute:      route(domainHandler.GetAll),
+		receptor.UpsertDomainRoute: auth(domainHandler.Upsert),
+		receptor.DomainsRoute:      auth(domainHandler.GetAll),
 
 		// Sync
-		receptor.DownloadRoute: route(syncHandler.Download),
+		receptor.DownloadRoute: http.HandlerFunc(syncHandler.Download),
 
 		// Event Streaming
-		receptor.EventStream: route(eventStreamHandler.EventStream),
+		receptor.EventStream: auth(eventStreamHandler.EventStream),
 
 		// Authentication Cookie
-		receptor.GenerateCookie: route(authCookieHandler.GenerateCookie),
+		receptor.GenerateCookie: auth(authCookieHandler.GenerateCookie),
 	}
 
 	handler, err := rata.NewRouter(receptor.Routes, actions)
@@ -63,17 +70,9 @@ func New(bbs bbs.Client, locketClient locket.Client, logger lager.Logger, userna
 		panic("unable to create router: " + err.Error())
 	}
 
-	if username != "" {
-		handler = CookieAuthWrap(BasicAuthWrap(handler, username, password), receptor.AuthorizationCookieName)
-	}
-
 	if corsEnabled {
 		handler = CORSWrapper(handler)
 	}
 
 	return LogWrap(handler, logger)
-}
-
-func route(f func(w http.ResponseWriter, r *http.Request)) http.Handler {
-	return http.HandlerFunc(f)
 }

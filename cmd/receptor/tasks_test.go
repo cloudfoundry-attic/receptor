@@ -34,7 +34,7 @@ var _ = Describe("Task API", func() {
 	Describe("Headers", func() {
 		It("includes the Content-Length and Content-Type headers", func() {
 			httpClient := new(http.Client)
-			res, err := httpClient.Get("http://" + receptorAddress + "/tasks")
+			res, err := httpClient.Get("http://" + receptorAddress + "/v1/tasks")
 			Expect(err).NotTo(HaveOccurred())
 			Expect(res.Header.Get("Content-Length")).To(MatchRegexp(`\d+`))
 			Expect(res.Header.Get("Content-Type")).To(Equal("application/json"))
