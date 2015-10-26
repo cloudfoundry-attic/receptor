@@ -10,7 +10,7 @@ import (
 	"github.com/tedsuo/rata"
 )
 
-func New(bbs bbs.Client, locketClient locket.Client, logger lager.Logger, username, password string, corsEnabled bool, artifactLocator ArtifactLocator) http.Handler {
+func New(bbs bbs.Client, locketClient locket.Client, logger lager.Logger, username, password string, corsEnabled bool, artifactLocator ArtifactLocator, versionFilesLocator VersionFilesLocator) http.Handler {
 	taskHandler := NewTaskHandler(bbs, logger)
 	desiredLRPHandler := NewDesiredLRPHandler(bbs, logger)
 	actualLRPHandler := NewActualLRPHandler(bbs, logger)
@@ -19,6 +19,7 @@ func New(bbs bbs.Client, locketClient locket.Client, logger lager.Logger, userna
 	syncHandler := NewSyncHandler(artifactLocator, logger)
 	eventStreamHandler := NewEventStreamHandler(bbs, logger)
 	authCookieHandler := NewAuthCookieHandler(logger)
+	versionHandler := NewVersionHandler(versionFilesLocator)
 
 	auth := func(handler func(http.ResponseWriter, *http.Request)) http.Handler {
 		if username == "" {
@@ -63,6 +64,9 @@ func New(bbs bbs.Client, locketClient locket.Client, logger lager.Logger, userna
 
 		// Authentication Cookie
 		receptor.GenerateCookie: auth(authCookieHandler.GenerateCookie),
+
+		// Version
+		receptor.GetVersionRoute: auth(versionHandler.GetVersion),
 	}
 
 	handler, err := rata.NewRouter(receptor.Routes, actions)

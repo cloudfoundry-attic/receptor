@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -133,6 +134,12 @@ var artifactPath = flag.String(
 	"path to the directory which contains ARCH/ltc",
 )
 
+var versionFilesPath = flag.String(
+	"versionFilesPath",
+	"",
+	"path to the directory which contains version files",
+)
+
 const (
 	dropsondeDestination = "localhost:3457"
 	dropsondeOrigin      = "receptor"
@@ -144,6 +151,19 @@ type artifactLocator struct {
 
 func (l *artifactLocator) LocateArtifact(arch, name string) (io.ReadSeeker, error) {
 	return os.Open(filepath.Join(l.basePath, arch, name))
+}
+
+type versionFilesLocator struct {
+	basePath string
+}
+
+func (v *versionFilesLocator) GetVersionFile(filename string) string {
+	bytes, err := ioutil.ReadFile(filepath.Join(v.basePath, filename))
+	if err != nil {
+		return ""
+	}
+
+	return strings.Trim(string(bytes), "\n\r")
 }
 
 func main() {
@@ -169,7 +189,7 @@ func main() {
 
 	locketClient := initializeLocketClient(logger)
 
-	handler := handlers.New(initializeBBSClient(logger), locketClient, logger, *username, *password, *corsEnabled, &artifactLocator{*artifactPath})
+	handler := handlers.New(initializeBBSClient(logger), locketClient, logger, *username, *password, *corsEnabled, &artifactLocator{*artifactPath}, &versionFilesLocator{*versionFilesPath})
 
 	members := grouper.Members{
 		{"server", http_server.New(*serverAddress, handler)},

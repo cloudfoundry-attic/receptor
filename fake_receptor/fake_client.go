@@ -195,6 +195,13 @@ type FakeClient struct {
 	getStreamingClientReturns     struct {
 		result1 *http.Client
 	}
+	GetVersionStub        func() (receptor.VersionResponse, error)
+	getVersionMutex       sync.RWMutex
+	getVersionArgsForCall []struct{}
+	getVersionReturns     struct {
+		result1 receptor.VersionResponse
+		result2 error
+	}
 }
 
 func (fake *FakeClient) CreateTask(arg1 receptor.TaskCreateRequest) error {
@@ -884,6 +891,31 @@ func (fake *FakeClient) GetStreamingClientReturns(result1 *http.Client) {
 	fake.getStreamingClientReturns = struct {
 		result1 *http.Client
 	}{result1}
+}
+
+func (fake *FakeClient) GetVersion() (receptor.VersionResponse, error) {
+	fake.getVersionMutex.Lock()
+	fake.getVersionArgsForCall = append(fake.getVersionArgsForCall, struct{}{})
+	fake.getVersionMutex.Unlock()
+	if fake.GetVersionStub != nil {
+		return fake.GetVersionStub()
+	} else {
+		return fake.getVersionReturns.result1, fake.getVersionReturns.result2
+	}
+}
+
+func (fake *FakeClient) GetVersionCallCount() int {
+	fake.getVersionMutex.RLock()
+	defer fake.getVersionMutex.RUnlock()
+	return len(fake.getVersionArgsForCall)
+}
+
+func (fake *FakeClient) GetVersionReturns(result1 receptor.VersionResponse, result2 error) {
+	fake.GetVersionStub = nil
+	fake.getVersionReturns = struct {
+		result1 receptor.VersionResponse
+		result2 error
+	}{result1, result2}
 }
 
 var _ receptor.Client = new(FakeClient)

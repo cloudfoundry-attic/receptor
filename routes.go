@@ -38,6 +38,9 @@ const (
 
 	// Authentication Cookie
 	GenerateCookie = "GenerateCookie"
+
+	// Version
+	GetVersionRoute = "GetVersion"
 )
 
 var Routes = rata.Routes{
@@ -76,4 +79,7 @@ var Routes = rata.Routes{
 
 	// Authentication Cookie
 	{Path: "/v1/auth_cookie", Method: "POST", Name: GenerateCookie},
+
+	// Version
+	{Path: "/v1/version", Method: "GET", Name: GetVersionRoute},
 }

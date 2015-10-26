@@ -62,6 +62,8 @@ type Client interface {
 
 	GetClient() *http.Client
 	GetStreamingClient() *http.Client
+
+	GetVersion() (VersionResponse, error)
 }
 
 func NewClient(url string) Client {
@@ -86,6 +88,12 @@ func (c *client) GetClient() *http.Client {
 
 func (c *client) GetStreamingClient() *http.Client {
 	return c.streamingHTTPClient
+}
+
+func (c *client) GetVersion() (VersionResponse, error) {
+	version := VersionResponse{}
+	err := c.doRequest(GetVersionRoute, nil, nil, nil, &version)
+	return version, err
 }
 
 func (c *client) CreateTask(request TaskCreateRequest) error {
