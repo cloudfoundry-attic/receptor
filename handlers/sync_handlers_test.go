@@ -33,7 +33,7 @@ var _ = Describe("Sync Handlers", func() {
 	Describe("Download", func() {
 		JustBeforeEach(func() {
 			req := newTestRequest("")
-			req.Form = url.Values{":arch": []string{"linux"}}
+			req.Form = url.Values{":arch": []string{"windows"}, ":artifact": []string{"ltc.exe"}}
 			handler.Download(responseRecorder, req)
 		})
 
@@ -43,8 +43,8 @@ var _ = Describe("Sync Handlers", func() {
 			})
 
 			It("sends the contents", func() {
-				Expect(fakeLocator.paramArch).To(Equal("linux"))
-				Expect(fakeLocator.paramName).To(Equal("ltc"))
+				Expect(fakeLocator.paramArch).To(Equal("windows"))
+				Expect(fakeLocator.paramName).To(Equal("ltc.exe"))
 
 				Expect(responseRecorder.Body.Bytes()).To(Equal([]byte("xyz")))
 				Expect(responseRecorder.Code).To(Equal(http.StatusOK))
@@ -59,8 +59,8 @@ var _ = Describe("Sync Handlers", func() {
 			})
 
 			It("returns an error", func() {
-				Expect(fakeLocator.paramArch).To(Equal("linux"))
-				Expect(fakeLocator.paramName).To(Equal("ltc"))
+				Expect(fakeLocator.paramArch).To(Equal("windows"))
+				Expect(fakeLocator.paramName).To(Equal("ltc.exe"))
 
 				Expect(responseRecorder.Code).To(Equal(http.StatusInternalServerError))
 			})

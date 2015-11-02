@@ -26,11 +26,13 @@ func NewSyncHandler(locator ArtifactLocator, logger lager.Logger) *SyncHandler {
 
 func (h *SyncHandler) Download(w http.ResponseWriter, req *http.Request) {
 	arch := req.FormValue(":arch")
+	artifact := req.FormValue(":artifact")
 	logger := h.logger.Session("download", lager.Data{
-		"arch": arch,
+		"arch":     arch,
+		"artifact": artifact,
 	})
 
-	artifactSeeker, err := h.locator.LocateArtifact(arch, "ltc")
+	artifactSeeker, err := h.locator.LocateArtifact(arch, artifact)
 	if err != nil {
 		logger.Error("failed-to-locate-artifact", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -38,5 +40,5 @@ func (h *SyncHandler) Download(w http.ResponseWriter, req *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/octet-stream")
-	http.ServeContent(w, req, "ltc", time.Time{}, artifactSeeker)
+	http.ServeContent(w, req, "", time.Time{}, artifactSeeker)
 }

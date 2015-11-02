@@ -72,7 +72,7 @@ var Routes = rata.Routes{
 	{Path: "/v1/domains", Method: "GET", Name: DomainsRoute},
 
 	// Sync
-	{Path: "/v1/sync/:arch/ltc", Method: "GET", Name: DownloadRoute},
+	{Path: "/v1/sync/:arch/:artifact", Method: "GET", Name: DownloadRoute},
 
 	// Event Streaming
 	{Path: "/v1/events", Method: "GET", Name: EventStream},

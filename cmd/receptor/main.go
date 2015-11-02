@@ -150,7 +150,7 @@ type artifactLocator struct {
 }
 
 func (l *artifactLocator) LocateArtifact(arch, name string) (io.ReadSeeker, error) {
-	return os.Open(filepath.Join(l.basePath, arch, name))
+	return os.Open(filepath.Join(l.basePath, filepath.Base(arch), filepath.Base(name)))
 }
 
 type versionFilesLocator struct {
