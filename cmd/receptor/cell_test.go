@@ -2,8 +2,8 @@ package main_test
 
 import (
 	"github.com/cloudfoundry-incubator/locket"
-	"github.com/cloudfoundry-incubator/locket/presence"
 	"github.com/cloudfoundry-incubator/receptor"
+	"github.com/cloudfoundry-incubator/bbs/models"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 	"github.com/tedsuo/ifrit/ginkgomon"
 
@@ -12,12 +12,12 @@ import (
 )
 
 var _ = Describe("Cell API", func() {
-	var cellPresence presence.CellPresence
+	var cellPresence models.CellPresence
 
 	BeforeEach(func() {
-		capacity := presence.NewCellCapacity(128, 1024, 6)
-		cellPresence = presence.NewCellPresence("cell-0", "1.2.3.4", "the-zone", capacity, []string{}, []string{})
-		value, err := presence.ToJSON(cellPresence)
+		capacity := models.NewCellCapacity(128, 1024, 6)
+		cellPresence = models.NewCellPresence("cell-0", "1.2.3.4", "the-zone", capacity, []string{}, []string{})
+		value, err := models.ToJSON(cellPresence)
 
 		_, err = consulSession.SetPresence(locket.CellSchemaPath(cellPresence.CellID), value)
 		Expect(err).NotTo(HaveOccurred())
@@ -34,7 +34,7 @@ var _ = Describe("Cell API", func() {
 		var getErr error
 
 		BeforeEach(func() {
-			Eventually(func() []presence.CellPresence {
+			Eventually(func() []models.CellPresence {
 				cellPresences, err := locketClient.Cells()
 				Expect(err).NotTo(HaveOccurred())
 				return cellPresences

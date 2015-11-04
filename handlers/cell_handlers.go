@@ -5,6 +5,7 @@ import (
 
 	"github.com/cloudfoundry-incubator/locket"
 	"github.com/cloudfoundry-incubator/receptor"
+	"github.com/cloudfoundry-incubator/bbs/models"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 	"github.com/pivotal-golang/lager"
 )
