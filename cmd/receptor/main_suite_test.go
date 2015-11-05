@@ -9,7 +9,6 @@ import (
 	"github.com/cloudfoundry-incubator/bbs"
 	"github.com/cloudfoundry-incubator/consuladapter"
 	"github.com/cloudfoundry-incubator/consuladapter/consulrunner"
-	"github.com/cloudfoundry-incubator/locket"
 	"github.com/cloudfoundry-incubator/receptor"
 
 	bbstestrunner "github.com/cloudfoundry-incubator/bbs/cmd/bbs/testrunner"
@@ -60,7 +59,7 @@ var bbsRunner *ginkgomon.Runner
 var bbsProcess ifrit.Process
 var bbsClient bbs.Client
 
-var locketClient locket.Client
+var serviceClient bbs.ServiceClient
 
 var logger lager.Logger
 
@@ -145,7 +144,7 @@ var _ = BeforeEach(func() {
 	receptorAddress = fmt.Sprintf("127.0.0.1:%d", 6700+GinkgoParallelNode())
 
 	etcdAdapter = etcdRunner.Adapter(nil)
-	locketClient = locket.NewClient(consulSession, clock.NewClock(), logger)
+	serviceClient = bbs.NewServiceClient(consulSession, clock.NewClock())
 
 	natsPort = 4051 + GinkgoParallelNode()
 	natsAddress = fmt.Sprintf("127.0.0.1:%d", natsPort)

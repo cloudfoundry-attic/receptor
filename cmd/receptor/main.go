@@ -18,7 +18,6 @@ import (
 	cf_lager "github.com/cloudfoundry-incubator/cf-lager"
 	"github.com/cloudfoundry-incubator/cf_http"
 	"github.com/cloudfoundry-incubator/consuladapter"
-	"github.com/cloudfoundry-incubator/locket"
 	"github.com/cloudfoundry-incubator/natbeat"
 	"github.com/cloudfoundry-incubator/receptor/handlers"
 	"github.com/cloudfoundry/dropsonde"
@@ -187,9 +186,9 @@ func main() {
 		logger.Fatal("invalid-bbs-address", err)
 	}
 
-	locketClient := initializeLocketClient(logger)
+	serviceClient := initializeServiceClient(logger)
 
-	handler := handlers.New(initializeBBSClient(logger), locketClient, logger, *username, *password, *corsEnabled, &artifactLocator{*artifactPath}, &versionFilesLocator{*versionFilesPath})
+	handler := handlers.New(initializeBBSClient(logger), serviceClient, logger, *username, *password, *corsEnabled, &artifactLocator{*artifactPath}, &versionFilesLocator{*versionFilesPath})
 
 	members := grouper.Members{
 		{"server", http_server.New(*serverAddress, handler)},
@@ -248,7 +247,7 @@ func initializeDropsonde(logger lager.Logger) {
 	}
 }
 
-func initializeLocketClient(logger lager.Logger) locket.Client {
+func initializeServiceClient(logger lager.Logger) bbs.ServiceClient {
 	client, err := consuladapter.NewClient(*consulCluster)
 	if err != nil {
 		logger.Fatal("new-client-failed", err)
@@ -260,7 +259,7 @@ func initializeLocketClient(logger lager.Logger) locket.Client {
 		logger.Fatal("consul-session-failed", err)
 	}
 
-	return locket.NewClient(consulSession, clock.NewClock(), logger)
+	return bbs.NewServiceClient(consulSession, clock.NewClock())
 }
 
 func initializeServerRegistration(logger lager.Logger) (registration natbeat.RegistryMessage) {

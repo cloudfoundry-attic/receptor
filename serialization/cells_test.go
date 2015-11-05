@@ -1,8 +1,8 @@
 package serialization_test
 
 import (
-	"github.com/cloudfoundry-incubator/locket/presence"
 	"github.com/cloudfoundry-incubator/receptor"
+	"github.com/cloudfoundry-incubator/bbs/models"
 	"github.com/cloudfoundry-incubator/receptor/serialization"
 
 	. "github.com/onsi/ginkgo"
@@ -11,11 +11,11 @@ import (
 
 var _ = Describe("CellPresence Serialization", func() {
 	Describe("CellPresenceToCellResponse", func() {
-		var cellPresence presence.CellPresence
+		var cellPresence models.CellPresence
 
 		BeforeEach(func() {
-			capacity := presence.NewCellCapacity(128, 1024, 6)
-			cellPresence = presence.NewCellPresence("cell-id-0", "1.2.3.4", "the-zone", capacity, []string{"provider-1", "provider-2"}, []string{"stack-1"})
+			capacity := models.NewCellCapacity(128, 1024, 6)
+			cellPresence = models.NewCellPresence("cell-id-0", "1.2.3.4", "the-zone", capacity, []string{"provider-1", "provider-2"}, []string{"stack-1"})
 		})
 
 		It("serializes all the fields", func() {
