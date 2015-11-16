@@ -46,13 +46,13 @@ var _ = Describe("Version Handlers", func() {
 				response := receptor.VersionResponse{}
 				err := json.Unmarshal(responseRecorder.Body.Bytes(), &response)
 				Expect(err).NotTo(HaveOccurred())
-				Expect(response.CfRelease).To(Equal("v218"))
-				Expect(response.CfRoutingRelease).To(Equal("v219"))
+				Expect(response.CFRelease).To(Equal("v218"))
+				Expect(response.CFRoutingRelease).To(Equal("v219"))
 				Expect(response.DiegoRelease).To(Equal("v220"))
 				Expect(response.GardenLinuxRelease).To(Equal("v221"))
 				Expect(response.LatticeRelease).To(Equal("v222"))
 				Expect(response.LatticeReleaseImage).To(Equal("v223"))
-				Expect(response.Ltc).To(Equal("v224"))
+				Expect(response.LTC).To(Equal("v224"))
 				Expect(response.Receptor).To(Equal("v225"))
 			})
 		})
@@ -75,7 +75,7 @@ type fakeVersionFilesLocator struct {
 
 func (v *fakeVersionFilesLocator) GetVersionFile(filename string) string {
 	switch filename {
-	case "CF_RELEASE":
+	case "CF_LATTICE_RELEASE":
 		return v.cfRelease
 	case "CF_ROUTING_RELEASE":
 		return v.cfRoutingRelease

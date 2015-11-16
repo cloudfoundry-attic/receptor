@@ -283,12 +283,12 @@ func (ActualLRPRemovedEvent) EventType() EventType { return EventTypeActualLRPRe
 func (e ActualLRPRemovedEvent) Key() string        { return e.ActualLRPResponse.InstanceGuid }
 
 type VersionResponse struct {
-	CfRelease           string `json:"cf_release,omitempty"`
-	CfRoutingRelease    string `json:"cf_routing_release,omitempty"`
+	CFRelease           string `json:"cf_release,omitempty"`
+	CFRoutingRelease    string `json:"cf_routing_release,omitempty"`
 	DiegoRelease        string `json:"diego_release,omitempty"`
 	GardenLinuxRelease  string `json:"garden_linux_release,omitempty"`
 	LatticeRelease      string `json:"lattice_release,omitempty"`
 	LatticeReleaseImage string `json:"lattice_release_image,omitempty"`
-	Ltc                 string `json:"ltc,omitempty"`
+	LTC                 string `json:"ltc,omitempty"`
 	Receptor            string `json:"receptor,omitempty"`
 }

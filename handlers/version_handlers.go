@@ -22,13 +22,13 @@ func NewVersionHandler(locator VersionFilesLocator) *VersionHandler {
 
 func (v *VersionHandler) GetVersion(w http.ResponseWriter, req *http.Request) {
 	writeJSONResponse(w, http.StatusOK, receptor.VersionResponse{
-		CfRelease:           v.locator.GetVersionFile("CF_RELEASE"),
-		CfRoutingRelease:    v.locator.GetVersionFile("CF_ROUTING_RELEASE"),
+		CFRelease:           v.locator.GetVersionFile("CF_LATTICE_RELEASE"),
+		CFRoutingRelease:    v.locator.GetVersionFile("CF_ROUTING_RELEASE"),
 		DiegoRelease:        v.locator.GetVersionFile("DIEGO_RELEASE"),
 		GardenLinuxRelease:  v.locator.GetVersionFile("GARDEN_LINUX_RELEASE"),
 		LatticeRelease:      v.locator.GetVersionFile("LATTICE_RELEASE"),
 		LatticeReleaseImage: v.locator.GetVersionFile("LATTICE_RELEASE_IMAGE"),
-		Ltc:                 v.locator.GetVersionFile("LTC"),
+		LTC:                 v.locator.GetVersionFile("LTC"),
 		Receptor:            v.locator.GetVersionFile("RECEPTOR"),
 	})
 }
